@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  web:
+    image: nginx
+    volumes:
+      - ./html:/usr/share/nginx/html
+    networks:
+      - proxy
+    labels:
+      - "traefik.http.routers.web.rule=Host(`docker.localhost`)"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

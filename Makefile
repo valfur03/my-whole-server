@@ -1,4 +1,4 @@
-SERVICES = traefik
+SERVICES = traefik web
 
 all: c=up -d
 all: $(SERVICES)

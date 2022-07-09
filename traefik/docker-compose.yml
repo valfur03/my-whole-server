@@ -7,7 +7,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - proxy
+      - traefik
     restart: unless-stopped
 
   reverse-proxy:
@@ -20,8 +20,10 @@ services:
       - ./traefik.yml:/etc/traefik/traefik.yml
     networks:
       - proxy
+      - traefik
     restart: unless-stopped
 
 networks:
+  traefik:
   proxy:
     external: true
