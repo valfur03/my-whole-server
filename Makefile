@@ -1,10 +1,12 @@
 SERVICES = traefik web
 
+include .env
+
 all: c=up -d
 all: $(SERVICES)
 
 $(SERVICES) : % :
-	docker-compose -f $@/docker-compose.yml $(c)
+	DOMAIN=$(DOMAIN) docker-compose -f $@/docker-compose.yml $(c)
 
 clean: c=stop
 clean: $(SERVICES)
