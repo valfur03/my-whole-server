@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  database:
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - database:/var/lib/mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: true
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+    networks:
+      - backend
+    restart: unless-stopped
+
+  app:
+    image: nextcloud:fpm
+    volumes:
+      - nextcloud:/var/www/html
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: database
+    networks:
+      - backend
+    restart: unless-stopped
+
+  web:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    volumes_from:
+      - app
+    networks:
+      - backend
+      - proxy
+    labels:
+      - "traefik.http.routers.nextcloud.rule=Host(`cloud.${DOMAIN}`)"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+volumes:
+  nextcloud:
+  database:
+
+networks:
+  backend:
+  proxy:
+    external: true

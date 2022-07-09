@@ -1,4 +1,4 @@
-SERVICES = traefik web
+SERVICES = nextcloud traefik web
 
 include .env
 
