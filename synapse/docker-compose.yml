@@ -1,0 +1,36 @@
+version: "3.2"
+services:
+  database:
+    image: postgres
+    volumes:
+      - database:/var/lib/mysql
+      - .pgpass:/root/.pgpass
+    networks:
+      - backend
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD_FILE: ~/.pgpass
+    restart: unless-stopped
+
+  app:
+    image: matrixdotorg/synapse
+    volumes:
+      - data:/data
+    networks:
+      - backend
+      - proxy
+    labels:
+      - "traefik.http.routers.synapse.rule=Host(`matrix.${DOMAIN}`)"
+      - "traefik.http.services.synapse.loadbalancer.server.port=8008"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+volumes:
+  data:
+  database:
+
+networks:
+  backend:
+  proxy:
+    external: true
