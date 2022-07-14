@@ -21,7 +21,7 @@ services:
       - backend
       - proxy
     labels:
-      - "traefik.http.routers.synapse.rule=Host(`matrix.${DOMAIN}`)"
+      - "traefik.http.routers.synapse.rule=Host(`matrix.pi.valfur.fr`)"
       - "traefik.http.services.synapse.loadbalancer.server.port=8008"
       - "traefik.enable=true"
     restart: unless-stopped

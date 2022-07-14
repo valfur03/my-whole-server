@@ -7,7 +7,7 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.web.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.web.rule=Host(`pi.valfur.fr`)"
       - "traefik.enable=true"
     restart: unless-stopped
 

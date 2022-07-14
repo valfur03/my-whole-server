@@ -18,13 +18,14 @@ services:
   app:
     image: nextcloud:fpm
     volumes:
-      - nextcloud:/var/www/html
+      - data:/var/www/html
     env_file:
       - .env
     environment:
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
       MYSQL_HOST: database
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.pi.valfur.fr
     networks:
       - backend
     restart: unless-stopped
@@ -39,13 +40,13 @@ services:
       - backend
       - proxy
     labels:
-      - "traefik.http.routers.nextcloud.rule=Host(`cloud.${DOMAIN}`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`cloud.pi.valfur.fr`)"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
       - "traefik.enable=true"
     restart: unless-stopped
 
 volumes:
-  nextcloud:
+  data:
   database:
 
 networks:

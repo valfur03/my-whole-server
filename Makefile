@@ -1,12 +1,10 @@
 SERVICES = nextcloud synapse traefik web
 
-include .env
-
 all: c=up -d
 all: $(SERVICES)
 
 $(SERVICES) : % :
-	DOMAIN=$(DOMAIN) docker-compose -f $@/docker-compose.yml $(c)
+	docker-compose -f $@/docker-compose.yml $(c)
 
 clean: c=stop
 clean: $(SERVICES)
