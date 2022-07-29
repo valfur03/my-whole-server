@@ -13,3 +13,4 @@ providers:
   docker:
     endpoint: "tcp://socket-proxy:2375"
     exposedbydefault: false
+    network: proxy
