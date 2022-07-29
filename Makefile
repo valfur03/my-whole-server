@@ -1,4 +1,4 @@
-SERVICES = nextcloud synapse traefik web
+SERVICES = nextcloud seedbox synapse traefik web
 
 all: c=up -d
 all: $(SERVICES)
