@@ -8,9 +8,6 @@ services:
       - NET_ADMIN
     volumes:
       - ./openvpn:/vpn:ro
-    ports:
-      - 4494:4494
-      - 9091:9091
     dns:
       - "8.8.8.8"
       - "8.8.4.4"
