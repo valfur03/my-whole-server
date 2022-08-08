@@ -19,6 +19,7 @@ services:
     image: nextcloud:fpm
     volumes:
       - data:/var/www/html
+      - /media/transmission/complete:/media:ro
     env_file:
       - .env
     environment:

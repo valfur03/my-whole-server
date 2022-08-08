@@ -87,8 +87,8 @@ services:
       - TZ=Europe/Paris
     volumes:
       - sonarr-config:/config
-      - ${HOME}/media/transmission:/downloads
-      - ${HOME}/media:/data
+      - /media/transmission:/downloads
+      - /media:/data
     networks:
       - indexer
       - proxy
@@ -106,8 +106,8 @@ services:
       - TZ=Europe/Paris
     volumes:
       - radarr-config:/config
-      - ${HOME}/media/transmission:/downloads
-      - ${HOME}/media:/data
+      - /media/transmission:/downloads
+      - /media:/data
     networks:
       - indexer
       - proxy
