@@ -8,6 +8,9 @@ services:
       - NET_ADMIN
     volumes:
       - ./openvpn:/vpn:ro
+    ports:
+      - 51413:51413/tcp
+      - 51413:51413/udp
     dns:
       - "8.8.8.8"
       - "8.8.4.4"
@@ -48,7 +51,7 @@ services:
       - TZ=Europe/Paris
     network_mode: "service:vpn"
     volumes:
-      - /media/transmission:/downloads
+      - /transmission:/downloads
     restart: unless-stopped
   flaresolverr:
     image: flaresolverr/flaresolverr
@@ -82,13 +85,13 @@ services:
   sonarr:
     image: lscr.io/linuxserver/sonarr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Europe/Paris
     volumes:
       - sonarr-config:/config
-      - /media/transmission:/downloads
-      - /media:/data
+      - /transmission:/downloads
+      - /media/series:/series
     networks:
       - indexer
       - proxy
@@ -101,13 +104,13 @@ services:
   radarr:
     image: lscr.io/linuxserver/radarr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Europe/Paris
     volumes:
       - radarr-config:/config
-      - /media/transmission:/downloads
-      - /media:/data
+      - /transmission:/downloads
+      - /media/movies:/movies
     networks:
       - indexer
       - proxy
