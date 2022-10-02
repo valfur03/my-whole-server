@@ -6,8 +6,21 @@ api:
 entryPoints:
   http:
     address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
   https:
     address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      storage: /etc/traefik/acme/acme.json
+      dnsChallenge:
+        provider: netlify
 
 providers:
   docker:
