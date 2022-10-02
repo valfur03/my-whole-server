@@ -1,0 +1,262 @@
+version: "3.3"
+services:
+# ============================================================================ #
+# ================================= NEXCTLOUD ================================ #
+# ============================================================================ #
+  nextcloud-database:
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
+    volumes:
+      - nextcloud-database:/var/lib/mysql
+    env_file:
+      - nextcloud/.env
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+    networks:
+      - nextcloud-backend
+    restart: unless-stopped
+
+  nextcloud-app:
+    image: nextcloud:fpm
+    volumes:
+      - nextcloud-data:/var/www/html
+      - /media/transmission/complete:/media:ro
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: nextcloud-database
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.pi.valfur.fr
+    networks:
+      - nextcloud-backend
+    restart: unless-stopped
+
+  nextcloud-web:
+    build: nextcloud
+    volumes:
+      - nextcloud-data:/var/www/html
+      - /media/transmission/complete:/media:ro
+    networks:
+      - nextcloud-backend
+      - proxy
+    labels:
+      - "traefik.http.routers.nextcloud.rule=Host(`cloud.pi.valfur.fr`)"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+# ============================================================================ #
+# ================================== SEEDBOX ================================= #
+# ============================================================================ #
+  vpn:
+    image: dperson/openvpn-client:latest
+    devices:
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./seedbox/openvpn:/vpn:ro
+    ports:
+      - 51413:51413/tcp
+      - 51413:51413/udp
+    dns:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    logging:
+      options:
+        max-size: "2m"
+        max-file: "3"
+    environment:
+      - FIREWALL
+      - TZ=Europe/Paris
+    networks:
+      - proxy
+      - seedbox-torrenting
+    labels:
+      - "traefik.http.routers.joal.rule=Host(`joal.pi.valfur.fr`)"
+      - "traefik.http.routers.joal.service=joal"
+      - "traefik.http.services.joal.loadbalancer.server.port=4494"
+      - "traefik.http.routers.transmission.rule=Host(`transmission.pi.valfur.fr`)"
+      - "traefik.http.routers.transmission.service=transmission"
+      - "traefik.http.services.transmission.loadbalancer.server.port=9091"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+  joal:
+    build: seedbox/joal
+    container_name: joal
+    restart: unless-stopped
+    network_mode: "service:vpn"
+    volumes:
+      - ./seedbox/joal/conf/torrents:/data/torrents
+    command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=joal", "--joal.ui.secret-token=132465"]
+
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+    network_mode: "service:vpn"
+    volumes:
+      - /seedbox/transmission:/downloads
+    restart: unless-stopped
+
+  flaresolverr:
+    image: flaresolverr/flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/Paris
+    networks:
+      - seedbox-indexer
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett
+    depends_on:
+      - flaresolverr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+    volumes:
+      - jackett-config:/config
+      - jackett-downloads:/downloads
+    networks:
+      - seedbox-indexer
+      - proxy
+    labels:
+      - "traefik.http.routers.jackett.rule=Host(`jackett.pi.valfur.fr`)"
+      - "traefik.http.services.jackett.loadbalancer.server.port=9117"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Paris
+    volumes:
+      - sonarr-config:/config
+      - /transmission:/downloads
+      - /media/series:/series
+    networks:
+      - seedbox-indexer
+      - proxy
+      - seedbox-torrenting
+    labels:
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.pi.valfur.fr`)"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Europe/Paris
+    volumes:
+      - radarr-config:/config
+      - /transmission:/downloads
+      - /media/movies:/movies
+    networks:
+      - seedbox-indexer
+      - proxy
+      - seedbox-torrenting
+    labels:
+      - "traefik.http.routers.radarr.rule=Host(`radarr.pi.valfur.fr`)"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      - "traefik.enable=true"
+    restart: unless-stopped
+ 
+# ============================================================================ #
+# ================================== SYNAPSE ================================= #
+# ============================================================================ #
+  synapse-database:
+    image: postgres
+    volumes:
+      - synapse-database:/var/lib/mysql
+      - ./synapse/.pgpass:/root/.pgpass
+    networks:
+      - synapse-backend
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD_FILE: /root/.pgpass
+    restart: unless-stopped
+
+  synapse-app:
+    image: matrixdotorg/synapse
+    volumes:
+      - synapse-data:/data
+    networks:
+      - synapse-backend
+      - proxy
+    labels:
+      - "traefik.http.routers.synapse.rule=Host(`matrix.pi.valfur.fr`)"
+      - "traefik.http.services.synapse.loadbalancer.server.port=8008"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+# ============================================================================ #
+# ================================== TRAEFIK ================================= #
+# ============================================================================ #
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    environment:
+      CONTAINERS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik
+    restart: unless-stopped
+
+  reverse-proxy:
+    build: traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    networks:
+      - proxy
+      - traefik
+    restart: unless-stopped
+
+# ============================================================================ #
+# ==================================== WEB =================================== #
+# ============================================================================ #
+  web:
+    build: web
+    networks:
+      - proxy
+    labels:
+      - "traefik.http.routers.web.rule=Host(`pi.valfur.fr`)"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+volumes:
+  nextcloud-data:
+  nextcloud-database:
+  jackett-config:
+  jackett-downloads:
+  sonarr-config:
+  radarr-config:
+  synapse-data:
+  synapse-database:
+  traefik-acme:
+
+networks:
+  proxy:
+  nextcloud-backend:
+  seedbox-indexer:
+  seedbox-torrenting:
+  synapse-backend:
+  traefik:
