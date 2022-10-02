@@ -9,7 +9,7 @@ services:
     volumes:
       - nextcloud-database:/var/lib/mysql
     env_file:
-      - nextcloud/.env
+      - .env
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_DATABASE: nextcloud
@@ -18,8 +18,19 @@ services:
       - nextcloud-backend
     restart: unless-stopped
 
+  nextcloud-redis:
+    image: redis:6.2.6-alpine3.14
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - nextcloud-backend
+
   nextcloud-app:
     image: nextcloud:fpm
+    depends_on:
+      - nextcloud-database
+      - nextcloud-redis
     volumes:
       - nextcloud-data:/var/www/html
       - /media/transmission/complete:/media:ro
@@ -29,6 +40,7 @@ services:
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
       MYSQL_HOST: nextcloud-database
+      REDIS_HOST: nextcloud-redis
       NEXTCLOUD_TRUSTED_DOMAINS: cloud.pi.valfur.fr
     networks:
       - nextcloud-backend
@@ -36,6 +48,8 @@ services:
 
   nextcloud-web:
     build: nextcloud
+    depends_on:
+      - nextcloud-app
     volumes:
       - nextcloud-data:/var/www/html
       - /media/transmission/complete:/media:ro
