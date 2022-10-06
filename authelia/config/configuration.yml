@@ -1,0 +1,28 @@
+authentication_backend:
+  file:
+    path: /config/users.yml
+    password:
+      algorithm: argon2id
+      iterations: 3
+      key_length: 32
+      salt_length: 16
+      parallelism: 4
+      memory: 64
+storage:
+  postgres:
+    host: authelia-database
+    database: authelia
+    username: authelia
+session:
+  redis:
+    host: authelia-redis
+    port: 6379
+notifier:
+  smtp:
+    port: 465
+    subject: "[Valfur Authelia] {title}"
+    tls:
+      skip_verify: false
+      minimum_version: TLS1.2
+access_control:
+  default_policy: one_factor

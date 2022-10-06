@@ -1,6 +1,63 @@
 version: "3.3"
 services:
 # ============================================================================ #
+# ================================ AUTHELIA ================================== #
+# ============================================================================ #
+  authelia-database:
+    image: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: authelia
+      POSTGRES_USER: authelia
+    volumes:
+      - authelia-database:/var/lib/postgresql/data
+    networks:
+      - authelia-backend
+
+  authelia-redis:
+    image: redis
+    restart: unless-stopped
+    networks:
+      - authelia-backend
+
+  authelia:
+    image: authelia/authelia
+    depends_on:
+      - authelia-database
+      - authelia-redis
+    environment:
+      AUTHELIA_DEFAULT_REDIRECTION_URL: https://${BASE_DOMAIN}
+      AUTHELIA_JWT_SECRET_FILE: /run/secrets/JWT_SECRET
+      AUTHELIA_NOTIFIER_SMTP_USERNAME: ${SMTP_USERNAME}
+      AUTHELIA_NOTIFIER_SMTP_SENDER: "Valfur Authelia <${AUTHELIA_SYSTEM_EMAIL}>"
+      AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /run/secrets/NOTIFIER_PASSWORD
+      AUTHELIA_NOTIFIER_SMTP_HOST: ${SMTP_HOST}
+      AUTHELIA_NOTIFIER_SMTP_TLS_SERVER_NAME: ${SMTP_HOST}
+      AUTHELIA_SESSION_DOMAIN: ${BASE_DOMAIN}
+      AUTHELIA_SESSION_SECRET_FILE: /run/secrets/SESSION_SECRET
+      AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: /run/secrets/STORAGE_PASSWORD
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/STORAGE_ENCRYPTION_KEY
+    volumes:
+      - ./authelia/config:/config
+    networks:
+      - authelia-backend
+      - proxy
+    secrets: [JWT_SECRET, NOTIFIER_PASSWORD, SESSION_SECRET, STORAGE_PASSWORD, STORAGE_ENCRYPTION_KEY]
+    expose:
+      - 9091
+    labels:
+      - "traefik.http.routers.authelia.rule=Host(`auth.pi.valfur.fr`)"
+      - "traefik.http.routers.authelia.tls=true"
+      - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.pi.valfur.fr%2F'
+      - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+      - "traefik.enable=true"
+    restart: unless-stopped
+# ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
@@ -237,6 +294,8 @@ services:
 
   reverse-proxy:
     build: traefik
+    depends_on:
+      - authelia
     ports:
       - 80:80
       - 443:443
@@ -295,6 +354,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  authelia-database:
   nextcloud-data:
   nextcloud-database:
   jackett-config:
@@ -307,9 +367,22 @@ volumes:
   wireguard:
 
 networks:
+  authelia-backend:
   proxy:
   nextcloud-backend:
   seedbox-indexer:
   seedbox-torrenting:
   synapse-backend:
   traefik:
+
+secrets:
+  JWT_SECRET:
+    file: ./authelia/secrets/JWT_SECRET
+  NOTIFIER_PASSWORD:
+    file: ./authelia/secrets/NOTIFIER_PASSWORD
+  SESSION_SECRET:
+    file: ./authelia/secrets/SESSION_SECRET
+  STORAGE_PASSWORD:
+    file: ./authelia/secrets/STORAGE_PASSWORD
+  STORAGE_ENCRYPTION_KEY:
+    file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
