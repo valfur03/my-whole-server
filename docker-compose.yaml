@@ -253,7 +253,7 @@ services:
   synapse-database:
     image: postgres
     volumes:
-      - synapse-database:/var/lib/mysql
+      - synapse-database:/var/lib/postgresql/data
       - ./synapse/.pgpass:/root/.pgpass
     networks:
       - synapse-backend
@@ -261,10 +261,13 @@ services:
       POSTGRES_DB: synapse
       POSTGRES_USER: synapse
       POSTGRES_PASSWORD_FILE: /root/.pgpass
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
     restart: unless-stopped
 
   synapse-app:
     image: matrixdotorg/synapse
+    depends_on:
+      - synapse-database
     volumes:
       - synapse-data:/data
     networks:
