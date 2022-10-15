@@ -52,9 +52,6 @@ services:
       - "traefik.http.routers.authelia.tls=true"
       - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
       - "traefik.http.services.authelia.loadbalancer.server.port=9091"
-      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.pi.valfur.fr%2F'
-      - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
-      - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
       - "traefik.enable=true"
     restart: unless-stopped
 # ============================================================================ #
@@ -308,6 +305,10 @@ services:
       - traefik
     volumes:
       - traefik-acme:/etc/traefik/acme
+    labels:
+      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.pi.valfur.fr%2F'
+      - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
+      - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
     restart: unless-stopped
 
 # ============================================================================ #
