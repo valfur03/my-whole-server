@@ -273,6 +273,8 @@ services:
     labels:
       - "traefik.http.routers.synapse.rule=Host(`matrix.pi.valfur.fr`)"
       - "traefik.http.services.synapse.loadbalancer.server.port=8008"
+      - "traefik.http.routers.synapse.tls=true"
+      - "traefik.http.routers.synapse.tls.certresolver=letsencrypt"
       - "traefik.enable=true"
     restart: unless-stopped
 
