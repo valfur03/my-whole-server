@@ -1,5 +1,5 @@
 api:
-  insecure: true
+  insecure: false
   dashboard: true
   debug: false
 
