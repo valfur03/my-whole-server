@@ -296,7 +296,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 8080:8080
     environment:
       NETLIFY_TOKEN: ${NETLIFY_TOKEN}
       TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${SYSTEM_EMAIL}
@@ -309,6 +308,13 @@ services:
       - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.pi.valfur.fr%2F'
       - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
       - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+      - "traefik.http.routers.traefik.rule=Host(`proxy.pi.valfur.fr`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.middlewares=authelia@docker"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.enable=true"
     restart: unless-stopped
 
 # ============================================================================ #
@@ -330,6 +336,8 @@ services:
 # ============================================================================ #
   wireguard:
     image: weejewel/wg-easy
+    depends_on:
+      - reverse-proxy
     ports:
       - 51820:51820/udp
     cap_add:
@@ -350,6 +358,7 @@ services:
       - "traefik.http.routers.wireguard.rule=Host(`wireguard.pi.valfur.fr`)"
       - "traefik.http.routers.wireguard.tls=true"
       - "traefik.http.routers.wireguard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.wireguard.middlewares=authelia@docker"
       - "traefik.http.services.wireguard.loadbalancer.server.port=51821"
       - "traefik.enable=true"
     restart: unless-stopped
