@@ -48,7 +48,7 @@ services:
     expose:
       - 9091
     labels:
-      - "traefik.http.routers.authelia.rule=Host(`auth.pi.valfur.fr`)"
+      - "traefik.http.routers.authelia.rule=Host(`auth.${BASE_DOMAIN}`)"
       - "traefik.http.routers.authelia.tls=true"
       - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
       - "traefik.http.services.authelia.loadbalancer.server.port=9091"
@@ -95,7 +95,7 @@ services:
       MYSQL_USER: nextcloud
       MYSQL_HOST: nextcloud-database
       REDIS_HOST: nextcloud-redis
-      NEXTCLOUD_TRUSTED_DOMAINS: cloud.pi.valfur.fr
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN}
     networks:
       - nextcloud-backend
     restart: unless-stopped
@@ -111,7 +111,7 @@ services:
       - nextcloud-backend
       - proxy
     labels:
-      - "traefik.http.routers.nextcloud.rule=Host(`cloud.pi.valfur.fr`)"
+      - "traefik.http.routers.nextcloud.rule=Host(`cloud.${BASE_DOMAIN}`)"
       - "traefik.http.routers.nextcloud.tls=true"
       - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
       - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
@@ -147,19 +147,19 @@ services:
       - seedbox-indexer
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.joal.rule=Host(`joal.pi.valfur.fr`)"
+      - "traefik.http.routers.joal.rule=Host(`joal.${BASE_DOMAIN}`)"
       - "traefik.http.routers.joal.service=joal"
       - "traefik.http.routers.joal.tls=true"
       - "traefik.http.routers.joal.tls.certresolver=letsencrypt"
       - "traefik.http.routers.joal.middlewares=authelia@docker"
       - "traefik.http.services.joal.loadbalancer.server.port=4494"
-      - "traefik.http.routers.transmission.rule=Host(`transmission.pi.valfur.fr`)"
+      - "traefik.http.routers.transmission.rule=Host(`transmission.${BASE_DOMAIN}`)"
       - "traefik.http.routers.transmission.service=transmission"
       - "traefik.http.routers.transmission.tls=true"
       - "traefik.http.routers.transmission.tls.certresolver=letsencrypt"
       - "traefik.http.services.transmission.loadbalancer.server.port=9091"
       - "traefik.http.routers.transmission.middlewares=authelia@docker"
-      - "traefik.http.routers.jackett.rule=Host(`jackett.pi.valfur.fr`)"
+      - "traefik.http.routers.jackett.rule=Host(`jackett.${BASE_DOMAIN}`)"
       - "traefik.http.routers.jackett.service=jackett"
       - "traefik.http.services.jackett.loadbalancer.server.port=9117"
       - "traefik.http.routers.jackett.tls=true"
@@ -228,7 +228,7 @@ services:
       - proxy
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.sonarr.rule=Host(`sonarr.pi.valfur.fr`)"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${BASE_DOMAIN}`)"
       - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
       - "traefik.http.routers.sonarr.tls=true"
       - "traefik.http.routers.sonarr.tls.certresolver=letsencrypt"
@@ -250,7 +250,7 @@ services:
       - proxy
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.radarr.rule=Host(`radarr.pi.valfur.fr`)"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${BASE_DOMAIN}`)"
       - "traefik.http.services.radarr.loadbalancer.server.port=7878"
       - "traefik.http.routers.radarr.tls=true"
       - "traefik.http.routers.radarr.tls.certresolver=letsencrypt"
@@ -285,7 +285,7 @@ services:
       - synapse-backend
       - proxy
     labels:
-      - "traefik.http.routers.synapse.rule=Host(`matrix.pi.valfur.fr`)"
+      - "traefik.http.routers.synapse.rule=Host(`matrix.${BASE_DOMAIN}`)"
       - "traefik.http.services.synapse.loadbalancer.server.port=8008"
       - "traefik.http.routers.synapse.tls=true"
       - "traefik.http.routers.synapse.tls.certresolver=letsencrypt"
@@ -321,10 +321,10 @@ services:
     volumes:
       - traefik-acme:/etc/traefik/acme
     labels:
-      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.pi.valfur.fr%2F'
+      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F'
       - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
       - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-      - "traefik.http.routers.traefik.rule=Host(`proxy.pi.valfur.fr`)"
+      - "traefik.http.routers.traefik.rule=Host(`proxy.${BASE_DOMAIN}`)"
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.middlewares=authelia@docker"
@@ -341,7 +341,7 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.web.rule=Host(`pi.valfur.fr`)"
+      - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
       - "traefik.http.routers.web.tls=true"
       - "traefik.http.routers.web.tls.certresolver=letsencrypt"
       - "traefik.enable=true"
@@ -371,7 +371,7 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.wireguard.rule=Host(`wireguard.pi.valfur.fr`)"
+      - "traefik.http.routers.wireguard.rule=Host(`wireguard.${BASE_DOMAIN}`)"
       - "traefik.http.routers.wireguard.tls=true"
       - "traefik.http.routers.wireguard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.wireguard.middlewares=authelia@docker"
