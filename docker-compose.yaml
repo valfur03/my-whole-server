@@ -87,7 +87,7 @@ services:
       - nextcloud-redis
     volumes:
       - nextcloud-data:/var/www/html
-      - /media/transmission/complete:/media:ro
+      - /data/media:/media:ro
     env_file:
       - .env
     environment:
@@ -106,7 +106,7 @@ services:
       - nextcloud-app
     volumes:
       - nextcloud-data:/var/www/html
-      - /media/transmission/complete:/media:ro
+      - /data/media:/media:ro
     networks:
       - nextcloud-backend
       - proxy
@@ -173,7 +173,7 @@ services:
       - TZ=Europe/Paris
     network_mode: "service:vpn"
     volumes:
-      - /seedbox/transmission:/downloads
+      - /data/torrent:/downloads
     restart: unless-stopped
 
   flaresolverr:
@@ -215,8 +215,7 @@ services:
       - TZ=Europe/Paris
     volumes:
       - sonarr-config:/config
-      - /transmission:/downloads
-      - /media/series:/series
+      - /data:/data
     networks:
       - seedbox-indexer
       - proxy
@@ -235,8 +234,7 @@ services:
       - TZ=Europe/Paris
     volumes:
       - radarr-config:/config
-      - /transmission:/downloads
-      - /media/movies:/movies
+      - /data:/data
     networks:
       - seedbox-indexer
       - proxy
