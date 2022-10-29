@@ -257,6 +257,31 @@ services:
       - "traefik.http.routers.radarr.middlewares=authelia@docker"
       - "traefik.enable=true"
     restart: unless-stopped
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    ports:
+      - 7359:7359/udp
+      - 1900:1900/udp
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Paris
+    devices:
+      - /dev/video10:/dev/video10
+      - /dev/video11:/dev/video11
+      - /dev/video12:/dev/video12
+    volumes:
+      - jellyfin-config:/config
+      - /data:/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.${BASE_DOMAIN}`)"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.http.routers.jellyfin.tls=true"
+      - "traefik.http.routers.jellyfin.tls.certresolver=letsencrypt"
+      - "traefik.enable=true"
+    restart: unless-stopped
  
 # ============================================================================ #
 # ================================== SYNAPSE ================================= #
@@ -384,6 +409,7 @@ volumes:
   nextcloud-database:
   jackett-config:
   jackett-downloads:
+  jellyfin-config:
   sonarr-config:
   radarr-config:
   synapse-data:
