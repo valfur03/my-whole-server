@@ -187,6 +187,7 @@ services:
     network_mode: "service:vpn"
     volumes:
       - /data/torrent:/downloads
+      - transmission-config:/config
     restart: unless-stopped
 
   flaresolverr:
@@ -415,6 +416,7 @@ volumes:
   synapse-data:
   synapse-database:
   traefik-acme:
+  transmission-config:
   wireguard:
 
 networks:
