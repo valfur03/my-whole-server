@@ -59,6 +59,8 @@ services:
 # ============================================================================ #
   prometheus:
     build: prometheus
+    volumes:
+      - prometheus-data:/prometheus
     networks:
       - proxy #delete
       - metrics
@@ -447,6 +449,7 @@ volumes:
   jackett-downloads:
   jellyfin-config:
   plex-config:
+  prometheus-data:
   sonarr-config:
   radarr-config:
   synapse-data:
