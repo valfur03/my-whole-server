@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:1.19.3-bullseye
 
 RUN set -eux; \
 	git clone https://github.com/metalmatze/transmission-exporter; \
