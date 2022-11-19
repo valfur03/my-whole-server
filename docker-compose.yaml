@@ -210,7 +210,7 @@ services:
     restart: unless-stopped
     network_mode: "service:vpn"
     volumes:
-      - ./seedbox/joal/conf/torrents:/data/torrents
+      - ./seedbox/joal/data:/data
     command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=joal", "--joal.ui.secret-token=132465"]
 
   transmission:
