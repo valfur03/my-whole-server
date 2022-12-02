@@ -1,7 +1,7 @@
 {
-  "minUploadRate" : 13456,
-  "maxUploadRate" : 25489,
+  "minUploadRate" : 7613,
+  "maxUploadRate" : 9764,
   "simultaneousSeed" : 20,
-  "client" : "qbittorrent-4.3.9.client",
+  "client" : "transmission-3.00.client",
   "keepTorrentWithZeroLeechers" : true
 }
