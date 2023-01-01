@@ -4,7 +4,7 @@ services:
 # ================================ AUTHELIA ================================== #
 # ============================================================================ #
   authelia-database:
-    image: postgres:14.5-bullseye
+    image: postgres:14.6-alpine3.17
     restart: unless-stopped
     env_file:
       - .env
@@ -17,7 +17,7 @@ services:
       - authelia-backend
 
   authelia-redis:
-    image: redis:7.0.5-bullseye
+    image: redis:7.0.5-alpine3.17
     restart: unless-stopped
     networks:
       - authelia-backend
@@ -116,7 +116,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:25.0.1-fpm
+    image: nextcloud:25.0.1-fpm-alpine
     depends_on:
       - nextcloud-database
       - nextcloud-redis
@@ -324,7 +324,7 @@ services:
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
   synapse-database:
-    image: postgres:14.5-bullseye
+    image: postgres:14.6-alpine3.17
     volumes:
       - synapse-database:/var/lib/postgresql/data
       - ./synapse/.pgpass:/root/.pgpass
