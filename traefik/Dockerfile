@@ -1,2 +1,2 @@
-FROM traefik:v2.9.4-alpine
+FROM traefik:v2.9.6
 COPY ./traefik.yml /etc/traefik/traefik.yml
