@@ -1,5 +1,4 @@
 .env
-.pgpass
+secrets/
 
-authelia/secrets
 authelia/config/users.yml
