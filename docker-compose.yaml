@@ -11,10 +11,13 @@ services:
     environment:
       POSTGRES_DB: authelia
       POSTGRES_USER: authelia
+      POSTGRES_PASSWORD_FILE: /run/secrets/AUTHELIA_STORAGE_PASSWORD
     volumes:
       - authelia-database:/var/lib/postgresql/data
     networks:
       - authelia-backend
+    secrets:
+      - AUTHELIA_STORAGE_PASSWORD
 
   authelia-redis:
     image: redis:7.0.5-alpine3.17
@@ -102,14 +105,15 @@ services:
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
     volumes:
       - nextcloud-database:/var/lib/mysql
-    env_file:
-      - .env
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 1
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
+      MYSQL_PASSWORD_FILE: /run/secrets/NEXTCLOUD_STORAGE_PASSWORD
     networks:
       - nextcloud-backend
+    secrets:
+      - NEXTCLOUD_STORAGE_PASSWORD
     restart: unless-stopped
 
   nextcloud-redis:
@@ -128,16 +132,17 @@ services:
     volumes:
       - nextcloud-data:/var/www/html
       - /data/media:/media:ro
-    env_file:
-      - .env
     environment:
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
       MYSQL_HOST: nextcloud-database
+      MYSQL_PASSWORD_FILE: /run/secrets/NEXTCLOUD_STORAGE_PASSWORD
       REDIS_HOST: nextcloud-redis
       NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN}
     networks:
       - nextcloud-backend
+    secrets:
+      - NEXTCLOUD_STORAGE_PASSWORD
     restart: unless-stopped
 
   nextcloud-web:
@@ -338,8 +343,10 @@ services:
     environment:
       POSTGRES_DB: synapse
       POSTGRES_USER: synapse
-      POSTGRES_PASSWORD_FILE: /root/.pgpass
+      POSTGRES_PASSWORD_FILE: /run/secrets/SYNAPSE_STORAGE_PASSWORD
       POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+    secrets:
+      - SYNAPSE_STORAGE_PASSWORD
     restart: unless-stopped
 
   synapse-app:
@@ -544,5 +551,9 @@ secrets:
     file: ./authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
     file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+  NEXTCLOUD_STORAGE_PASSWORD:
+    file: ./nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
     file: ./secrets/SMTP_PASSWORD
+  SYNAPSE_STORAGE_PASSWORD:
+    file: ./synapse/secrets/STORAGE_PASSWORD
