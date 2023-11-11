@@ -337,7 +337,6 @@ services:
     image: postgres:14.6-alpine3.17
     volumes:
       - synapse-database:/var/lib/postgresql/data
-      - ./synapse/.pgpass:/root/.pgpass
     networks:
       - synapse-backend
     environment:
