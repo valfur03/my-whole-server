@@ -411,7 +411,7 @@ services:
   vaultwarden:
     image: vaultwarden/server:1.27.0
     environment:
-      ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
+      ADMIN_TOKEN_FILE: /run/secrets/VAULTWARDEN_ADMIN_TOKEN
       DOMAIN: "https://vault.${BASE_DOMAIN}"
       SIGNUPS_ALLOWED: "false"
       SMTP_HOST: ${SMTP_HOST}
@@ -427,6 +427,7 @@ services:
       - proxy
     secrets:
       - SMTP_PASSWORD
+      - VAULTWARDEN_ADMIN_TOKEN
     labels:
       - "traefik.http.routers.vaultwarden.rule=Host(`vault.${BASE_DOMAIN}`)"
       - "traefik.http.routers.vaultwarden.service=vaultwarden"
@@ -565,3 +566,5 @@ secrets:
     file: ./secrets/SMTP_PASSWORD
   SYNAPSE_STORAGE_PASSWORD:
     file: ./synapse/secrets/STORAGE_PASSWORD
+  VAULTWARDEN_ADMIN_TOKEN:
+    file: ./vaultwarden/secrets/ADMIN_TOKEN
