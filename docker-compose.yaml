@@ -414,11 +414,19 @@ services:
       ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
       DOMAIN: "https://vault.${BASE_DOMAIN}"
       SIGNUPS_ALLOWED: "false"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_FROM: ${VAULTWARDEN_SYSTEM_EMAIL}
+      SMTP_PORT: 587
+      SMTP_SECURITY: starttls
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD_FILE: /run/secrets/SMTP_PASSWORD
       WEBSOCKET_ENABLED: "true"
     volumes:
       - vaultwarden-data:/data
     networks:
       - proxy
+    secrets:
+      - SMTP_PASSWORD
     labels:
       - "traefik.http.routers.vaultwarden.rule=Host(`vault.${BASE_DOMAIN}`)"
       - "traefik.http.routers.vaultwarden.service=vaultwarden"
