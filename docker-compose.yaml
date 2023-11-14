@@ -412,6 +412,7 @@ services:
     image: vaultwarden/server:1.27.0
     environment:
       ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
+      DOMAIN: "https://vault.${BASE_DOMAIN}"
       SIGNUPS_ALLOWED: "false"
       WEBSOCKET_ENABLED: "true"
     volumes:
