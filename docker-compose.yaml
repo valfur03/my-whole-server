@@ -331,6 +331,22 @@ services:
       TRANSMISSION_ADDR: http://vpn:9091
  
 # ============================================================================ #
+# =================================== S-PDF ================================== #
+# ============================================================================ #
+  s-pdf:
+    image: frooodle/s-pdf:0.15.1
+    networks:
+      - proxy
+    labels:
+      - "traefik.http.routers.s-pdf.rule=Host(`s-pdf.${BASE_DOMAIN}`)"
+      - "traefik.http.services.s-pdf.loadbalancer.server.port=8080"
+      - "traefik.http.routers.s-pdf.tls=true"
+      - "traefik.http.routers.s-pdf.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.s-pdf.middlewares=authelia@docker"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
+# ============================================================================ #
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
   synapse-database:
