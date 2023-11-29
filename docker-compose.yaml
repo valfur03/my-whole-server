@@ -98,6 +98,86 @@ services:
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
       - "traefik.enable=true"
 # ============================================================================ #
+# ================================= MASTODON ================================= #
+# ============================================================================ #
+  mastodon-database:
+    image: postgres:14.8-alpine3.18
+    volumes:
+      - mastodon-database:/var/lib/postgresql/data
+    networks:
+      - mastodon-backend
+    environment:
+      POSTGRES_DB: mastodon
+      POSTGRES_USER: mastodon
+      POSTGRES_PASSWORD_FILE: /run/secrets/MASTODON_STORAGE_PASSWORD
+    secrets:
+      - MASTODON_STORAGE_PASSWORD
+    restart: unless-stopped
+
+  mastodon-cache:
+    image: redis:7.0.12-alpine3.18
+    restart: unless-stopped
+    networks:
+      - mastodon-backend
+
+  mastodon:
+    image: lscr.io/linuxserver/mastodon:4.2.1
+    environment:
+      PUID: 1000
+      PGID: 1000
+      LOCAL_DOMAIN: ${BASE_DOMAIN}
+      REDIS_HOST: mastodon-cache
+      REDIS_PORT: 6379
+      DB_HOST: mastodon-database
+      DB_USER: mastodon
+      DB_NAME: mastodon
+      FILE__DB_PASS: /run/secrets/MASTODON_STORAGE_PASSWORD
+      DB_PORT: 5432
+      ES_ENABLED: false # change this for scaling
+      FILE__SECRET_KEY_BASE: /run/secrets/MASTODON_SECRET_KEY_BASE
+      FILE__OTP_SECRET: /run/secrets/MASTODON_OTP_SECRET
+      FILE__VAPID_PRIVATE_KEY: /run/secrets/MASTODON_VAPID_PRIVATE_KEY
+      FILE__VAPID_PUBLIC_KEY: /run/secrets/MASTODON_VAPID_PUBLIC_KEY
+      SMTP_SERVER: ${SMTP_HOST}
+      SMTP_PORT: 25
+      SMTP_LOGIN: ${SMTP_USERNAME}
+      FILE__SMTP_PASSWORD: /run/secrets/SMTP_PASSWORD
+      SMTP_FROM_ADDRESS: ${MASTODON_SYSTEM_EMAIL}
+      S3_ENABLED: false # change this for scaling
+      WEB_DOMAIN: mastodon.fediverse.${BASE_DOMAIN}
+      # ES_HOST: es #optional
+      # ES_PORT: 9200 #optional
+      # ES_USER: elastic #optional
+      # ES_PASS: elastic #optional
+      # S3_BUCKET:  #optional
+      # AWS_ACCESS_KEY_ID:  #optional
+      # AWS_SECRET_ACCESS_KEY:  #optional
+      # S3_ALIAS_HOST:  #optional
+      SIDEKIQ_ONLY: false # change this for scaling
+      # SIDEKIQ_QUEUE:  #optional
+      # SIDEKIQ_DEFAULT: false #optional
+      # SIDEKIQ_THREADS: 5 #optional
+      # DB_POOL: 5 #optional
+      NO_CHOWN: false
+    volumes:
+      - mastodon-config:/config
+    networks:
+      - mastodon-backend
+    secrets:
+      - MASTODON_OTP_SECRET
+      - MASTODON_SECRET_KEY_BASE
+      - MASTODON_STORAGE_PASSWORD
+      - MASTODON_VAPID_PRIVATE_KEY
+      - MASTODON_VAPID_PUBLIC_KEY
+      - SMTP_PASSWORD
+    labels:
+      - "traefik.http.routers.mastodon.rule=Host(`mastodon.fediverse.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.mastodon.tls=true"
+      - "traefik.http.routers.mastodon.tls.certresolver=letsencrypt"
+      - "traefik.enable=true"
+    restart: no
+    # restart: unless-stopped
+# ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
@@ -529,6 +609,8 @@ volumes:
   adguard-work:
   authelia-database:
   grafana-data:
+  mastodon-config:
+  mastodon-database:
   nextcloud-data:
   nextcloud-database:
   jackett-config:
@@ -549,6 +631,7 @@ networks:
   authelia-backend:
   metrics:
   proxy:
+  mastodon-backend:
   nextcloud-backend:
   seedbox-indexer:
   seedbox-metrics:
@@ -575,6 +658,16 @@ secrets:
     file: ./authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
     file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+  MASTODON_OTP_SECRET:
+    file: ./mastodon/secrets/OTP_SECRET
+  MASTODON_SECRET_KEY_BASE:
+    file: ./mastodon/secrets/SECRET_KEY_BASE
+  MASTODON_STORAGE_PASSWORD:
+    file: ./mastodon/secrets/STORAGE_PASSWORD
+  MASTODON_VAPID_PRIVATE_KEY:
+    file: ./mastodon/secrets/VAPID_PRIVATE_KEY
+  MASTODON_VAPID_PUBLIC_KEY:
+    file: ./mastodon/secrets/VAPID_PUBLIC_KEY
   NEXTCLOUD_STORAGE_PASSWORD:
     file: ./nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
