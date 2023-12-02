@@ -243,8 +243,7 @@ services:
       - LOG_HTML=${LOG_HTML:-false}
       - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
       - TZ=Europe/Paris
-    networks:
-      - seedbox-indexer
+    network_mode: "service:vpn"
     restart: unless-stopped
 
   jackett:
