@@ -232,8 +232,8 @@ services:
       - TZ=Europe/Paris
     network_mode: "service:vpn"
     volumes:
-      - /data/torrent:/downloads
-      - transmission-config:/config
+     - /data/torrent:/downloads
+     - transmission-config:/config
     restart: unless-stopped
 
   flaresolverr:
