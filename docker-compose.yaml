@@ -20,13 +20,13 @@ services:
       - AUTHELIA_STORAGE_PASSWORD
 
   authelia-redis:
-    image: redis:7.0.5-alpine3.17
+    image: redis:7.2-alpine3.18
     restart: unless-stopped
     networks:
       - authelia-backend
 
   authelia:
-    image: authelia/authelia:4.37.2
+    image: authelia/authelia:4.37.5
     depends_on:
       - authelia-database
       - authelia-redis
@@ -82,7 +82,7 @@ services:
       - "traefik.enable=true"
     restart: unless-stopped
   grafana:
-    image: grafana/grafana-oss:9.2.4
+    image: grafana/grafana-oss:10.2.2
     depends_on:
       - prometheus
     volumes:
@@ -101,7 +101,7 @@ services:
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
-    image: mariadb:10.9.3-jammy
+    image: mariadb:11.2-jammy
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
     volumes:
       - nextcloud-database:/var/lib/mysql
@@ -117,7 +117,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis:
-    image: redis:7.0.5-alpine3.17
+    image: redis:7.2-alpine3.18
     restart: unless-stopped
     env_file:
       - .env
@@ -125,7 +125,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:26.0.3-fpm-alpine
+    image: nextcloud:27.1-fpm-alpine
     depends_on:
       - nextcloud-database
       - nextcloud-redis
@@ -224,7 +224,7 @@ services:
     command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=${JOAL_PATH_PREFIX}", "--joal.ui.secret-token=${JOAL_SECRET_TOKEN}"]
 
   transmission:
-    image: linuxserver/transmission:version-3.00-r6
+    image: linuxserver/transmission:4.0.4
     container_name: transmission
     environment:
       - PUID=1000
@@ -237,7 +237,7 @@ services:
     restart: unless-stopped
 
   flaresolverr:
-    image: flaresolverr/flaresolverr:v2.2.10
+    image: flaresolverr/flaresolverr:v3.3.10
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -248,7 +248,7 @@ services:
     restart: unless-stopped
 
   jackett:
-    image: lscr.io/linuxserver/jackett:version-v0.20.2225
+    image: lscr.io/linuxserver/jackett:version-v0.21.1293
     depends_on:
       - flaresolverr
     environment:
@@ -262,7 +262,7 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:version-3.0.9.1549
+    image: lscr.io/linuxserver/sonarr:3.0.10
     environment:
       - PUID=0
       - PGID=0
@@ -284,7 +284,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:version-4.2.4.6635
+    image: lscr.io/linuxserver/radarr:4.7.5
     environment:
       - PUID=0
       - PGID=0
@@ -305,7 +305,7 @@ services:
       - "traefik.enable=true"
     restart: unless-stopped
   plex:
-    image: lscr.io/linuxserver/plex:version-1.29.2.6364-6d72b0cf6
+    image: lscr.io/linuxserver/plex:1.32.7
     environment:
       PUID: 1000
       PGID: 1000
@@ -365,7 +365,7 @@ services:
     restart: unless-stopped
 
   synapse-app:
-    image: matrixdotorg/synapse:v1.71.0
+    image: matrixdotorg/synapse:v1.97.0
     depends_on:
       - synapse-database
     volumes:
@@ -425,7 +425,7 @@ services:
 # ================================ VAULTWARDEN =============================== #
 # ============================================================================ #
   vaultwarden:
-    image: vaultwarden/server:1.27.0
+    image: vaultwarden/server:1.30.1
     environment:
       ADMIN_TOKEN_FILE: /run/secrets/VAULTWARDEN_ADMIN_TOKEN
       DOMAIN: "https://vault.${BASE_DOMAIN}"
@@ -476,7 +476,7 @@ services:
 # ================================= WIREGUARD ================================ #
 # ============================================================================ #
   adguard:
-    image: adguard/adguardhome:v0.107.18
+    image: adguard/adguardhome:v0.107.36
     volumes:
       - adguard-work:/opt/adguardhome/work
       - adguard-conf:/opt/adguardhome/conf
