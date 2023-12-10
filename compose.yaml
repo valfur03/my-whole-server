@@ -303,7 +303,7 @@ services:
       - "traefik.enable=true"
     restart: unless-stopped
   plex:
-    image: lscr.io/linuxserver/plex:1.32.7
+    image: lscr.io/linuxserver/plex:1.32.8
     environment:
       PUID: 1000
       PGID: 1000
