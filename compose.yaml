@@ -3,7 +3,7 @@ services:
 # ================================ AUTHELIA ================================== #
 # ============================================================================ #
   authelia-database:
-    image: postgres:14.6-alpine3.17
+    image: postgres:14.10-alpine3.17
     restart: unless-stopped
     env_file:
       - .env
@@ -348,7 +348,7 @@ services:
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
   synapse-database:
-    image: postgres:14.6-alpine3.17
+    image: postgres:14.10-alpine3.17
     volumes:
       - synapse-database:/var/lib/postgresql/data
     networks:
