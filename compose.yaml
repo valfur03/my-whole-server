@@ -363,7 +363,7 @@ services:
     restart: unless-stopped
 
   synapse-app:
-    image: matrixdotorg/synapse:v1.97.0
+    image: matrixdotorg/synapse:v1.98.0
     depends_on:
       - synapse-database
     volumes:
