@@ -124,7 +124,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:27.1-fpm-alpine
+    image: nextcloud:28.0-fpm-alpine
     depends_on:
       - nextcloud-database
       - nextcloud-redis
