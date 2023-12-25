@@ -97,6 +97,39 @@ services:
       traefik.http.services.grafana.loadbalancer.server.port: 3000
       traefik.enable: true
 # ============================================================================ #
+# =================================== LDAP =================================== #
+# ============================================================================ #
+  ldap:
+    image: osixia/openldap:1.5.0
+    networks:
+      - ldap-backend
+    environment:
+      LDAP_ORGANISATION: ${ORGANISATION_NAME}
+      LDAP_DOMAIN: ${BASE_DOMAIN}
+      LDAP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_ADMIN_PASSWORD_FILE: /run/secrets/LDAP_ADMIN_PASSWORD
+    secrets:
+      - LDAP_ADMIN_PASSWORD
+    restart: unless-stopped
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    depends_on:
+      - ldap
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+      PHPLDAPADMIN_HTTPS: false
+    networks:
+      - ldap-backend
+      - proxy
+    labels:
+      - "traefik.http.routers.ldap.rule=Host(`ldap.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.ldap.tls=true"
+      - "traefik.http.routers.ldap.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ldap.middlewares=authelia@docker"
+      - "traefik.enable=true"
+    restart: unless-stopped
+# ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
@@ -592,6 +625,7 @@ volumes:
 
 networks:
   authelia-backend:
+  ldap-backend:
   metrics:
   proxy:
   nextcloud-backend:
@@ -620,6 +654,8 @@ secrets:
     file: ./authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
     file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+  LDAP_ADMIN_PASSWORD:
+    file: ./ldap/secrets/ADMIN_PASSWORD
   NEXTCLOUD_STORAGE_PASSWORD:
     file: ./nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
