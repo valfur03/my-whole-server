@@ -1,13 +1,10 @@
 authentication_backend:
-  file:
-    path: /config/users.yml
-    password:
-      algorithm: argon2id
-      iterations: 3
-      key_length: 32
-      salt_length: 16
-      parallelism: 4
-      memory: 64
+  ldap:
+    url: ldap://ldap
+    users_filter: (&({username_attribute}={input})(objectClass=person))
+    username_attribute: cn
+    groups_filter: (&(uniquemember={dn})(objectclass=groupOfUniqueNames))
+    group_name_attribute: cn
 storage:
   postgres:
     host: authelia-database
