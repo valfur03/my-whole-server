@@ -16,10 +16,6 @@ entryPoints:
 
 certificatesResolvers:
   letsencrypt:
-    acme:
-      caServer: https://acme-v02.api.letsencrypt.org/directory
-      storage: /etc/traefik/acme/acme.json
-      tlsChallenge: {}
 
 providers:
   docker:

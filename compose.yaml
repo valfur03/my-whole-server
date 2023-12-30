@@ -39,6 +39,7 @@ services:
       AUTHELIA_DEFAULT_REDIRECTION_URL: https://${BASE_DOMAIN}
       AUTHELIA_JWT_SECRET_FILE: /run/secrets/AUTHELIA_JWT_SECRET
       AUTHELIA_NOTIFIER_SMTP_USERNAME: ${SMTP_USERNAME}
+      # TODO valfur alert
       AUTHELIA_NOTIFIER_SMTP_SENDER: "Valfur Authelia <${AUTHELIA_SYSTEM_EMAIL}>"
       AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /run/secrets/SMTP_PASSWORD
       AUTHELIA_NOTIFIER_SMTP_HOST: ${SMTP_HOST}
@@ -509,6 +510,7 @@ services:
       - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
       - "traefik.http.routers.web.tls=true"
       - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.web.middlewares=authelia@docker"
       - "traefik.enable=true"
     restart: unless-stopped
 
