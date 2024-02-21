@@ -246,6 +246,15 @@ services:
     network_mode: "service:vpn"
     restart: unless-stopped
 
+  fleischel:
+    image: ghcr.io/valfur03/fleischel
+    networks:
+      - seedbox-torrenting
+    environment:
+      TRANSMISSION_HOST: vpn
+      LOG_LEVEL: debug
+    restart: unless-stopped
+
   jackett:
     image: lscr.io/linuxserver/jackett:version-v0.21.1293
     depends_on:
