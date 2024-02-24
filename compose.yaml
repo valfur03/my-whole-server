@@ -389,6 +389,42 @@ services:
       - "traefik.enable=true"
     restart: unless-stopped
 
+  synapse-syncv3-database:
+    image: postgres:16.1-alpine3.17
+    volumes:
+      - synapse-syncv3-database:/var/lib/postgresql/data
+    networks:
+      - synapse-backend
+    environment:
+      POSTGRES_DB: synapse-syncv3
+      POSTGRES_USER: synapse-syncv3
+      POSTGRES_PASSWORD: ${SYNAPSE_SYNCV3_STORAGE_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+    secrets:
+      - SYNAPSE_STORAGE_PASSWORD
+    restart: unless-stopped
+
+  # docker run --rm -e "SYNCV3_SERVER=https://matrix-client.matrix.org" -e "SYNCV3_SECRET=$(cat .secret)" -e "SYNCV3_BINDADDR=:8008" -e "SYNCV3_DB=user=$(whoami) dbname=syncv3 sslmode=disable host=host.docker.internal password='DATABASE_PASSWORD_HERE'" -p 8008:8008 ghcr.io/matrix-org/sliding-sync:latest
+  synapse-syncv3-proxy:
+    image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
+    depends_on:
+      - synapse-app
+      - synapse-syncv3-database
+    environment:
+      SYNCV3_SERVER: https://matrix.${BASE_DOMAIN}
+      SYNCV3_SECRET: ${SYNAPSE_SYNCV3_SECRET} # TODO can it be set in Docker Secret?
+      SYNCV3_DB: user=synapse-syncv3 dbname=synapse-syncv3 sslmode=disable host=synapse-syncv3-database password=${SYNAPSE_SYNCV3_STORAGE_PASSWORD} # TODO can it be set in Docker Secret?
+    networks:
+      - synapse-backend
+      - proxy
+    labels:
+      - "traefik.http.routers.synapse-syncv3.rule=Host(`syncv3.matrix.${BASE_DOMAIN}`)"
+      - "traefik.http.services.synapse-syncv3.loadbalancer.server.port=8008"
+      - "traefik.http.routers.synapse-syncv3.tls=true"
+      - "traefik.http.routers.synapse-syncv3.tls.certresolver=letsencrypt"
+      - "traefik.enable=true"
+    restart: unless-stopped
+
 # ============================================================================ #
 # ================================== TRAEFIK ================================= #
 # ============================================================================ #
@@ -549,6 +585,7 @@ volumes:
   radarr-config:
   synapse-data:
   synapse-database:
+  synapse-syncv3-database:
   traefik-acme:
   transmission-config:
   vaultwarden-data:
