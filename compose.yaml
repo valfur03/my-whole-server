@@ -404,7 +404,6 @@ services:
       - SYNAPSE_STORAGE_PASSWORD
     restart: unless-stopped
 
-  # docker run --rm -e "SYNCV3_SERVER=https://matrix-client.matrix.org" -e "SYNCV3_SECRET=$(cat .secret)" -e "SYNCV3_BINDADDR=:8008" -e "SYNCV3_DB=user=$(whoami) dbname=syncv3 sslmode=disable host=host.docker.internal password='DATABASE_PASSWORD_HERE'" -p 8008:8008 ghcr.io/matrix-org/sliding-sync:latest
   synapse-syncv3-proxy:
     image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
     depends_on:
