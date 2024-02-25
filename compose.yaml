@@ -131,11 +131,11 @@ services:
       - ldap-backend
       - proxy
     labels:
-      - "traefik.http.routers.ldap.rule=Host(`ldap.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.ldap.tls=true"
-      - "traefik.http.routers.ldap.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.ldap.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.ldap.rule: Host(`ldap.${BASE_DOMAIN}`)
+      traefik.http.routers.ldap.tls: true
+      traefik.http.routers.ldap.tls.certresolver: letsencrypt
+      traefik.http.routers.ldap.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
 # ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
