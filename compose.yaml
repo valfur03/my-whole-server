@@ -55,11 +55,11 @@ services:
     expose:
       - 9091
     labels:
-      - "traefik.http.routers.authelia.rule=Host(`auth.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.authelia.tls=true"
-      - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
-      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
-      - "traefik.enable=true"
+      traefik.http.routers.authelia.rule: Host(`auth.${BASE_DOMAIN}`)
+      traefik.http.routers.authelia.tls: true
+      traefik.http.routers.authelia.tls.certresolver: letsencrypt
+      traefik.http.services.authelia.loadbalancer.server.port: 9091
+      traefik.enable: true
     restart: unless-stopped
 # ============================================================================ #
 # ================================== GRAFANA ================================= #
@@ -73,12 +73,12 @@ services:
       - metrics
       - seedbox-metrics
     labels: # delete
-      - "traefik.http.routers.prom.rule=Host(`prom.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.prom.tls=true"
-      - "traefik.http.routers.prom.tls.certresolver=letsencrypt"
-      - "traefik.http.services.prom.loadbalancer.server.port=9090"
-      - "traefik.http.routers.prom.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.prom.rule: Host(`prom.${BASE_DOMAIN}`)
+      traefik.http.routers.prom.tls: true
+      traefik.http.routers.prom.tls.certresolver: letsencrypt
+      traefik.http.services.prom.loadbalancer.server.port: 9090
+      traefik.http.routers.prom.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
   grafana:
     image: grafana/grafana-oss:10.3.1
@@ -91,11 +91,11 @@ services:
       - proxy
     restart: unless-stopped
     labels:
-      - "traefik.http.routers.grafana.rule=Host(`metrics.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.grafana.tls=true"
-      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.enable=true"
+      traefik.http.routers.grafana.rule: Host(`metrics.${BASE_DOMAIN}`)
+      traefik.http.routers.grafana.tls: true
+      traefik.http.routers.grafana.tls.certresolver: letsencrypt
+      traefik.http.services.grafana.loadbalancer.server.port: 3000
+      traefik.enable: true
 # ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
@@ -156,11 +156,11 @@ services:
       - nextcloud-backend
       - proxy
     labels:
-      - "traefik.http.routers.nextcloud.rule=Host(`cloud.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.nextcloud.tls=true"
-      - "traefik.http.routers.nextcloud.tls.certresolver=letsencrypt"
-      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
-      - "traefik.enable=true"
+      traefik.http.routers.nextcloud.rule: Host(`cloud.${BASE_DOMAIN}`)
+      traefik.http.routers.nextcloud.tls: true
+      traefik.http.routers.nextcloud.tls.certresolver: letsencrypt
+      traefik.http.services.nextcloud.loadbalancer.server.port: 80
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -193,25 +193,25 @@ services:
       - seedbox-metrics
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.joal.rule=Host(`joal.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.joal.service=joal"
-      - "traefik.http.routers.joal.tls=true"
-      - "traefik.http.routers.joal.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.joal.middlewares=authelia@docker"
-      - "traefik.http.services.joal.loadbalancer.server.port=4494"
-      - "traefik.http.routers.transmission.rule=Host(`transmission.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.transmission.service=transmission"
-      - "traefik.http.routers.transmission.tls=true"
-      - "traefik.http.routers.transmission.tls.certresolver=letsencrypt"
-      - "traefik.http.services.transmission.loadbalancer.server.port=9091"
-      - "traefik.http.routers.transmission.middlewares=authelia@docker"
-      - "traefik.http.routers.jackett.rule=Host(`jackett.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.jackett.service=jackett"
-      - "traefik.http.services.jackett.loadbalancer.server.port=9117"
-      - "traefik.http.routers.jackett.tls=true"
-      - "traefik.http.routers.jackett.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.jackett.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.joal.rule: Host(`joal.${BASE_DOMAIN}`)
+      traefik.http.routers.joal.service: joal
+      traefik.http.routers.joal.tls: true
+      traefik.http.routers.joal.tls.certresolver: letsencrypt
+      traefik.http.routers.joal.middlewares: authelia@docker
+      traefik.http.services.joal.loadbalancer.server.port: 4494
+      traefik.http.routers.transmission.rule: Host(`transmission.${BASE_DOMAIN}`)
+      traefik.http.routers.transmission.service: transmission
+      traefik.http.routers.transmission.tls: true
+      traefik.http.routers.transmission.tls.certresolver: letsencrypt
+      traefik.http.services.transmission.loadbalancer.server.port: 9091
+      traefik.http.routers.transmission.middlewares: authelia@docker
+      traefik.http.routers.jackett.rule: Host(`jackett.${BASE_DOMAIN}`)
+      traefik.http.routers.jackett.service: jackett
+      traefik.http.services.jackett.loadbalancer.server.port: 9117
+      traefik.http.routers.jackett.tls: true
+      traefik.http.routers.jackett.tls.certresolver: letsencrypt
+      traefik.http.routers.jackett.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
 
   joal:
@@ -283,12 +283,12 @@ services:
       - proxy
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${BASE_DOMAIN}`)"
-      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
-      - "traefik.http.routers.sonarr.tls=true"
-      - "traefik.http.routers.sonarr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.sonarr.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.sonarr.rule: Host(`sonarr.${BASE_DOMAIN}`)
+      traefik.http.services.sonarr.loadbalancer.server.port: 8989
+      traefik.http.routers.sonarr.tls: true
+      traefik.http.routers.sonarr.tls.certresolver: letsencrypt
+      traefik.http.routers.sonarr.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
 
   radarr:
@@ -305,12 +305,12 @@ services:
       - proxy
       - seedbox-torrenting
     labels:
-      - "traefik.http.routers.radarr.rule=Host(`radarr.${BASE_DOMAIN}`)"
-      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
-      - "traefik.http.routers.radarr.tls=true"
-      - "traefik.http.routers.radarr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.radarr.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.radarr.rule: Host(`radarr.${BASE_DOMAIN}`)
+      traefik.http.services.radarr.loadbalancer.server.port: 7878
+      traefik.http.routers.radarr.tls: true
+      traefik.http.routers.radarr.tls.certresolver: letsencrypt
+      traefik.http.routers.radarr.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
   plex:
     image: lscr.io/linuxserver/plex:1.32.8
@@ -324,11 +324,11 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.plex.rule=Host(`plex.${BASE_DOMAIN}`)"
-      - "traefik.http.services.plex.loadbalancer.server.port=32400"
-      - "traefik.http.routers.plex.tls=true"
-      - "traefik.http.routers.plex.tls.certresolver=letsencrypt"
-      - "traefik.enable=true"
+      traefik.http.routers.plex.rule: Host(`plex.${BASE_DOMAIN}`)
+      traefik.http.services.plex.loadbalancer.server.port: 32400
+      traefik.http.routers.plex.tls: true
+      traefik.http.routers.plex.tls.certresolver: letsencrypt
+      traefik.enable: true
     restart: unless-stopped
   transmission-exporter:
     build: transmission-exporter
@@ -346,12 +346,12 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.s-pdf.rule=Host(`s-pdf.${BASE_DOMAIN}`)"
-      - "traefik.http.services.s-pdf.loadbalancer.server.port=8080"
-      - "traefik.http.routers.s-pdf.tls=true"
-      - "traefik.http.routers.s-pdf.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.s-pdf.middlewares=authelia@docker"
-      - "traefik.enable=true"
+      traefik.http.routers.s-pdf.rule: Host(`s-pdf.${BASE_DOMAIN}`)
+      traefik.http.services.s-pdf.loadbalancer.server.port: 8080
+      traefik.http.routers.s-pdf.tls: true
+      traefik.http.routers.s-pdf.tls.certresolver: letsencrypt
+      traefik.http.routers.s-pdf.middlewares: authelia@docker
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -382,11 +382,11 @@ services:
       - synapse-backend
       - proxy
     labels:
-      - "traefik.http.routers.synapse.rule=Host(`matrix.${BASE_DOMAIN}`)"
-      - "traefik.http.services.synapse.loadbalancer.server.port=8008"
-      - "traefik.http.routers.synapse.tls=true"
-      - "traefik.http.routers.synapse.tls.certresolver=letsencrypt"
-      - "traefik.enable=true"
+      traefik.http.routers.synapse.rule: Host(`matrix.${BASE_DOMAIN}`)
+      traefik.http.services.synapse.loadbalancer.server.port: 8008
+      traefik.http.routers.synapse.tls: true
+      traefik.http.routers.synapse.tls.certresolver: letsencrypt
+      traefik.enable: true
     restart: unless-stopped
 
   synapse-syncv3-database:
@@ -418,11 +418,11 @@ services:
       - synapse-backend
       - proxy
     labels:
-      - "traefik.http.routers.synapse-syncv3.rule=Host(`syncv3.matrix.${BASE_DOMAIN}`)"
-      - "traefik.http.services.synapse-syncv3.loadbalancer.server.port=8008"
-      - "traefik.http.routers.synapse-syncv3.tls=true"
-      - "traefik.http.routers.synapse-syncv3.tls.certresolver=letsencrypt"
-      - "traefik.enable=true"
+      traefik.http.routers.synapse-syncv3.rule: Host(`syncv3.matrix.${BASE_DOMAIN}`)
+      traefik.http.services.synapse-syncv3.loadbalancer.server.port: 8008
+      traefik.http.routers.synapse-syncv3.tls: true
+      traefik.http.routers.synapse-syncv3.tls.certresolver: letsencrypt
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -453,16 +453,16 @@ services:
     volumes:
       - traefik-acme:/etc/traefik/acme
     labels:
-      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F'
-      - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
-      - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email'
-      - "traefik.http.routers.traefik.rule=Host(`proxy.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.middlewares=authelia@docker"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
-      - "traefik.enable=true"
+      traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
+      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: true
+      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
+      traefik.http.routers.traefik.rule: Host(`proxy.${BASE_DOMAIN}`)
+      traefik.http.routers.traefik.tls: true
+      traefik.http.routers.traefik.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik.middlewares: authelia@docker
+      traefik.http.routers.traefik.service: api@internal
+      traefik.http.services.traefik.loadbalancer.server.port: 8080
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -489,17 +489,17 @@ services:
       - SMTP_PASSWORD
       - VAULTWARDEN_ADMIN_TOKEN
     labels:
-      - "traefik.http.routers.vaultwarden.rule=Host(`vault.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.vaultwarden.service=vaultwarden"
-      - "traefik.http.routers.vaultwarden.tls=true"
-      - "traefik.http.routers.vaultwarden.tls.certresolver=letsencrypt"
-      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
-      - "traefik.http.routers.vaultwarden-ws.rule=Host(`vault.${BASE_DOMAIN}`) && Path(`/notifications/hub`)"
-      - "traefik.http.routers.vaultwarden-ws.service=vaultwarden-ws"
-      - "traefik.http.routers.vaultwarden-ws.tls=true"
-      - "traefik.http.routers.vaultwarden-ws.tls.certresolver=letsencrypt"
-      - "traefik.http.services.vaultwarden-ws.loadbalancer.server.port=3012"
-      - "traefik.enable=true"
+      traefik.http.routers.vaultwarden.rule: Host(`vault.${BASE_DOMAIN}`)
+      traefik.http.routers.vaultwarden.service: vaultwarden
+      traefik.http.routers.vaultwarden.tls: true
+      traefik.http.routers.vaultwarden.tls.certresolver: letsencrypt
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 80
+      traefik.http.routers.vaultwarden-ws.rule: Host(`vault.${BASE_DOMAIN}`) && Path(`/notifications/hub`)
+      traefik.http.routers.vaultwarden-ws.service: vaultwarden-ws
+      traefik.http.routers.vaultwarden-ws.tls: true
+      traefik.http.routers.vaultwarden-ws.tls.certresolver: letsencrypt
+      traefik.http.services.vaultwarden-ws.loadbalancer.server.port: 3012
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -510,10 +510,10 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.http.routers.web.rule=Host(`${BASE_DOMAIN}`)"
-      - "traefik.http.routers.web.tls=true"
-      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
-      - "traefik.enable=true"
+      traefik.http.routers.web.rule: Host(`${BASE_DOMAIN}`)
+      traefik.http.routers.web.tls: true
+      traefik.http.routers.web.tls.certresolver: letsencrypt
+      traefik.enable: true
     restart: unless-stopped
 
 # ============================================================================ #
@@ -529,12 +529,12 @@ services:
       AAA-vpn:
         ipv4_address: "10.8.1.3"
     labels:
-      - "traefik.http.routers.adguard.rule=Host(`adguard.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.adguard.tls=true"
-      - "traefik.http.routers.adguard.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.adguard.middlewares=authelia@docker"
-      - "traefik.http.services.adguard.loadbalancer.server.port=80"
-      - "traefik.enable=true"
+      traefik.http.routers.adguard.rule: Host(`adguard.${BASE_DOMAIN}`)
+      traefik.http.routers.adguard.tls: true
+      traefik.http.routers.adguard.tls.certresolver: letsencrypt
+      traefik.http.routers.adguard.middlewares: authelia@docker
+      traefik.http.services.adguard.loadbalancer.server.port: 80
+      traefik.enable: true
     restart: unless-stopped
   wireguard:
     image: weejewel/wg-easy:7
@@ -561,12 +561,12 @@ services:
         ipv4_address: "10.8.1.2"
       proxy:
     labels:
-      - "traefik.http.routers.wireguard.rule=Host(`wireguard.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.wireguard.tls=true"
-      - "traefik.http.routers.wireguard.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.wireguard.middlewares=authelia@docker"
-      - "traefik.http.services.wireguard.loadbalancer.server.port=51821"
-      - "traefik.enable=true"
+      traefik.http.routers.wireguard.rule: Host(`wireguard.${BASE_DOMAIN}`)
+      traefik.http.routers.wireguard.tls: true
+      traefik.http.routers.wireguard.tls.certresolver: letsencrypt
+      traefik.http.routers.wireguard.middlewares: authelia@docker
+      traefik.http.services.wireguard.loadbalancer.server.port: 51821
+      traefik.enable: true
     restart: unless-stopped
 
 volumes:
