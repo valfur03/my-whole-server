@@ -22,5 +22,3 @@ notifier:
     tls:
       skip_verify: false
       minimum_version: TLS1.2
-access_control:
-  default_policy: one_factor

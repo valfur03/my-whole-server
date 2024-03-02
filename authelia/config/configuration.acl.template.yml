@@ -1,0 +1,19 @@
+access_control:
+  networks:
+  - name: internal
+    networks:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/18"
+  rules:
+  # phpLDAPadmin does not require Authelia authentication on internal network
+  - domain: "ldap.${BASE_DOMAIN}"
+    networks:
+    - "internal"
+    - "${HOST_IP}"
+    policy: bypass
+  # Requires One Factor authentication for all routes
+  - domain: "*.${BASE_DOMAIN}"
+    subject:
+    - ["group:admin"]
+    policy: one_factor
