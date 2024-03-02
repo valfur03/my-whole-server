@@ -17,3 +17,8 @@ access_control:
     subject:
     - ["group:admin"]
     policy: one_factor
+  # Allow One Factor authentication for s-pdf to bureaucrat users
+  - domain: "s-pdf.${BASE_DOMAIN}"
+    subject:
+    - ["group:bureaucrat"]
+    policy: one_factor
