@@ -328,7 +328,7 @@ services:
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
       traefik.http.routers.sonarr.tls: true
       traefik.http.routers.sonarr.tls.certresolver: letsencrypt
-      traefik.http.routers.sonarr.middlewares: authelia@docker
+      traefik.http.routers.sonarr.middlewares: authelia@docker, sonarr-auth-header@docker
       traefik.enable: true
     restart: unless-stopped
 
@@ -494,6 +494,7 @@ services:
       - traefik-acme:/etc/traefik/acme
     labels:
       traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
+      traefik.http.middlewares.sonarr-auth-header.headers.customrequestheaders.Authorization: Basic ${SONARR_BASIC_AUTH_TOKEN}
       traefik.http.routers.traefik.rule: Host(`proxy.${BASE_DOMAIN}`)
       traefik.http.routers.traefik.tls: true
       traefik.http.routers.traefik.tls.certresolver: letsencrypt
