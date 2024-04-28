@@ -1,0 +1,19 @@
+<<: !include
+    - repositories/constants.yaml
+    - constants/docker.yaml
+    - encryption/docker-secret.yaml
+    - name-formats/docker.yaml
+    - retention/7d.yaml
+
+constants:
+    pg_name: authelia
+    pg_host: authelia-database
+    pg_user: authelia
+    pg_pass: ${AUTHELIA_POSTGRES_PASSWORD}
+    volume_name: authelia-database
+
+postgresql_databases:
+    !include sources/pg-database.yaml
+
+repositories:
+    !include repositories/all.yaml

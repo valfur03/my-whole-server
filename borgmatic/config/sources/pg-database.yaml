@@ -1,0 +1,4 @@
+- name: "{pg_name}"
+  hostname: "{pg_host}"
+  username: "{pg_user}"
+  password: "{pg_pass}"

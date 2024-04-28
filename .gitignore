@@ -1,4 +1,5 @@
 .env
+envs/
 secrets/
 
 authelia/config/users.yml
