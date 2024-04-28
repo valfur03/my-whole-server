@@ -1,0 +1,2 @@
+- path: "{local_backup_directory}/{volume_name}"
+  label: local

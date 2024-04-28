@@ -1,0 +1,1 @@
+archive_name_format: 'docker-{volume_name}-{now}'

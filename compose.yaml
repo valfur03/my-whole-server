@@ -71,6 +71,25 @@ services:
       traefik.enable: true
     restart: unless-stopped
 # ============================================================================ #
+# ================================= BORGMATIC ================================ #
+# ============================================================================ #
+  borgmatic:
+    image: ghcr.io/borgmatic-collective/borgmatic:1.8.10
+    environment:
+      BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
+      CRON: "0 2 * * *"
+      TZ: Europe/Paris
+    volumes:
+      - borg-config:/root/.config/borg
+      - ./borgmatic/config:/etc/borgmatic.d:ro
+      - ./borgmatic/scripts:/scripts:ro
+      - adguard-conf:/volumes/adguard-conf:ro
+      - /backup/borg/docker:/backup
+      - /var/run/docker.sock:/var/run/docker.sock
+    secrets:
+      - BORGMATIC_ENCRYPTION_PASSPHRASE
+    restart: unless-stopped
+# ============================================================================ #
 # ================================== GRAFANA ================================= #
 # ============================================================================ #
   prometheus:
@@ -629,6 +648,7 @@ volumes:
   adguard-conf:
   adguard-work:
   authelia-database:
+  borg-config:
   grafana-data:
   nextcloud-data:
   nextcloud-database:
@@ -680,6 +700,8 @@ secrets:
     file: ./authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
     file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+  BORGMATIC_ENCRYPTION_PASSPHRASE:
+    file: ./borgmatic/secrets/ENCRYPTION_PASSPHRASE
   LDAP_ADMIN_PASSWORD:
     file: ./ldap/secrets/ADMIN_PASSWORD
   NEXTCLOUD_STORAGE_PASSWORD:

@@ -1,0 +1,2 @@
+constants:
+    docker_volumes_path: /volumes
