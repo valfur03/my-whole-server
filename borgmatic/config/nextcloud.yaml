@@ -1,0 +1,25 @@
+<<: !include
+    - repositories/constants.yaml
+    - constants/docker.yaml
+    - encryption/docker-secret.yaml
+    - hooks/nextcloud-maintenance.yaml
+    - name-formats/docker.yaml
+    - retention/7d.yaml
+
+constants:
+    mariadb_name: nextcloud
+    mariadb_host: nextcloud-database
+    mariadb_user: nextcloud
+    mariadb_pass: ${NEXTCLOUD_MARIADB_PASSWORD}
+    volume_name: nextcloud-database
+
+source_directories:
+    - "{docker_volumes_path}/nextcloud-data/config"
+    - "{docker_volumes_path}/nextcloud-data/data"
+    - "{docker_volumes_path}/nextcloud-data/theme"
+
+mariadb_databases:
+    !include sources/mariadb-database.yaml
+
+repositories:
+    !include repositories/all.yaml

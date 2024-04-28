@@ -1,0 +1,4 @@
+- name: "{mariadb_name}"
+  hostname: "{mariadb_host}"
+  username: "{mariadb_user}"
+  password: "{mariadb_pass}"

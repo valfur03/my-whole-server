@@ -86,10 +86,12 @@ services:
       - ./borgmatic/config:/etc/borgmatic.d:ro
       - ./borgmatic/scripts:/scripts:ro
       - adguard-conf:/volumes/adguard-conf:ro
+      - nextcloud-data:/volumes/nextcloud-data:ro
       - /backup/borg/docker:/backup
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - authelia-backend
+      - nextcloud-backend
     secrets:
       - BORGMATIC_ENCRYPTION_PASSPHRASE
       - AUTHELIA_STORAGE_PASSWORD
