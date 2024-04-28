@@ -8,5 +8,5 @@ before_extract:
   - sh /scripts/nextcloud-maintenance.sh on
 
 after_extract:
-  - sh /scripts/nextcloud-maintenance.sh on
+  - sh /scripts/nextcloud-maintenance.sh off
   - sh /scripts/nextcloud-data-fingerprint.sh
