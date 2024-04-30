@@ -16,7 +16,7 @@ constants:
 source_directories:
     - "{docker_volumes_path}/nextcloud-data/config"
     - "{docker_volumes_path}/nextcloud-data/data"
-    - "{docker_volumes_path}/nextcloud-data/theme"
+    - "{docker_volumes_path}/nextcloud-data/themes"
 
 mariadb_databases:
     !include sources/mariadb-database.yaml
