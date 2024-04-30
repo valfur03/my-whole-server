@@ -83,6 +83,7 @@ services:
       - ./borgmatic/envs/databases
     volumes:
       - borg-config:/root/.config/borg
+      - borg-cache:/root/.cache/borg
       - ./borgmatic/config:/etc/borgmatic.d:ro
       - ./borgmatic/scripts:/scripts:ro
       - adguard-conf:/volumes/adguard-conf:ro
@@ -655,6 +656,7 @@ volumes:
   adguard-conf:
   adguard-work:
   authelia-database:
+  borg-cache:
   borg-config:
   grafana-data:
   nextcloud-data:
