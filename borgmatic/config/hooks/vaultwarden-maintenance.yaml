@@ -1,0 +1,6 @@
+before_extract:
+  - sh /scripts/vaultwarden-maintenance.sh on
+  - rm -f "{docker_volumes_path}/{volume_name}/db.sqlite3-{wal,shm}"
+
+after_extract:
+  - sh /scripts/vaultwarden-maintenance.sh off

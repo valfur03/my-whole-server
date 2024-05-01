@@ -1,0 +1,27 @@
+<<: !include
+    - repositories/constants.yaml
+    - constants/docker.yaml
+    - encryption/docker-secret.yaml
+    - excludes/sqlite-files.yaml
+    - hooks/repositories-all.yaml
+    - hooks/vaultwarden-maintenance.yaml
+    - name-formats/docker-custom.yaml
+    - retention/7d.yaml
+
+constants:
+    archive_name: vaultwarden
+    sqlite_name: vaultwarden
+    sqlite_path: db.sqlite3
+    volume_name: vaultwarden-data
+
+source_directories:
+    !include sources/docker-volume.yaml
+
+repositories:
+    !include repositories/all.yaml
+
+sqlite_databases:
+    !include sources/sqlite-database.yaml
+
+exclude_patterns:
+    - '{docker_volumes_path}/{volume_name}/icon_cache'

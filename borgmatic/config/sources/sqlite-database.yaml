@@ -1,0 +1,2 @@
+- name: "{sqlite_name}"
+  path: "{docker_volumes_path}/{volume_name}/{sqlite_path}"
