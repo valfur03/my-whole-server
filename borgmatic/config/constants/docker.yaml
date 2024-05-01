@@ -1,2 +1,3 @@
 constants:
     docker_volumes_path: /volumes
+    archive_name: "{volume_name}"

@@ -1,2 +1,2 @@
-- path: "{local_backup_directory}/{volume_name}"
+- path: "{local_backup_directory}/{archive_name}"
   label: local
