@@ -1,2 +1,2 @@
 constants:
-    local_backup_directory: /backup
+    local_backup_directory: /backup/local
