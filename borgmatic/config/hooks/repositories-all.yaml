@@ -1,0 +1,2 @@
+before_actions:
+    - findmnt {local_backup_directory} || exit 1

@@ -3,6 +3,7 @@
     - constants/docker.yaml
     - encryption/docker-secret.yaml
     - hooks/nextcloud-maintenance.yaml
+    - hooks/repositories-all.yaml
     - name-formats/docker.yaml
     - retention/7d.yaml
 
