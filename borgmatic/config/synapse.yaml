@@ -1,0 +1,27 @@
+<<: !include
+    - repositories/constants.yaml
+    - constants/docker.yaml
+    - encryption/docker-secret.yaml
+    - hooks/repositories-all.yaml
+    - name-formats/docker-custom.yaml
+    - retention/7d.yaml
+
+constants:
+    archive_name: synapse
+    volume_name: synapse-data
+
+source_directories:
+    !include sources/docker-volume.yaml
+
+postgresql_databases:
+    - name: synapse
+      hostname: synapse-database
+      username: synapse
+      password: ${SYNAPSE_POSTGRES_PASSWORD}
+    - name: synapse-syncv3
+      hostname: synapse-syncv3-database
+      username: synapse-syncv3
+      password: ${SYNAPSE_SYNCV3_POSTGRES_PASSWORD}
+
+repositories:
+    !include repositories/all.yaml
