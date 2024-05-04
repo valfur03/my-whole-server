@@ -4,6 +4,9 @@ before_backup:
 after_backup:
   - sh /scripts/nextcloud-maintenance.sh off
 
+after_everything:
+  - sh /scripts/nextcloud-maintenance.sh off
+
 before_extract:
   - sh /scripts/nextcloud-maintenance.sh on
 
