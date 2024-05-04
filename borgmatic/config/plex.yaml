@@ -1,0 +1,20 @@
+<<: !include
+    - repositories/constants.yaml
+    - constants/docker.yaml
+    - encryption/docker-secret.yaml
+    - hooks/repositories-all.yaml
+    - name-formats/docker-custom.yaml
+    - retention/7d.yaml
+
+constants:
+    archive_name: plex
+    volume_name: plex-config
+
+source_directories:
+    !include sources/docker-volume.yaml
+
+repositories:
+    !include repositories/all.yaml
+
+exclude_patterns:
+    - '{docker_volumes_path}/{volume_name}/Library/Application Support/Plex Media Server/Cache'

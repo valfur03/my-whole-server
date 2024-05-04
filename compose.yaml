@@ -88,6 +88,7 @@ services:
       - ./borgmatic/scripts:/scripts:ro
       - adguard-conf:/volumes/adguard-conf:ro
       - nextcloud-data:/volumes/nextcloud-data:ro
+      - plex-config:/volumes/plex-config:ro
       - synapse-data:/volumes/synapse-data:ro
       - vaultwarden-data:/volumes/vaultwarden-data:ro
       - /backup/local/borg/docker:/backup/local
