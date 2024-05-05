@@ -5,6 +5,7 @@
     - hooks/repositories-all.yaml
     - name-formats/docker-custom.yaml
     - retention/7d.yaml
+    - repositories/all.yaml
 
 constants:
     archive_name: plex
@@ -12,9 +13,6 @@ constants:
 
 source_directories:
     !include sources/docker-volume.yaml
-
-repositories:
-    !include repositories/all.yaml
 
 exclude_patterns:
     - '{docker_volumes_path}/{volume_name}/Library/Application Support/Plex Media Server/Cache'

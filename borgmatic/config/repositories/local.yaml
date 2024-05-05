@@ -1,2 +1,3 @@
-- path: "{local_backup_directory}/{archive_name}"
-  label: local
+repositories:
+    - path: "{local_backup_directory}/{archive_name}"
+      label: local

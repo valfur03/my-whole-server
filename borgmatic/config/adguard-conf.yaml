@@ -5,12 +5,10 @@
     - hooks/repositories-all.yaml
     - name-formats/docker.yaml
     - retention/7d.yaml
+    - repositories/all.yaml
 
 constants:
     volume_name: adguard-conf
 
 source_directories:
     !include sources/docker-volume.yaml
-
-repositories:
-    !include repositories/all.yaml

@@ -5,6 +5,7 @@
     - hooks/repositories-all.yaml
     - name-formats/docker.yaml
     - retention/7d.yaml
+    - repositories/all.yaml
 
 constants:
     pg_name: authelia
@@ -15,6 +16,3 @@ constants:
 
 postgresql_databases:
     !include sources/pg-database.yaml
-
-repositories:
-    !include repositories/all.yaml

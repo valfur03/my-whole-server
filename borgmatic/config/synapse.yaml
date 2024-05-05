@@ -5,6 +5,7 @@
     - hooks/repositories-all.yaml
     - name-formats/docker-custom.yaml
     - retention/7d.yaml
+    - repositories/all.yaml
 
 constants:
     archive_name: synapse
@@ -22,6 +23,3 @@ postgresql_databases:
       hostname: synapse-syncv3-database
       username: synapse-syncv3
       password: ${SYNAPSE_SYNCV3_POSTGRES_PASSWORD}
-
-repositories:
-    !include repositories/all.yaml

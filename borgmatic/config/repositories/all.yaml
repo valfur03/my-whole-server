@@ -1,1 +1,2 @@
-!include local.yaml
+<<: !include
+    - local.yaml
