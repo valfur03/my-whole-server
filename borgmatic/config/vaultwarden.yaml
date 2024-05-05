@@ -11,6 +11,7 @@
 
 constants:
     archive_name: vaultwarden
+    borgbase_repo_id: gb7fgee1
     sqlite_name: vaultwarden
     sqlite_path: db.sqlite3
     volume_name: vaultwarden-data

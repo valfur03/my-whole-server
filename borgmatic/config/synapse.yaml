@@ -9,6 +9,7 @@
 
 constants:
     archive_name: synapse
+    borgbase_repo_id: k14051y9
     volume_name: synapse-data
 
 source_directories:

@@ -1,2 +1,3 @@
 <<: !include
     - local.yaml
+    - borgbase.yaml

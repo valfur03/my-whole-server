@@ -9,6 +9,7 @@
 
 constants:
     archive_name: authelia
+    borgbase_repo_id: he206604
     pg_name: authelia
     pg_host: authelia-database
     pg_user: authelia

@@ -9,6 +9,7 @@
 
 constants:
     archive_name: plex
+    borgbase_repo_id: gx8b14fp
     volume_name: plex-config
 
 source_directories:
