@@ -1,0 +1,3 @@
+repositories:
+    - path: ssh://{borgbase_repo_id}@{borgbase_repo_id}.repo.borgbase.com/./repo
+      label: borgbase

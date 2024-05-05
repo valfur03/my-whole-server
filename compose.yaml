@@ -86,6 +86,7 @@ services:
       - borg-cache:/root/.cache/borg
       - ./borgmatic/config:/etc/borgmatic.d:ro
       - ./borgmatic/scripts:/scripts:ro
+      - ./borgmatic/ssh:/root/.ssh
       - adguard-conf:/volumes/adguard-conf:ro
       - nextcloud-data:/volumes/nextcloud-data:ro
       - plex-config:/volumes/plex-config:ro
