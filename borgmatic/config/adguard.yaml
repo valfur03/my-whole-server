@@ -8,6 +8,7 @@
     - repositories/all.yaml
 
 constants:
+    archive_name: adguard
     volume_name: adguard-conf
 
 source_directories:

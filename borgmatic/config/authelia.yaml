@@ -8,6 +8,7 @@
     - repositories/all.yaml
 
 constants:
+    archive_name: authelia
     pg_name: authelia
     pg_host: authelia-database
     pg_user: authelia

@@ -9,11 +9,11 @@
     - repositories/all.yaml
 
 constants:
+    archive_name: nextcloud
     mariadb_name: nextcloud
     mariadb_host: nextcloud-database
     mariadb_user: nextcloud
     mariadb_pass: ${NEXTCLOUD_MARIADB_PASSWORD}
-    volume_name: nextcloud
 
 source_directories:
     - "{docker_volumes_path}/nextcloud-data/config"
