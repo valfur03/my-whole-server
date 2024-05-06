@@ -131,6 +131,9 @@ services:
       LDAP_DOMAIN: ${BASE_DOMAIN}
       LDAP_BASE_DN: ${LDAP_BASE_DN}
       LDAP_ADMIN_PASSWORD_FILE: /run/secrets/LDAP_ADMIN_PASSWORD
+    volumes:
+      - ldap-database:/var/lib/ldap
+      - ldap-config:/etc/ldap/slapd.d
     secrets:
       - LDAP_ADMIN_PASSWORD
     restart: unless-stopped
@@ -633,6 +636,8 @@ volumes:
   jackett-config:
   jackett-downloads:
   jellyfin-config:
+  ldap-config:
+  ldap-database:
   plex-config:
   prometheus-data:
   sonarr-config:
