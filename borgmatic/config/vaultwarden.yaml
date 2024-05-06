@@ -5,7 +5,7 @@
     - excludes/sqlite-files.yaml
     - hooks/repositories-all.yaml
     - hooks/vaultwarden-maintenance.yaml
-    - name-formats/docker-custom.yaml
+    - name-formats/docker.yaml
     - retention/7d.yaml
     - repositories/all.yaml
 

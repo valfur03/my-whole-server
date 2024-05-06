@@ -1,2 +1,1 @@
-<<: !include
-    - docker-custom.yaml
+archive_name_format: 'docker-{archive_name}-{now}'
