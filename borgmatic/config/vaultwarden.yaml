@@ -1,13 +1,7 @@
 <<: !include
-    - constants/docker.yaml
-    - constants/repositories.yaml.yaml
-    - encryption/docker-secret.yaml
+    - includes/common.yaml
     - excludes/sqlite-files.yaml
-    - hooks/repositories-all.yaml
     - hooks/vaultwarden-maintenance.yaml
-    - name-formats/docker.yaml
-    - retention/7d.yaml
-    - repositories/all.yaml
 
 constants:
     archive_name: vaultwarden
