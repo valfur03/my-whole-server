@@ -1,6 +1,6 @@
 <<: !include
-    - repositories/constants.yaml
     - constants/docker.yaml
+    - constants/repositories.yaml.yaml
     - encryption/docker-secret.yaml
     - hooks/nextcloud-maintenance.yaml
     - hooks/repositories-all.yaml

@@ -1,6 +1,6 @@
 <<: !include
-    - repositories/constants.yaml
     - constants/docker.yaml
+    - constants/repositories.yaml.yaml
     - encryption/docker-secret.yaml
     - excludes/sqlite-files.yaml
     - hooks/repositories-all.yaml
