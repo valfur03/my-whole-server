@@ -101,8 +101,14 @@ services:
       - nextcloud-backend
       - synapse-backend
     secrets:
-      - BORGMATIC_ENCRYPTION_PASSPHRASE
+      - AUTHELIA_JWT_SECRET
+      - AUTHELIA_SESSION_SECRET
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY
       - AUTHELIA_STORAGE_PASSWORD
+      - BORGMATIC_ENCRYPTION_PASSPHRASE
+      - LDAP_ADMIN_PASSWORD
+      - NEXTCLOUD_STORAGE_PASSWORD
+      - SYNAPSE_STORAGE_PASSWORD
     restart: unless-stopped
 # ============================================================================ #
 # ================================== GRAFANA ================================= #
