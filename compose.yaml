@@ -577,7 +577,7 @@ services:
 # ================================= WIREGUARD ================================ #
 # ============================================================================ #
   adguard:
-    image: adguard/adguardhome:v0.107.44
+    image: adguard/adguardhome:v0.107.51
     volumes:
       - adguard-work:/opt/adguardhome/work
       - adguard-conf:/opt/adguardhome/conf
