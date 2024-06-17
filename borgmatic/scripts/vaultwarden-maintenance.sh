@@ -5,6 +5,7 @@ set -eux
 cd $(dirname $0)
 
 . utils/docker/start.sh
+. utils/docker/stop.sh
 
 VAULTWARDEN_CONTAINER_NAME="my-whole-server-vaultwarden-1"
 
