@@ -9,7 +9,7 @@ NEXTCLOUD_CONTAINER_NAME="my-whole-server-nextcloud-app-1"
 set_nextcloud_maintenance()
 {
 	MODE=$1
-    docker_exec $NEXTCLOUD_CONTAINER_NAME www-data php occ maintenance:mode --$MODE
+    docker_exec $NEXTCLOUD_CONTAINER_NAME www-data php occ maintenance:mode --$MODE -n
 }
 
 if [ $# -ge 1 ] && [ "$1" == "off" ]
