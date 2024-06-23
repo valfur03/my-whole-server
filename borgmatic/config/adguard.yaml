@@ -3,7 +3,7 @@
 
 constants:
     archive_name: adguard
-    borgbase_repo_id: mv307xu0
+    borgbase_repo_id: ${BORGBASE_ADGUARD_REPO_ID}
     volume_name: adguard-conf
 
 source_directories:

@@ -3,7 +3,7 @@
 
 constants:
     archive_name: authelia
-    borgbase_repo_id: he206604
+    borgbase_repo_id: ${BORGBASE_AUTHELIA_REPO_ID}
     pg_name: authelia
     pg_host: authelia-database
     pg_user: authelia

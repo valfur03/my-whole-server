@@ -5,7 +5,7 @@
 
 constants:
     archive_name: vaultwarden
-    borgbase_repo_id: gb7fgee1
+    borgbase_repo_id: ${BORGBASE_VAULTWARDEN_REPO_ID}
     sqlite_name: vaultwarden
     sqlite_path: db.sqlite3
     volume_name: vaultwarden-data

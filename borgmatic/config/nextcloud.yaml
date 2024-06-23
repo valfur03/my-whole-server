@@ -4,7 +4,7 @@
 
 constants:
     archive_name: nextcloud
-    borgbase_repo_id: lw5dp5e7
+    borgbase_repo_id: ${BORGBASE_NEXTCLOUD_REPO_ID}
     mariadb_name: nextcloud
     mariadb_host: nextcloud-database
     mariadb_user: nextcloud
