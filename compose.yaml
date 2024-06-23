@@ -87,14 +87,14 @@ services:
     volumes:
       - borg-config:/root/.config/borg
       - borg-cache:/root/.cache/borg
-      - ./borgmatic/config:/etc/borgmatic.d:ro
+      - ./borgmatic/config:/etc/borgmatic.d
       - ./borgmatic/scripts:/scripts:ro
       - ./borgmatic/ssh:/root/.ssh
-      - adguard-conf:/volumes/adguard-conf:ro
-      - nextcloud-data:/volumes/nextcloud-data:ro
-      - plex-config:/volumes/plex-config:ro
-      - synapse-data:/volumes/synapse-data:ro
-      - vaultwarden-data:/volumes/vaultwarden-data:ro
+      - adguard-conf:/volumes/adguard-conf
+      - nextcloud-data:/volumes/nextcloud-data
+      - plex-config:/volumes/plex-config
+      - synapse-data:/volumes/synapse-data
+      - vaultwarden-data:/volumes/vaultwarden-data
       - /backup/local/borg/docker:/backup/local
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
