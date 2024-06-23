@@ -635,7 +635,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   wireguard:
-    image: weejewel/wg-easy:7
+    image: ghcr.io/wg-easy/wg-easy:13
     depends_on:
       - reverse-proxy
     ports:
