@@ -499,6 +499,7 @@ services:
   reverse-proxy:
     build: traefik
     depends_on:
+      - socket-proxy
       - authelia
     ports:
       - 80:80
