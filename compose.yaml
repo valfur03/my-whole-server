@@ -596,7 +596,6 @@ services:
   wireguard:
     image: weejewel/wg-easy:7
     depends_on:
-      - adguard
       - reverse-proxy
     ports:
       - 51820:51820/udp
