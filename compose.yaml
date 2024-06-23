@@ -666,7 +666,7 @@ networks:
     # that the interface used inside the container is eth0.
     # The below issue offers another solution that is not well extensible
     # according to me. Furthermore, it didn't work when I tried.
-    # https://github.com/WeeJeWel/wg-easy/issues/291
+    # https://github.com/wg-easy/wg-easy/issues/291
     ipam:
       driver: default
       config:
