@@ -74,9 +74,7 @@ services:
 # ================================= BORGMATIC ================================ #
 # ============================================================================ #
   borgmatic:
-    build:
-      context: borgmatic/docker-borgmatic
-      dockerfile: Dockerfile
+    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12
     environment:
       BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
       CRON: "0 2 * * *"
