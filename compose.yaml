@@ -262,6 +262,23 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
+# =================================== OTEL =================================== #
+# ============================================================================ #
+  jaeger:
+    image: jaegertracing/all-in-one:1.58.0
+    networks:
+      - proxy
+      - traefik
+    labels:
+      traefik.http.routers.otel-collector.rule: Host(`traces.${BASE_DOMAIN}`)
+      traefik.http.routers.otel-collector.tls: true
+      traefik.http.routers.otel-collector.tls.certresolver: letsencrypt
+      traefik.http.routers.otel-collector.middlewares: authelia@docker
+      traefik.http.services.otel-collector.loadbalancer.server.port: 16686
+      traefik.enable: true
+    restart: unless-stopped
+
+# ============================================================================ #
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
   vpn:
