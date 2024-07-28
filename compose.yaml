@@ -470,22 +470,22 @@ services:
       - SYNAPSE_STORAGE_PASSWORD
     restart: unless-stopped
 
-  synapse-app:
-    image: matrixdotorg/synapse:v1.98.0
-    depends_on:
-      - synapse-database
-    volumes:
-      - synapse-data:/data
-    networks:
-      - synapse-backend
-      - proxy
-    labels:
-      traefik.http.routers.synapse.rule: Host(`matrix.${BASE_DOMAIN}`)
-      traefik.http.services.synapse.loadbalancer.server.port: 8008
-      traefik.http.routers.synapse.tls: true
-      traefik.http.routers.synapse.tls.certresolver: letsencrypt
-      traefik.enable: true
-    restart: unless-stopped
+#  synapse-app:
+#    image: matrixdotorg/synapse:v1.98.0
+#    depends_on:
+#      - synapse-database
+#    volumes:
+#      - synapse-data:/data
+#    networks:
+#      - synapse-backend
+#      - proxy
+#    labels:
+#      traefik.http.routers.synapse.rule: Host(`matrix.${BASE_DOMAIN}`)
+#      traefik.http.services.synapse.loadbalancer.server.port: 8008
+#      traefik.http.routers.synapse.tls: true
+#      traefik.http.routers.synapse.tls.certresolver: letsencrypt
+#      traefik.enable: true
+#    restart: unless-stopped
 
   synapse-syncv3-database:
     image: postgres:16.1-alpine3.17
@@ -502,25 +502,25 @@ services:
       - SYNAPSE_STORAGE_PASSWORD
     restart: unless-stopped
 
-  synapse-syncv3-proxy:
-    image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
-    depends_on:
-      - synapse-app
-      - synapse-syncv3-database
-    environment:
-      SYNCV3_SERVER: https://matrix.${BASE_DOMAIN}
-      SYNCV3_SECRET: ${SYNAPSE_SYNCV3_SECRET} # TODO can it be set in Docker Secret?
-      SYNCV3_DB: user=synapse-syncv3 dbname=synapse-syncv3 sslmode=disable host=synapse-syncv3-database password=${SYNAPSE_SYNCV3_STORAGE_PASSWORD} # TODO can it be set in Docker Secret?
-    networks:
-      - synapse-backend
-      - proxy
-    labels:
-      traefik.http.routers.synapse-syncv3.rule: Host(`syncv3.matrix.${BASE_DOMAIN}`)
-      traefik.http.services.synapse-syncv3.loadbalancer.server.port: 8008
-      traefik.http.routers.synapse-syncv3.tls: true
-      traefik.http.routers.synapse-syncv3.tls.certresolver: letsencrypt
-      traefik.enable: true
-    restart: unless-stopped
+#  synapse-syncv3-proxy:
+#    image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
+#    depends_on:
+#      - synapse-app
+#      - synapse-syncv3-database
+#    environment:
+#      SYNCV3_SERVER: https://matrix.${BASE_DOMAIN}
+#      SYNCV3_SECRET: ${SYNAPSE_SYNCV3_SECRET} # TODO can it be set in Docker Secret?
+#      SYNCV3_DB: user=synapse-syncv3 dbname=synapse-syncv3 sslmode=disable host=synapse-syncv3-database password=${SYNAPSE_SYNCV3_STORAGE_PASSWORD} # TODO can it be set in Docker Secret?
+#    networks:
+#      - synapse-backend
+#      - proxy
+#    labels:
+#      traefik.http.routers.synapse-syncv3.rule: Host(`syncv3.matrix.${BASE_DOMAIN}`)
+#      traefik.http.services.synapse-syncv3.loadbalancer.server.port: 8008
+#      traefik.http.routers.synapse-syncv3.tls: true
+#      traefik.http.routers.synapse-syncv3.tls.certresolver: letsencrypt
+#      traefik.enable: true
+#    restart: unless-stopped
 
 # ============================================================================ #
 # ================================== TRAEFIK ================================= #
