@@ -1,4 +1,4 @@
-FROM authelia/authelia:4.37.5
+FROM authelia/authelia:4.37.5@sha256:25fc5423238b6f3a1fc967fda3f6a9212846aeb4a720327ef61c8ccff52dbbe2
 
 RUN set -eux; \
 	apk add --no-cache gettext

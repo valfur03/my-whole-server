@@ -4,7 +4,7 @@ services:
 # ================================ AUTHELIA ================================== #
 # ============================================================================ #
   authelia-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     restart: unless-stopped
     env_file:
       - .env
@@ -20,7 +20,7 @@ services:
       - AUTHELIA_STORAGE_PASSWORD
 
   authelia-redis:
-    image: redis:7.2-alpine3.18
+    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
     restart: unless-stopped
     networks:
       - authelia-backend
@@ -74,7 +74,7 @@ services:
 # ================================= BORGMATIC ================================ #
 # ============================================================================ #
   borgmatic:
-    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12
+    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12@sha256:d681b0b7114b0d2c81e519a5ef01283f9db8eb33d690bc98b52b4089ebc94674
     environment:
       BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
       CRON: "0 2 * * *"
@@ -129,7 +129,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   grafana:
-    image: grafana/grafana-oss:10.3.1
+    image: grafana/grafana-oss:10.3.1@sha256:7567a7c70a3c1d75aeeedc968d1304174a16651e55a60d1fb132a05e1e63a054
     depends_on:
       - prometheus
     volumes:
@@ -145,7 +145,7 @@ services:
       traefik.http.services.grafana.loadbalancer.server.port: 3000
       traefik.enable: true
   node-exporter:
-    image: prom/node-exporter:v1.7.0
+    image: prom/node-exporter:v1.7.0@sha256:4cb2b9019f1757be8482419002cb7afe028fdba35d47958829e4cfeaf6246d80
     command:
       - "--path.procfs=/host/proc"
       - "--path.rootfs=/rootfs"
@@ -162,7 +162,7 @@ services:
 # =================================== LDAP =================================== #
 # ============================================================================ #
   ldap:
-    image: osixia/openldap:1.5.0
+    image: osixia/openldap:1.5.0@sha256:18742e9c449c9c1afe129d3f2f3ee15fb34cc43e5f940a20f3399728f41d7c28
     networks:
       - ldap-backend
     environment:
@@ -178,7 +178,7 @@ services:
     restart: unless-stopped
 
   phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0
+    image: osixia/phpldapadmin:0.9.0@sha256:d112b82be1336f91e028b0348755133fda333992355b533419355a65c32ff9ad
     depends_on:
       - ldap
     environment:
@@ -198,7 +198,7 @@ services:
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
-    image: mariadb:11.2-jammy
+    image: mariadb:11.2-jammy@sha256:e9ea1dbab6783ff0281e41e3357d950a5f598b2033559b8443e03b181807910b
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
     volumes:
       - nextcloud-database:/var/lib/mysql
@@ -214,7 +214,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis:
-    image: redis:7.2-alpine3.18
+    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
     restart: unless-stopped
     env_file:
       - .env
@@ -222,7 +222,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:28.0-fpm-alpine
+    image: nextcloud:28.0-fpm-alpine@sha256:42b6879afcb8f3c5a161570dfce99f56fce0ea624f81f4fd884799e9e4d70b13
     depends_on:
       - nextcloud-database
       - nextcloud-redis
@@ -291,7 +291,7 @@ services:
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
   vpn:
-    image: dperson/openvpn-client
+    image: dperson/openvpn-client@sha256:d174047b57d51734143325ad7395210643025e6516ba60a937e9319dbb462293
     devices:
       - /dev/net/tun
     cap_add:
@@ -348,7 +348,7 @@ services:
     command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=${JOAL_PATH_PREFIX}", "--joal.ui.secret-token=${JOAL_SECRET_TOKEN}"]
 
   transmission:
-    image: linuxserver/transmission:4.0.5
+    image: linuxserver/transmission:4.0.5@sha256:c6a95f014f7ec812c9173be5a0afef4656e7c09be1c2d063786f42bdc3ee3d8a
     container_name: transmission
     environment:
       - PUID=1000
@@ -361,7 +361,7 @@ services:
     restart: unless-stopped
 
   flaresolverr:
-    image: flaresolverr/flaresolverr:v3.3.17
+    image: flaresolverr/flaresolverr:v3.3.17@sha256:5f5661db1e69a6f80ac24d47d9fa5580f6f741ee5ec967818396ae0dacecd7ea
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -371,7 +371,7 @@ services:
     restart: unless-stopped
 
   fleischel:
-    image: ghcr.io/valfur03/fleischel
+    image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
     networks:
       - seedbox-torrenting
     environment:
@@ -380,7 +380,7 @@ services:
     restart: unless-stopped
 
   jackett:
-    image: lscr.io/linuxserver/jackett:0.21.2415
+    image: lscr.io/linuxserver/jackett:0.21.2415@sha256:762e6d97aff05f5dec0a4b34fb20fc49b9eb76fef65528eda890cd11c92e0f16
     depends_on:
       - flaresolverr
     environment:
@@ -394,7 +394,7 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.1
+    image: lscr.io/linuxserver/sonarr:4.0.1@sha256:e097383307467ba9af18bd5694d52cde4fbba1ed14142e32cdfc6b330b0a0952
     environment:
       - PUID=0
       - PGID=0
@@ -416,7 +416,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:4.7.5
+    image: lscr.io/linuxserver/radarr:4.7.5@sha256:a7e8acff3f429351d2dfa1c887d751d13b8e974cd423841ed52be4203a4b1941
     environment:
       - PUID=0
       - PGID=0
@@ -437,7 +437,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   plex:
-    image: lscr.io/linuxserver/plex:1.32.8
+    image: lscr.io/linuxserver/plex:1.32.8@sha256:e495036368c2540e84ce8015209b6ee2fe9dc88f66849c9ffcc1dffb182ac8d7
     environment:
       PUID: 1000
       PGID: 1000
@@ -466,7 +466,7 @@ services:
 # =================================== S-PDF ================================== #
 # ============================================================================ #
   s-pdf:
-    image: frooodle/s-pdf:0.26.1
+    image: frooodle/s-pdf:0.26.1@sha256:a5a8c2df471a760596dc3b2701a60af755a6fd63c85c73fa52c199b08504d584
     networks:
       - proxy
     labels:
@@ -482,7 +482,7 @@ services:
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
   synapse-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     volumes:
       - synapse-database:/var/lib/postgresql/data
     networks:
@@ -514,7 +514,7 @@ services:
 #    restart: unless-stopped
 
   synapse-syncv3-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     volumes:
       - synapse-syncv3-database:/var/lib/postgresql/data
     networks:
@@ -552,7 +552,7 @@ services:
 # ================================== TRAEFIK ================================= #
 # ============================================================================ #
   socket-proxy:
-    image: tecnativa/docker-socket-proxy
+    image: tecnativa/docker-socket-proxy@sha256:083bd0ed8783e366d745f332f0e4489816dd35d984bef8f16e6d89484a22c082
     environment:
       CONTAINERS: 1
     volumes:
@@ -592,7 +592,7 @@ services:
 # ================================ VAULTWARDEN =============================== #
 # ============================================================================ #
   vaultwarden:
-    image: vaultwarden/server:1.30.5
+    image: vaultwarden/server:1.30.5@sha256:edb8e2bab9cbca22e555638294db9b3657ffbb6e5d149a29d7ccdb243e3c71e0
     environment:
       ADMIN_TOKEN_FILE: /run/secrets/VAULTWARDEN_ADMIN_TOKEN
       DOMAIN: "https://vault.${BASE_DOMAIN}"
@@ -643,7 +643,7 @@ services:
 # ================================= WIREGUARD ================================ #
 # ============================================================================ #
   adguard:
-    image: adguard/adguardhome:v0.107.44
+    image: adguard/adguardhome:v0.107.44@sha256:049ef6c019a629b33db2ef957665b257fbd5761970a1517a309807fb128befb1
     volumes:
       - adguard-work:/opt/adguardhome/work
       - adguard-conf:/opt/adguardhome/conf
@@ -659,7 +659,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   wireguard:
-    image: ghcr.io/wg-easy/wg-easy:13
+    image: ghcr.io/wg-easy/wg-easy:13@sha256:4c2c591498aa910ce86a90fa00c4714ffd78dd7556b1f488f226471b97346bc6
     depends_on:
       - reverse-proxy
     ports:
