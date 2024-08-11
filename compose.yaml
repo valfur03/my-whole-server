@@ -279,11 +279,11 @@ services:
       - proxy
       - traefik
     labels:
-      traefik.http.routers.otel-collector.rule: Host(`traces.${BASE_DOMAIN}`)
-      traefik.http.routers.otel-collector.tls: true
-      traefik.http.routers.otel-collector.tls.certresolver: letsencrypt
-      traefik.http.routers.otel-collector.middlewares: authelia@docker
-      traefik.http.services.otel-collector.loadbalancer.server.port: 16686
+      traefik.http.routers.jaeger.rule: Host(`traces.${BASE_DOMAIN}`)
+      traefik.http.routers.jaeger.tls: true
+      traefik.http.routers.jaeger.tls.certresolver: letsencrypt
+      traefik.http.routers.jaeger.middlewares: authelia@docker
+      traefik.http.services.jaeger.loadbalancer.server.port: 16686
       traefik.enable: true
     restart: unless-stopped
 
