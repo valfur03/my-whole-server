@@ -361,7 +361,7 @@ services:
     restart: unless-stopped
 
   flaresolverr:
-    image: flaresolverr/flaresolverr:v3.3.17
+    image: flaresolverr/flaresolverr:v3.3.21@sha256:f104ee51e5124d83cf3be9b37480649355d223f7d8f9e453d0d5ef06c6e3b31b
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
