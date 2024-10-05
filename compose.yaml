@@ -574,6 +574,8 @@ services:
     networks:
       - proxy
       - traefik
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
     volumes:
       - traefik-acme:/etc/traefik/acme
     labels:
