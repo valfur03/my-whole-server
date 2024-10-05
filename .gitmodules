@@ -1,3 +1,0 @@
-[submodule "borgmatic/docker-borgmatic"]
-	path = borgmatic/docker-borgmatic
-	url = git@github.com:borgmatic-collective/docker-borgmatic.git
