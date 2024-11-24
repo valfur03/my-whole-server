@@ -198,7 +198,7 @@ services:
 # ================================= NEXCTLOUD ================================ #
 # ============================================================================ #
   nextcloud-database:
-    image: mariadb:11.2-jammy
+    image: mariadb:11.3-jammy@sha256:e101f9db31916a5d4d7d594dd0dd092fb23ab4f499f1d7a7425d1afd4162c4bc
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
     volumes:
       - nextcloud-database:/var/lib/mysql
