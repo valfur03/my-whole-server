@@ -287,6 +287,23 @@ services:
       traefik.enable: true
     restart: unless-stopped
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    command: --config /etc/otelcol/otel-collector-config.yml
+    depends_on:
+      - jaeger
+    volumes:
+      - ./otel/collector/config.yml:/etc/otelcol/otel-collector-config.yml
+    networks:
+      - proxy
+      - seedbox-metrics
+    labels:
+      traefik.http.routers.jaeger-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
+      traefik.http.routers.jaeger-http-collector.tls: true
+      traefik.http.routers.jaeger-http-collector.tls.certresolver: letsencrypt
+      traefik.http.services.jaeger-http-collector.loadbalancer.server.port: 4318
+      traefik.enable: true
+
 # ============================================================================ #
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
