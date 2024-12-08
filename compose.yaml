@@ -277,6 +277,7 @@ services:
       - otel-data:/badger
     networks:
       - proxy
+      - seedbox-metrics
       - traefik
     labels:
       traefik.http.routers.jaeger.rule: Host(`traces.${BASE_DOMAIN}`)
