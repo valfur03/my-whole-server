@@ -74,7 +74,7 @@ services:
 # ================================= BORGMATIC ================================ #
 # ============================================================================ #
   borgmatic:
-    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12
+    image: ghcr.io/borgmatic-collective/borgmatic:1.9.4@sha256:4f3eb857d063f065ff7b8842d79b9ed2a41f8dfaee93878bdebcf716a1fd6904
     environment:
       BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
       CRON: "0 2 * * *"
