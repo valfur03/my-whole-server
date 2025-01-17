@@ -12,7 +12,7 @@ It is also possible to perform a manual backup on all repositories.
 docker compose exec borgmatic borgmatic --stats --list --verbosity 1
 ```
 
-> [!INFO]
+> [!NOTE]
 > The flags at the end of the command line are optional.
 
 See more at the [backup creation documentation](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#backups).
