@@ -302,6 +302,7 @@ services:
       traefik.http.routers.jaeger-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
       traefik.http.routers.jaeger-http-collector.tls: true
       traefik.http.routers.jaeger-http-collector.tls.certresolver: letsencrypt
+      traefik.http.routers.jaeger-http-collector.middlewares: authelia@docker
       traefik.http.services.jaeger-http-collector.loadbalancer.server.port: 4318
       traefik.enable: true
 
