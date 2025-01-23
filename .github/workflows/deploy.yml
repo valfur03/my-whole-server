@@ -10,8 +10,9 @@ on:
 
 jobs:
   deploy-to-prod:
-    environment: production
     runs-on: ubuntu-latest
+
+    secrets: inherit
 
     steps:
       - name: Checkout code
@@ -28,5 +29,3 @@ jobs:
             git fetch --all
             git checkout ${{ github.ref_name }}
             git rebase origin/${{ github.ref_name }}
-
-    secrets: inherit
