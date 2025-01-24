@@ -24,6 +24,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -eux
             cd ${{ secrets.PROD_SERVER_DEPLOY_DIR }}
             git stash push -m "automatic CI stash"
             git fetch --all
