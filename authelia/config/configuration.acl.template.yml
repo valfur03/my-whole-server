@@ -20,6 +20,14 @@ access_control:
     policy: bypass
   - domain: "home.${BASE_DOMAIN}"
     policy: deny
+  # Requires internal network for Vaultwarden Admin panel
+  - domain: "vault.${BASE_DOMAIN}"
+    networks:
+    - "internal"
+    - "${HOST_IP}"
+    policy: bypass
+  - domain: "vault.${BASE_DOMAIN}"
+    policy: deny
   # Requires One Factor authentication for all routes
   - domain: "*.${BASE_DOMAIN}"
     subject:
