@@ -643,7 +643,7 @@ services:
       traefik.http.routers.vaultwarden-ws.tls: true
       traefik.http.routers.vaultwarden-ws.tls.certresolver: letsencrypt
       traefik.http.services.vaultwarden-ws.loadbalancer.server.port: 3012
-      traefik.http.routers.vaultwarden-admin.rule: Host(`vault.${BASE_DOMAIN}`) && PathPrefix(`/admin/`)
+      traefik.http.routers.vaultwarden-admin.rule: Host(`vault.${BASE_DOMAIN}`) && (Path(`/admin`) || PathPrefix(`/admin/`))
       traefik.http.routers.vaultwarden-admin.service: vaultwarden
       traefik.http.routers.vaultwarden-admin.tls: true
       traefik.http.routers.vaultwarden-admin.tls.certresolver: letsencrypt
