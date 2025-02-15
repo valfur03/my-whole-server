@@ -367,7 +367,7 @@ services:
     command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=${JOAL_PATH_PREFIX}", "--joal.ui.secret-token=${JOAL_SECRET_TOKEN}"]
 
   transmission:
-    image: linuxserver/transmission:4.0.6@sha256:26692ddc7c32136a3ca0dae916b927f9f6feea8bb6ac74d3c225ee376336358b
+    image: linuxserver/transmission:4.0.6@sha256:847d4f49db97ad9f42683d432fd32b3e98f307e8fa520442840838e518698084
     container_name: transmission
     environment:
       - PUID=1000
