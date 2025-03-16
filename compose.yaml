@@ -748,6 +748,10 @@ networks:
   ldap-backend:
   metrics:
   proxy:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.47.0.0/16
   nextcloud-backend:
   seedbox-indexer:
   seedbox-metrics:
