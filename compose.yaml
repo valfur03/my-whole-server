@@ -222,7 +222,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:29.0-fpm-alpine@sha256:44f7837fcec2695ab2b1e0a39e15f7da3066dcf4830c3b312e272900e7351b26
+    image: nextcloud:29.0-fpm-alpine@sha256:d47f90faa38a0b7f6265cf9bb24eb1bbc429baa492238081bdb2a973b0c9fd6f
     depends_on:
       - nextcloud-database
       - nextcloud-redis
