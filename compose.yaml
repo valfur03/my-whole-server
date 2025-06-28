@@ -590,6 +590,10 @@ services:
       - 443:443
     environment:
       TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${SYSTEM_EMAIL}
+      OVH_APPLICATION_KEY: ${OVH_APPLICATION_KEY}
+      OVH_APPLICATION_SECRET: ${OVH_APPLICATION_SECRET}
+      OVH_CONSUMER_KEY: ${OVH_CONSUMER_KEY}
+      OVH_ENDPOINT: ${OVH_ENDPOINT}
     networks:
       - proxy
       - traefik
@@ -661,6 +665,8 @@ services:
     labels:
       traefik.http.routers.web.rule: Host(`${BASE_DOMAIN}`)
       traefik.http.routers.web.tls: true
+      traefik.http.routers.web.tls.domains[0].main: ${BASE_DOMAIN}
+      traefik.http.routers.web.tls.domains[0].sans: "*.${BASE_DOMAIN}"
       traefik.http.routers.web.tls.certresolver: letsencrypt
       traefik.enable: true
     restart: unless-stopped
