@@ -654,10 +654,42 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
+# ================================= VIDLVERY ================================= #
+# ============================================================================ #
+  vidlvery:
+    image: ghcr.io/valfur03/vidlvery:0.0.1-alpha.20
+    environment:
+      PUBLIC_DIRECTORY_PATH: /var/www/html
+      VIDEOS_BASE_URL: "https://${BASE_DOMAIN}/vid"
+      DISABLE_FFMPEG: false
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: 465
+      SMTP_SECURE: true
+      SMTP_FROM: "${VIDLVERY_SYSTEM_EMAIL_SENDER} <${VIDLVERY_SYSTEM_EMAIL}>"
+      SMTP_USER: ${SMTP_USERNAME}
+      SMTP_PASS_FILE: /run/secrets/SMTP_PASSWORD
+    volumes:
+      - vidlvery-public-directory:/var/www/html
+    networks:
+      - proxy
+    secrets:
+      - SMTP_PASSWORD
+    labels:
+      traefik.http.routers.vidlvery.rule: Host(`vid.${BASE_DOMAIN}`)
+      traefik.http.routers.vidlvery.tls: true
+      traefik.http.routers.vidlvery.tls.certresolver: letsencrypt
+      traefik.http.routers.vidlvery.middlewares: authelia@docker
+      traefik.http.services.vidlvery.loadbalancer.server.port: 3000
+      traefik.enable: true
+    restart: unless-stopped
+
+# ============================================================================ #
 # ==================================== WEB =================================== #
 # ============================================================================ #
   web:
     build: web
+    volumes:
+      - vidlvery-public-directory:/usr/share/nginx/html/vid
     networks:
       - proxy
     labels:
@@ -745,6 +777,7 @@ volumes:
   traefik-acme:
   transmission-config:
   vaultwarden-data:
+  vidlvery-public-directory:
   wireguard:
 
 networks:
