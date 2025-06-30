@@ -317,9 +317,6 @@ services:
       - NET_ADMIN
     volumes:
       - ./seedbox/openvpn:/vpn:ro
-    ports:
-      - 51413:51413/tcp
-      - 51413:51413/udp
     dns:
       - "8.8.8.8"
       - "8.8.4.4"
