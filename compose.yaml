@@ -356,7 +356,6 @@ services:
 
   joal:
     build: seedbox/joal
-    container_name: joal
     restart: unless-stopped
     network_mode: "service:vpn"
     volumes:
@@ -365,7 +364,6 @@ services:
 
   transmission:
     image: linuxserver/transmission:4.0.6@sha256:26692ddc7c32136a3ca0dae916b927f9f6feea8bb6ac74d3c225ee376336358b
-    container_name: transmission
     environment:
       - PUID=1000
       - PGID=1000
