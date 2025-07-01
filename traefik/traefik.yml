@@ -14,13 +14,6 @@ entryPoints:
   https:
     address: ":443"
 
-http:
-  middlewares:
-    authelia:
-      forwardAuth:
-        trustForwardHeader: true
-        authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
-
 certificatesResolvers:
   letsencrypt:
     acme:

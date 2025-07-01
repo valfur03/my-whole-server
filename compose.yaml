@@ -598,6 +598,9 @@ services:
       - traefik-acme:/etc/traefik/acme
     labels:
       traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
+      traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
+      traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
+
       traefik.http.middlewares.sonarr-auth-header.headers.customrequestheaders.Authorization: Basic ${SONARR_BASIC_AUTH_TOKEN}
       traefik.http.routers.traefik.rule: Host(`proxy.${BASE_DOMAIN}`)
       traefik.http.routers.traefik.tls: true
