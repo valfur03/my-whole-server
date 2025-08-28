@@ -4,7 +4,7 @@ services:
 # ================================ AUTHELIA ================================== #
 # ============================================================================ #
   authelia-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     restart: unless-stopped
     env_file:
       - .env
@@ -20,7 +20,7 @@ services:
       - AUTHELIA_STORAGE_PASSWORD
 
   authelia-redis:
-    image: redis:7.2-alpine3.18
+    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
     restart: unless-stopped
     networks:
       - authelia-backend
@@ -74,7 +74,7 @@ services:
 # ================================= BORGMATIC ================================ #
 # ============================================================================ #
   borgmatic:
-    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12
+    image: ghcr.io/borgmatic-collective/borgmatic:1.8.12@sha256:d681b0b7114b0d2c81e519a5ef01283f9db8eb33d690bc98b52b4089ebc94674
     environment:
       BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
       CRON: "0 2 * * *"
@@ -145,7 +145,7 @@ services:
       traefik.http.services.grafana.loadbalancer.server.port: 3000
       traefik.enable: true
   node-exporter:
-    image: prom/node-exporter:v1.7.0
+    image: prom/node-exporter:v1.7.0@sha256:4cb2b9019f1757be8482419002cb7afe028fdba35d47958829e4cfeaf6246d80
     command:
       - "--path.procfs=/host/proc"
       - "--path.rootfs=/rootfs"
@@ -162,7 +162,7 @@ services:
 # =================================== LDAP =================================== #
 # ============================================================================ #
   ldap:
-    image: osixia/openldap:1.5.0
+    image: osixia/openldap:1.5.0@sha256:18742e9c449c9c1afe129d3f2f3ee15fb34cc43e5f940a20f3399728f41d7c28
     networks:
       - ldap-backend
     environment:
@@ -178,7 +178,7 @@ services:
     restart: unless-stopped
 
   phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0
+    image: osixia/phpldapadmin:0.9.0@sha256:d112b82be1336f91e028b0348755133fda333992355b533419355a65c32ff9ad
     depends_on:
       - ldap
     environment:
@@ -214,7 +214,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis:
-    image: redis:7.2-alpine3.18
+    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
     restart: unless-stopped
     env_file:
       - .env
@@ -289,7 +289,7 @@ services:
     restart: unless-stopped
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.111.0
+    image: otel/opentelemetry-collector-contrib:0.111.0@sha256:a2a52e43c1a80aa94120ad78c2db68780eb90e6d11c8db5b3ce2f6a0cc6b5029
     command: --config /etc/otelcol/otel-collector-config.yml
     depends_on:
       - jaeger
@@ -310,7 +310,7 @@ services:
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
   vpn:
-    image: dperson/openvpn-client
+    image: dperson/openvpn-client@sha256:d174047b57d51734143325ad7395210643025e6516ba60a937e9319dbb462293
     devices:
       - /dev/net/tun
     cap_add:
@@ -380,7 +380,7 @@ services:
     restart: unless-stopped
 
   flaresolverr:
-    image: alexfozor/flaresolverr:pr-1300-experimental
+    image: alexfozor/flaresolverr:pr-1300-experimental@sha256:3e5e1335c31365b5b0d9a737097c6a719de0ba49fed7db65cd828d75ae1bbecb
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -390,7 +390,7 @@ services:
     restart: unless-stopped
 
   fleischel:
-    image: ghcr.io/valfur03/fleischel
+    image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
     networks:
       - seedbox-torrenting
     environment:
@@ -399,7 +399,7 @@ services:
     restart: unless-stopped
 
   jackett:
-    image: lscr.io/linuxserver/jackett:0.22.1283
+    image: lscr.io/linuxserver/jackett:0.22.1283@sha256:cea42e5019c72b8450b9acb0a2687c55e71da18b8822b6b0da00e590441baa20
     depends_on:
       - flaresolverr
     environment:
@@ -435,7 +435,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:4.7.5
+    image: lscr.io/linuxserver/radarr:4.7.5@sha256:a7e8acff3f429351d2dfa1c887d751d13b8e974cd423841ed52be4203a4b1941
     environment:
       - PUID=0
       - PGID=0
@@ -501,7 +501,7 @@ services:
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
   synapse-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     volumes:
       - synapse-database:/var/lib/postgresql/data
     networks:
@@ -533,7 +533,7 @@ services:
 #    restart: unless-stopped
 
   synapse-syncv3-database:
-    image: postgres:16.1-alpine3.17
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     volumes:
       - synapse-syncv3-database:/var/lib/postgresql/data
     networks:
@@ -571,7 +571,7 @@ services:
 # ================================== TRAEFIK ================================= #
 # ============================================================================ #
   socket-proxy:
-    image: tecnativa/docker-socket-proxy
+    image: tecnativa/docker-socket-proxy@sha256:44538370af9103858aa387860f355bed72e7f4e15380ef829b53ed4e154cedcd
     environment:
       CONTAINERS: 1
     volumes:
