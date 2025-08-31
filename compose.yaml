@@ -657,7 +657,7 @@ services:
 # ================================= VIDLVERY ================================= #
 # ============================================================================ #
   vidlvery:
-    image: ghcr.io/valfur03/vidlvery:0.0.1-alpha.20
+    image: ghcr.io/valfur03/vidlvery:0.0.1-alpha.20@sha256:556833950553ef57fdd20d82c3f5d6ac6d1e4fe5ca77a970db131df764a4adc8
     environment:
       PUBLIC_DIRECTORY_PATH: /var/www/html
       VIDEOS_BASE_URL: "https://${BASE_DOMAIN}/vid"
