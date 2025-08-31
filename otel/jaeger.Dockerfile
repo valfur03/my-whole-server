@@ -1,4 +1,4 @@
-FROM jaegertracing/all-in-one:1.58.0@sha256:1f6ee90a3f487dfd5e7430aaace16a83b55251d2c5493b14c1744d29f933fedd
+FROM jaegertracing/all-in-one:1.72.0@sha256:144b7028db6045b28b50c4728dd3bea14fa76ab024b64afeccec51c8cb1edd63
 
 USER root
 RUN set -eux; \
