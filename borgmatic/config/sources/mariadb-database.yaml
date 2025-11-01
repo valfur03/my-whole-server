@@ -2,3 +2,4 @@
   hostname: "{mariadb_host}"
   username: "{mariadb_user}"
   password: "{mariadb_pass}"
+  options: --skip-ssl
