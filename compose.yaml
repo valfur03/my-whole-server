@@ -480,7 +480,7 @@ services:
 # =================================== S-PDF ================================== #
 # ============================================================================ #
   s-pdf:
-    image: frooodle/s-pdf:0.41.0@sha256:a570b6f6522d49fbef616e4fef97f7aff35ce046daee16de4e2fa4699a042d33
+    image: frooodle/s-pdf:0.46.2@sha256:396ca949b81198a65b9abfec38518fa44e871b1970dad9f9718ffd030eef9b92
     networks:
       - proxy
     labels:
