@@ -451,7 +451,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   plex:
-    image: lscr.io/linuxserver/plex:1.41.3@sha256:ec54f85c19b3575c63929c260a0d8c360d57d41f3597ac9184cb134b6c634137
+    image: lscr.io/linuxserver/plex:1.42.2@sha256:1720efa8e919a724ff3003cce7c1c0ae91a54e097ca3c8f6713a780c6fd73432
     environment:
       PUID: 1000
       PGID: 1000
