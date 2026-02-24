@@ -615,7 +615,7 @@ services:
 # ================================ VAULTWARDEN =============================== #
 # ============================================================================ #
   vaultwarden:
-    image: vaultwarden/server:1.33.0@sha256:e81ca01351ecf40083366202b163e7a31abca04d96e2194e9e1f78a57052f65c
+    image: vaultwarden/server:1.35.4@sha256:43498a94b22f9563f2a94b53760ab3e710eefc0d0cac2efda4b12b9eb8690664
     environment:
       ADMIN_TOKEN_FILE: /run/secrets/VAULTWARDEN_ADMIN_TOKEN
       DOMAIN: "https://vault.${BASE_DOMAIN}"
