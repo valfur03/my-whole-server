@@ -378,7 +378,7 @@ services:
       - TZ=Europe/Paris
     network_mode: "service:vpn"
     volumes:
-     - /data/torrent:/downloads
+     - /data:/data
      - transmission-config:/config
     restart: unless-stopped
 
@@ -483,6 +483,19 @@ services:
       - seedbox-metrics
     environment:
       TRANSMISSION_ADDR: http://vpn:9091
+
+  cross-seed:
+    image: ghcr.io/cross-seed/cross-seed:6.13.7@sha256:9555dc70f6753fef32d54bfc1ff504899377a6a0b73687f95d58fa27dfa0a7c7
+    command: daemon
+    user: 1000:1000
+    volumes:
+      # TODO configuration is generated at runtime
+      - cross-seed-config:/config
+      - /data:/data
+    networks:
+      - seedbox-indexer
+      - seedbox-torrenting
+    restart: unless-stopped
 
 # ============================================================================ #
 # =================================== S-PDF ================================== #
@@ -808,6 +821,7 @@ volumes:
   authelia-database:
   borg-cache:
   borg-config:
+  cross-seed-config:
   doco-cd-data:
   grafana-data:
   nextcloud-data:
