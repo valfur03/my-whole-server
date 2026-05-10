@@ -1,0 +1,7 @@
+name: my-whole-server
+reference: refs/heads/master
+env_files:
+  - .sops.env
+build:
+  force_image_pull: false
+webhook_filter: ^refs/heads/master$

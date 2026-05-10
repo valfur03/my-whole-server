@@ -1,5 +1,11 @@
 .env
-envs/
+.env.local
+borgmatic/envs/borgbase
+borgmatic/envs/databases
+
+sops_age_key*
+*.age
+
 secrets/
 
 authelia/config/users.yml
