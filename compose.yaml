@@ -80,8 +80,8 @@ services:
       CRON: "0 2 * * *"
       TZ: Europe/Paris
     env_file:
-      - ./borgmatic/envs/databases
-      - ./borgmatic/envs/borgbase
+      - ./borgmatic/envs/databases.env
+      - ./borgmatic/envs/borgbase.env
     volumes:
       - borg-config:/root/.config/borg
       - borg-cache:/root/.cache/borg
@@ -107,7 +107,15 @@ services:
       - BORGMATIC_ENCRYPTION_PASSPHRASE
       - LDAP_ADMIN_PASSWORD
       - NEXTCLOUD_STORAGE_PASSWORD
+      - SMTP_PASSWORD
       - SYNAPSE_STORAGE_PASSWORD
+      - VAULTWARDEN_ADMIN_TOKEN
+      - OVH_APPLICATION_KEY
+      - OVH_APPLICATION_SECRET
+      - OVH_CONSUMER_KEY
+      - DOCO_CD_GIT_ACCESS_TOKEN
+      - DOCO_CD_WEBHOOK_SECRET
+      - DOCO_CD_SOPS_AGE_KEY
     restart: unless-stopped
 # ============================================================================ #
 # ================================== GRAFANA ================================= #
@@ -585,9 +593,9 @@ services:
       - 443:443
     environment:
       TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${SYSTEM_EMAIL}
-      OVH_APPLICATION_KEY: ${OVH_APPLICATION_KEY}
-      OVH_APPLICATION_SECRET: ${OVH_APPLICATION_SECRET}
-      OVH_CONSUMER_KEY: ${OVH_CONSUMER_KEY}
+      OVH_APPLICATION_KEY_FILE: /run/secrets/OVH_APPLICATION_KEY
+      OVH_APPLICATION_SECRET_FILE: /run/secrets/OVH_APPLICATION_SECRET
+      OVH_CONSUMER_KEY_FILE: /run/secrets/OVH_CONSUMER_KEY
       OVH_ENDPOINT: ${OVH_ENDPOINT}
     networks:
       - proxy
@@ -596,6 +604,10 @@ services:
       - host.docker.internal:172.17.0.1
     volumes:
       - traefik-acme:/etc/traefik/acme
+    secrets:
+      - OVH_APPLICATION_KEY
+      - OVH_APPLICATION_SECRET
+      - OVH_CONSUMER_KEY
     labels:
       traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
       traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
@@ -702,6 +714,44 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
+# ================================== DOCO-CD ================================= #
+# ============================================================================ #
+  doco-cd:
+    image: ghcr.io/kimdre/doco-cd:0.85.1@sha256:2f4650dfcd25c17d7c6b274a47b1e205d8408e3ee12a33aa3a2459b4604757ef
+    depends_on:
+      - reverse-proxy
+    environment:
+      TZ: Europe/Paris
+      LOG_LEVEL: INFO
+      GIT_ACCESS_TOKEN_FILE: /run/secrets/DOCO_CD_GIT_ACCESS_TOKEN
+      WEBHOOK_SECRET_FILE: /run/secrets/DOCO_CD_WEBHOOK_SECRET
+      SOPS_AGE_KEY_FILE: /run/secrets/DOCO_CD_SOPS_AGE_KEY
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - doco-cd-data:/data
+    networks:
+      - proxy
+    secrets:
+      - DOCO_CD_GIT_ACCESS_TOKEN
+      - DOCO_CD_WEBHOOK_SECRET
+      - DOCO_CD_SOPS_AGE_KEY
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/doco-cd", "healthcheck"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      traefik.http.routers.doco-cd.rule: Host(`cd.${BASE_DOMAIN}`) && Path(`/v1/webhook`)
+      traefik.http.routers.doco-cd.tls: true
+      traefik.http.routers.doco-cd.tls.certresolver: letsencrypt
+      traefik.http.services.doco-cd.loadbalancer.server.port: 80
+      traefik.enable: true
+    restart: unless-stopped
+
+# ============================================================================ #
 # ================================= WIREGUARD ================================ #
 # ============================================================================ #
   adguard:
@@ -758,6 +808,7 @@ volumes:
   authelia-database:
   borg-cache:
   borg-config:
+  doco-cd-data:
   grafana-data:
   nextcloud-data:
   nextcloud-database:
@@ -808,22 +859,34 @@ networks:
 
 secrets:
   AUTHELIA_JWT_SECRET:
-    file: ./authelia/secrets/JWT_SECRET
+    file: ${SECRETS_DIR:-./}authelia/secrets/JWT_SECRET
   AUTHELIA_SESSION_SECRET:
-    file: ./authelia/secrets/SESSION_SECRET
+    file: ${SECRETS_DIR:-./}authelia/secrets/SESSION_SECRET
   AUTHELIA_STORAGE_PASSWORD:
-    file: ./authelia/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
-    file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+    file: ${SECRETS_DIR:-./}authelia/secrets/STORAGE_ENCRYPTION_KEY
   BORGMATIC_ENCRYPTION_PASSPHRASE:
-    file: ./borgmatic/secrets/ENCRYPTION_PASSPHRASE
+    file: ${SECRETS_DIR:-./}borgmatic/secrets/ENCRYPTION_PASSPHRASE
   LDAP_ADMIN_PASSWORD:
-    file: ./ldap/secrets/ADMIN_PASSWORD
+    file: ${SECRETS_DIR:-./}ldap/secrets/ADMIN_PASSWORD
   NEXTCLOUD_STORAGE_PASSWORD:
-    file: ./nextcloud/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
-    file: ./secrets/SMTP_PASSWORD
+    file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
   SYNAPSE_STORAGE_PASSWORD:
-    file: ./synapse/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
-    file: ./vaultwarden/secrets/ADMIN_TOKEN
+    file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
+  OVH_APPLICATION_KEY:
+    file: ${SECRETS_DIR:-./}ovh/secrets/APPLICATION_KEY
+  OVH_APPLICATION_SECRET:
+    file: ${SECRETS_DIR:-./}ovh/secrets/APPLICATION_SECRET
+  OVH_CONSUMER_KEY:
+    file: ${SECRETS_DIR:-./}ovh/secrets/CONSUMER_KEY
+  DOCO_CD_GIT_ACCESS_TOKEN:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/GIT_ACCESS_TOKEN
+  DOCO_CD_WEBHOOK_SECRET:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/WEBHOOK_SECRET
+  DOCO_CD_SOPS_AGE_KEY:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY

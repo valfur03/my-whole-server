@@ -62,8 +62,16 @@ We have to follow these steps:
    ```
 3. Populate our secrets in our host directory
    ```shell
+   # On the prod host with doco-cd:
+   ./scripts/distribute_secrets.sh .tmp_secrets /etc/my-whole-server
+
+   # Or for a local-dev layout:
    ./scripts/distribute_secrets.sh .tmp_secrets
    ```
+
+### How to restore the SOPS age key
+
+The key is included in the secrets archive (under `DOCO_CD_SOPS_AGE_KEY`) and `distribute_secrets.sh` places it at `/etc/my-whole-server/doco-cd/secrets/SOPS_AGE_KEY`. Compose mounts that file into the doco-cd container as the `DOCO_CD_SOPS_AGE_KEY` Docker secret, where doco-cd reads it via `SOPS_AGE_KEY_FILE`.
 
 ## Troubleshooting
 

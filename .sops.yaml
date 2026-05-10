@@ -1,0 +1,5 @@
+creation_rules:
+  - path_regex: \.sops\.env
+    age: age1y3kdeaxh5ttpng9myt0xu5e8p0xvxkle6n984cu8ykd8vrj0j35qrp7fvl
+  - path_regex: borgmatic/envs/.*\.env
+    age: age1y3kdeaxh5ttpng9myt0xu5e8p0xvxkle6n984cu8ykd8vrj0j35qrp7fvl
