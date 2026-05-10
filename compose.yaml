@@ -80,8 +80,8 @@ services:
       CRON: "0 2 * * *"
       TZ: Europe/Paris
     env_file:
-      - ./borgmatic/envs/databases
-      - ./borgmatic/envs/borgbase
+      - ./borgmatic/envs/databases.env
+      - ./borgmatic/envs/borgbase.env
     volumes:
       - borg-config:/root/.config/borg
       - borg-cache:/root/.cache/borg
@@ -100,6 +100,9 @@ services:
       - nextcloud-backend
       - synapse-backend
     secrets:
+      # Mounted at /run/secrets/<NAME> and backed up by borgmatic/config/secrets.yaml
+      # (which archives the whole /run/secrets directory). Add any new top-level
+      # secret here that you want preserved in the off-site backup.
       - AUTHELIA_JWT_SECRET
       - AUTHELIA_SESSION_SECRET
       - AUTHELIA_STORAGE_ENCRYPTION_KEY
@@ -107,7 +110,15 @@ services:
       - BORGMATIC_ENCRYPTION_PASSPHRASE
       - LDAP_ADMIN_PASSWORD
       - NEXTCLOUD_STORAGE_PASSWORD
+      - SMTP_PASSWORD
       - SYNAPSE_STORAGE_PASSWORD
+      - VAULTWARDEN_ADMIN_TOKEN
+      - OVH_APPLICATION_KEY
+      - OVH_APPLICATION_SECRET
+      - OVH_CONSUMER_KEY
+      - DOCO_CD_GIT_ACCESS_TOKEN
+      - DOCO_CD_WEBHOOK_SECRET
+      - DOCO_CD_SOPS_AGE_KEY
     restart: unless-stopped
 # ============================================================================ #
 # ================================== GRAFANA ================================= #
@@ -585,9 +596,9 @@ services:
       - 443:443
     environment:
       TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${SYSTEM_EMAIL}
-      OVH_APPLICATION_KEY: ${OVH_APPLICATION_KEY}
-      OVH_APPLICATION_SECRET: ${OVH_APPLICATION_SECRET}
-      OVH_CONSUMER_KEY: ${OVH_CONSUMER_KEY}
+      OVH_APPLICATION_KEY_FILE: /run/secrets/OVH_APPLICATION_KEY
+      OVH_APPLICATION_SECRET_FILE: /run/secrets/OVH_APPLICATION_SECRET
+      OVH_CONSUMER_KEY_FILE: /run/secrets/OVH_CONSUMER_KEY
       OVH_ENDPOINT: ${OVH_ENDPOINT}
     networks:
       - proxy
@@ -596,6 +607,10 @@ services:
       - host.docker.internal:172.17.0.1
     volumes:
       - traefik-acme:/etc/traefik/acme
+    secrets:
+      - OVH_APPLICATION_KEY
+      - OVH_APPLICATION_SECRET
+      - OVH_CONSUMER_KEY
     labels:
       traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
       traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
@@ -698,6 +713,61 @@ services:
       traefik.http.routers.web.tls.domains[0].main: ${BASE_DOMAIN}
       traefik.http.routers.web.tls.domains[0].sans: "*.${BASE_DOMAIN}"
       traefik.http.routers.web.tls.certresolver: letsencrypt
+      traefik.enable: true
+    restart: unless-stopped
+
+# ============================================================================ #
+# ================================== DOCO-CD ================================= #
+# ============================================================================ #
+# GitOps deploy daemon. Listens for GitHub webhooks at
+# https://cd.${BASE_DOMAIN}/v1/webhook (HMAC-secured via DOCO_CD_WEBHOOK_SECRET)
+# and runs `docker compose up -d --build` from a fresh clone of this repo.
+#
+# Notes:
+# - Uses the raw Docker socket (not socket-proxy): doco-cd needs to build images,
+#   create networks, manage volumes — socket-proxy's CONTAINERS:1 scope is too
+#   narrow.
+# - /data:/data is a bind mount with matching paths inside and out so compose-go's
+#   relative-path resolution (build contexts, secrets file refs, ./xxx bind
+#   mounts in the deployed compose.yaml) produces paths the host Docker daemon
+#   can find. A named volume here would silently break those.
+# - Only /v1/webhook is publicly exposed via Traefik. The rest of the app's HTTP
+#   surface (/v1/health, REST API, :9120 metrics) stays on the proxy network.
+  doco-cd:
+    image: ghcr.io/kimdre/doco-cd:0.85.1@sha256:2f4650dfcd25c17d7c6b274a47b1e205d8408e3ee12a33aa3a2459b4604757ef
+    depends_on:
+      - reverse-proxy
+    environment:
+      TZ: Europe/Paris
+      LOG_LEVEL: INFO
+      GIT_ACCESS_TOKEN_FILE: /run/secrets/DOCO_CD_GIT_ACCESS_TOKEN
+      WEBHOOK_SECRET_FILE: /run/secrets/DOCO_CD_WEBHOOK_SECRET
+      SOPS_AGE_KEY_FILE: /run/secrets/DOCO_CD_SOPS_AGE_KEY
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data:/data
+    networks:
+      - proxy
+    expose:
+      - 80
+      - 9120
+    secrets:
+      - DOCO_CD_GIT_ACCESS_TOKEN
+      - DOCO_CD_WEBHOOK_SECRET
+      - DOCO_CD_SOPS_AGE_KEY
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/doco-cd", "healthcheck"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      traefik.http.routers.doco-cd.rule: Host(`cd.${BASE_DOMAIN}`) && Path(`/v1/webhook`)
+      traefik.http.routers.doco-cd.tls: true
+      traefik.http.routers.doco-cd.tls.certresolver: letsencrypt
+      traefik.http.services.doco-cd.loadbalancer.server.port: 80
       traefik.enable: true
     restart: unless-stopped
 
@@ -807,23 +877,45 @@ networks:
         - subnet: 10.8.1.0/24
 
 secrets:
+  # All paths are prefixed with ${SECRETS_DIR:-./} so the same compose.yaml works
+  # in two modes:
+  #   - Local/dev:  SECRETS_DIR unset → falls back to "./" → repo-relative paths
+  #                 (the layout `scripts/distribute_secrets.sh` produces by default).
+  #   - doco-cd/prod: SECRETS_DIR=/etc/my-whole-server/ → host-managed dir, never
+  #                   in git, survives doco-cd's `git reset --hard` clones.
+  # See docs/backups.md for the host-side layout.
   AUTHELIA_JWT_SECRET:
-    file: ./authelia/secrets/JWT_SECRET
+    file: ${SECRETS_DIR:-./}authelia/secrets/JWT_SECRET
   AUTHELIA_SESSION_SECRET:
-    file: ./authelia/secrets/SESSION_SECRET
+    file: ${SECRETS_DIR:-./}authelia/secrets/SESSION_SECRET
   AUTHELIA_STORAGE_PASSWORD:
-    file: ./authelia/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}authelia/secrets/STORAGE_PASSWORD
   AUTHELIA_STORAGE_ENCRYPTION_KEY:
-    file: ./authelia/secrets/STORAGE_ENCRYPTION_KEY
+    file: ${SECRETS_DIR:-./}authelia/secrets/STORAGE_ENCRYPTION_KEY
   BORGMATIC_ENCRYPTION_PASSPHRASE:
-    file: ./borgmatic/secrets/ENCRYPTION_PASSPHRASE
+    file: ${SECRETS_DIR:-./}borgmatic/secrets/ENCRYPTION_PASSPHRASE
   LDAP_ADMIN_PASSWORD:
-    file: ./ldap/secrets/ADMIN_PASSWORD
+    file: ${SECRETS_DIR:-./}ldap/secrets/ADMIN_PASSWORD
   NEXTCLOUD_STORAGE_PASSWORD:
-    file: ./nextcloud/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
-    file: ./secrets/SMTP_PASSWORD
+    file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
   SYNAPSE_STORAGE_PASSWORD:
-    file: ./synapse/secrets/STORAGE_PASSWORD
+    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
-    file: ./vaultwarden/secrets/ADMIN_TOKEN
+    file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
+  # Promoted out of .env to keep them off a public-repo's `.env.sops`.
+  OVH_APPLICATION_KEY:
+    file: ${SECRETS_DIR:-./}ovh/secrets/APPLICATION_KEY
+  OVH_APPLICATION_SECRET:
+    file: ${SECRETS_DIR:-./}ovh/secrets/APPLICATION_SECRET
+  OVH_CONSUMER_KEY:
+    file: ${SECRETS_DIR:-./}ovh/secrets/CONSUMER_KEY
+  # doco-cd bootstrap. These must exist on the host before doco-cd can fetch the
+  # repo or decrypt anything, so they are always host-managed.
+  DOCO_CD_GIT_ACCESS_TOKEN:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/GIT_ACCESS_TOKEN
+  DOCO_CD_WEBHOOK_SECRET:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/WEBHOOK_SECRET
+  DOCO_CD_SOPS_AGE_KEY:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY

@@ -49,6 +49,9 @@ Here are the possible repository values:
 > The `BORGMATIC_ENCRYPTION_PASSPHRASE` is still needed,
 > so hopefully you have backed it up somewhere else.
 
+> [!IMPORTANT]
+> Before doco-cd: secrets lived under `<repo>/<service>/secrets/<NAME>` and `distribute_secrets.sh` (no second arg) restored them there. With doco-cd, secrets live under `/etc/my-whole-server/<service>/secrets/<NAME>` on the host and the distribution script needs the dest root passed explicitly.
+
 We have to follow these steps:
 
 1. Extract the secrets from our repo
@@ -62,8 +65,27 @@ We have to follow these steps:
    ```
 3. Populate our secrets in our host directory
    ```shell
+   # On the prod host with doco-cd:
+   ./scripts/distribute_secrets.sh .tmp_secrets /etc/my-whole-server
+
+   # Or for a local-dev layout (legacy / no doco-cd):
    ./scripts/distribute_secrets.sh .tmp_secrets
    ```
+
+### How to restore the SOPS age key
+
+The age private key encrypts `.env.sops` and `borgmatic/envs/*.env`. Without it, the deployed stack cannot read its compose-interpolation env. The key is included in the secrets archive (under `DOCO_CD_SOPS_AGE_KEY`) and `distribute_secrets.sh` places it at `/etc/my-whole-server/doco-cd/secrets/SOPS_AGE_KEY`. Compose mounts that file into the doco-cd container as the `DOCO_CD_SOPS_AGE_KEY` Docker secret, where doco-cd reads it via `SOPS_AGE_KEY_FILE`.
+
+> [!IMPORTANT]
+> Treat the age key like the `BORGMATIC_ENCRYPTION_PASSPHRASE`: keep an offline copy outside this backup chain. If you lose both the live host and this archive's age key, the encrypted `.env.sops` in the public repo becomes unrecoverable.
+
+### Disaster-recovery order
+
+1. Restore `BORGMATIC_ENCRYPTION_PASSPHRASE` from your offline copy. Without it, no other archive opens.
+2. On a fresh host: install Docker + Compose, clone this repo into `/data/my-whole-server`, set `SECRETS_DIR=/etc/my-whole-server/` and the prerequisite system secrets (at minimum, the borg passphrase + age key) so `borgmatic` can come up.
+3. Bring borgmatic up alone (`docker compose up -d borgmatic`), extract the secrets archive, run `distribute_secrets.sh .tmp_secrets /etc/my-whole-server`.
+4. Restore database archives, then per-service data volumes.
+5. `docker compose up -d` for the rest of the stack. doco-cd takes over from there.
 
 ## Troubleshooting
 

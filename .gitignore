@@ -1,5 +1,17 @@
+# Plaintext env files — never commit. The encrypted .env.sops at the repo
+# root and borgmatic/envs/*.env are committed (SOPS-encrypted, see .sops.yaml).
 .env
-envs/
+.env.local
+borgmatic/envs/borgbase
+borgmatic/envs/databases
+
+# Age private key — if this leaks, every secret in git history is decryptable.
+sops_age_key*
+*.age
+
+# Per-service secret directories (legacy local-dev layout produced by
+# scripts/distribute_secrets.sh with no destination override). On the prod host
+# these live under /etc/my-whole-server/ instead and never enter the repo clone.
 secrets/
 
 authelia/config/users.yml

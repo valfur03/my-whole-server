@@ -1,0 +1,20 @@
+# SOPS encryption rules.
+#
+# Replace <AGE_PUBLIC_KEY> with the public key produced by `age-keygen`. The
+# matching private key lives at `/etc/my-whole-server/doco-cd/secrets/SOPS_AGE_KEY`
+# on the prod host (and is mounted into doco-cd as the SOPS_AGE_KEY Docker
+# secret). Never commit the private key.
+#
+# What gets encrypted:
+#   - `.env.sops`             — Compose interpolation vars (BASE_DOMAIN, HOST_IP,
+#                                SMTP_*, SECRETS_DIR, …). Decrypted by doco-cd at
+#                                deploy time via .doco-cd.yaml's env_files.
+#   - `borgmatic/envs/*.env`  — Borgmatic env files (database creds, BORGBASE_*
+#                                repo IDs). Decrypted by doco-cd because compose.yaml
+#                                references them via `env_file:` on the borgmatic
+#                                service — doco-cd's SOPS auto-decrypt covers that.
+creation_rules:
+  - path_regex: \.env\.sops$
+    age: <AGE_PUBLIC_KEY>
+  - path_regex: borgmatic/envs/.*\.env$
+    age: <AGE_PUBLIC_KEY>
