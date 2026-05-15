@@ -6,8 +6,6 @@ services:
   authelia-database:
     image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       POSTGRES_DB: authelia
       POSTGRES_USER: authelia
@@ -224,8 +222,6 @@ services:
   nextcloud-redis:
     image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
     restart: unless-stopped
-    env_file:
-      - .env
     networks:
       - nextcloud-backend
 
@@ -795,8 +791,6 @@ services:
     sysctls:
       net.ipv4.conf.all.src_valid_mark: 1
       net.ipv4.ip_forward: 1
-    env_file:
-      - .env
     environment:
       WG_HOST: "${HOST_IP}"
       WG_DEFAULT_DNS: "10.8.1.3"
