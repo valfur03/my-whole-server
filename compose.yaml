@@ -402,7 +402,7 @@ services:
     restart: unless-stopped
 
   jackett:
-    image: lscr.io/linuxserver/jackett:0.22.1830@sha256:75db3257ae4b6c30d87a274488b4c8301ffd856039be2d51cb585e92fd3a2885
+    image: lscr.io/linuxserver/jackett:0.24.1440@sha256:cdea5d3209a6ab1fb8eb954ec0b8169b7d54274617f42bf5c74f22a92075755f
     depends_on:
       - flaresolverr
     environment:
