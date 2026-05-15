@@ -80,8 +80,8 @@ services:
       CRON: "0 2 * * *"
       TZ: Europe/Paris
     env_file:
-      - ./borgmatic/envs/databases.env
-      - ./borgmatic/envs/borgbase.env
+      - ./borgmatic/envs/databases.sops.env
+      - ./borgmatic/envs/borgbase.sops.env
     volumes:
       - borg-config:/root/.config/borg
       - borg-cache:/root/.cache/borg

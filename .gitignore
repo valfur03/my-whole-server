@@ -1,7 +1,7 @@
 .env
 .env.local
-borgmatic/envs/borgbase
-borgmatic/envs/databases
+borgmatic/envs/borgbase.env
+borgmatic/envs/databases.env
 
 sops_age_key*
 *.age
