@@ -1,0 +1,184 @@
+{
+  "uid": "ingress-traefik",
+  "title": "20-Ingress — Traefik (Loki)",
+  "tags": ["homelab", "ingress", "traefik", "transitional"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "router_regex",
+        "type": "textbox",
+        "label": "Router (regex)",
+        "query": ".*",
+        "current": { "selected": false, "text": ".*", "value": ".*" }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
+        "target": { "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"", "refId": "Anno" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 300,
+      "type": "row",
+      "title": "Loki-only — until metrics.prometheus is enabled in traefik.yml",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Recent log volume (5 m)",
+      "description": "Lines/sec from the reverse-proxy container. Background hum if accessLog is on; near-zero otherwise.",
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate({compose_service=\"reverse-proxy\"}[5m]))" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "logs/sec", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Error lines (5 m)",
+      "description": "Lines matching `error|panic|fatal` from Traefik.",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"(?i)error|panic|fatal\" [5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 10 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "5xx (5 m)",
+      "description": "Access-log lines whose status code is 5xx. Requires `accessLog:` enabled in traefik.yml. Will collapse to 0 if accessLog is off.",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"\\\" 5[0-9]{2} \" [5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 25 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "4xx (5 m)",
+      "description": "Client-side errors. High values often signal scanning or misconfigured clients.",
+      "gridPos": { "x": 18, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"\\\" 4[0-9]{2} \" [5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "orange", "value": 100 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Request rate (from access log)",
+      "description": "Lines/sec from the reverse-proxy container, grouped by stream (stdout/stderr). Once accessLog is enabled in traefik.yml, this becomes a per-request count.",
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 7 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (stream) (rate({compose_service=\"reverse-proxy\"}[$__interval]))", "legendFormat": "{{stream}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "logs/sec",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Status-class breakdown",
+      "description": "Stacked rates of 2xx / 3xx / 4xx / 5xx parsed from access logs. Requires `accessLog: { format: common }` (default Common Log Format).",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 7 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A2", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 2[0-9]{2} \" [$__interval]))", "legendFormat": "2xx" },
+        { "refId": "A3", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 3[0-9]{2} \" [$__interval]))", "legendFormat": "3xx" },
+        { "refId": "A4", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 4[0-9]{2} \" [$__interval]))", "legendFormat": "4xx" },
+        { "refId": "A5", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 5[0-9]{2} \" [$__interval]))", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 50, "showPoints": "never", "stacking": { "mode": "normal" } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "2xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "3xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "4xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "5xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "Live log — reverse-proxy",
+      "description": "Live tail of the Traefik container.",
+      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 12 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "refId": "A", "expr": "{compose_service=\"reverse-proxy\"} |~ \"$router_regex\"" }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}

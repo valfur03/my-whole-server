@@ -1,0 +1,666 @@
+{
+  "uid": "host-overview",
+  "title": "10-Infra — Host overview",
+  "tags": ["homelab", "infra", "host"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
+        "target": {
+          "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
+          "refId": "Anno"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "CPU %",
+      "description": "Total CPU utilisation across all cores. Green < 60%, orange 60–85%, red beyond. Sustained red means CPU saturation.",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "cpu"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "RAM %",
+      "description": "Memory used as a percentage of total. Green < 75%, orange 75–90%, red beyond. Linux uses free RAM for cache, so 'used' here is total minus MemAvailable (the kernel's own estimate of what's reclaimable).",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+          "legendFormat": "ram"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 75 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Swap used",
+      "description": "Any swap usage on a homelab is a real signal — the kernel only swaps under memory pressure. Green at zero, orange any non-zero, red > 100 MB.",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes",
+          "legendFormat": "swap"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 104857600 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Temperature",
+      "description": "Max sensor reading across all hwmon zones (CPU, board, NVMe). Green < 65 °C, orange 65–80 °C, red beyond. Empty on hosts without lm-sensors / hwmon.",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(node_hwmon_temp_celsius)",
+          "legendFormat": "temp"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 65 },
+              { "color": "red", "value": 80 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Load 1m / core",
+      "description": "1-minute load average divided by core count. Stable threshold regardless of host. Green < 0.7, orange 0.7–1.0, red > 1.0 (run-queue longer than the CPU can keep up with).",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "node_load1 / count(node_cpu_seconds_total{mode=\"idle\"}) by (instance)",
+          "legendFormat": "load"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.7 },
+              { "color": "red", "value": 1.0 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Uptime",
+      "description": "Time since last boot.",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - node_boot_time_seconds",
+          "legendFormat": "uptime"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Network — totals & rate",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 1 }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Received (24 h)",
+      "description": "Bytes received on real interfaces in the last 24 h (loopback, docker bridges, vethX, br-* excluded). Rolling window, not calendar day.",
+      "gridPos": { "x": 0, "y": 5, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(node_network_receive_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[24h]))",
+          "legendFormat": "rx 24h"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Transmitted (24 h)",
+      "description": "Bytes sent on real interfaces in the last 24 h. Same filter as rx.",
+      "gridPos": { "x": 6, "y": 5, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(node_network_transmit_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[24h]))",
+          "legendFormat": "tx 24h"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Received (30 d)",
+      "description": "Bytes received over the trailing 30 days. ISP-cap sanity check.",
+      "gridPos": { "x": 12, "y": 5, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(node_network_receive_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[30d]))",
+          "legendFormat": "rx 30d"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Transmitted (30 d)",
+      "description": "Bytes transmitted over the trailing 30 days.",
+      "gridPos": { "x": 18, "y": 5, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(node_network_transmit_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[30d]))",
+          "legendFormat": "tx 30d"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Network rate",
+      "description": "Current rx/tx bytes per second on real interfaces. Spot 'pipe pegged right now'.",
+      "gridPos": { "x": 0, "y": 9, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(node_network_receive_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[$__rate_interval]))",
+          "legendFormat": "rx"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(node_network_transmit_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[$__rate_interval]))",
+          "legendFormat": "tx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "Disk — per mount",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 1 }
+    },
+    {
+      "id": 14,
+      "type": "bargauge",
+      "title": "Fill % per mount",
+      "description": "Real filesystems only (tmpfs, overlay, docker, snap, /run, /proc, /sys excluded). LVM logical volumes appear here as ordinary mountpoints. Green < 70%, orange 70–90%, red beyond.",
+      "gridPos": { "x": 0, "y": 17, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 - 100 * (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"})",
+          "legendFormat": "{{mountpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 70 },
+              { "color": "red", "value": 90 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      }
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Used / free / total per mount",
+      "description": "Same mount filter as the bar gauge. Sort ascending by 'free' to surface the most-cramped mount first.",
+      "gridPos": { "x": 12, "y": 17, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "Used",
+          "expr": "node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"} - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"}",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "used"
+        },
+        {
+          "refId": "Free",
+          "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"}",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "free"
+        },
+        {
+          "refId": "Total",
+          "expr": "node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"}",
+          "instant": true,
+          "format": "table",
+          "legendFormat": "total"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": { "byField": "mountpoint", "mode": "outer" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true, "Time 2": true, "Time 3": true,
+              "__name__ 1": true, "__name__ 2": true, "__name__ 3": true,
+              "device 1": true, "device 2": true, "device 3": true,
+              "fstype 1": true, "fstype 2": true, "fstype 3": true,
+              "instance 1": true, "instance 2": true, "instance 3": true,
+              "job 1": true, "job 2": true, "job 3": true
+            },
+            "renameByName": {
+              "mountpoint": "Mount",
+              "Value #Used": "Used",
+              "Value #Free": "Free",
+              "Value #Total": "Total"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": { "fields": {}, "sort": [{ "field": "Free", "desc": false }] }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Free space per mount — 30 d trend",
+      "description": "30-day trailing trend. Where the slope is steep, the mount is filling fast. Use 'when will this fill up?' from the predicted-zero crossing.",
+      "gridPos": { "x": 0, "y": 25, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs|fuse.*|nsfs|cgroup.*\", mountpoint!~\"/var/lib/docker.*|/run.*|/snap.*|/sys.*|/proc.*|/dev.*\"}",
+          "legendFormat": "{{mountpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 5,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["lastNotNull", "min"] },
+        "tooltip": { "mode": "multi", "sort": "asc" }
+      }
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "Deep — CPU / memory / I/O breakdown",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 33, "w": 24, "h": 1 },
+      "panels": [
+        {
+          "id": 18,
+          "type": "timeseries",
+          "title": "CPU by mode",
+          "description": "Per-mode CPU share. iowait climbing = disk bottleneck; system climbing = kernel-side work (often I/O); user is application work.",
+          "gridPos": { "x": 0, "y": 34, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "avg by (mode) (rate(node_cpu_seconds_total{mode!=\"idle\"}[$__rate_interval]))",
+              "legendFormat": "{{mode}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 30, "stacking": { "mode": "normal" } }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          }
+        },
+        {
+          "id": 19,
+          "type": "timeseries",
+          "title": "Memory breakdown",
+          "description": "What's filling RAM — application allocations, kernel cache, buffers, free.",
+          "gridPos": { "x": 12, "y": 34, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "Used",
+              "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+              "legendFormat": "used"
+            },
+            {
+              "refId": "Cached",
+              "expr": "node_memory_Cached_bytes",
+              "legendFormat": "cached"
+            },
+            {
+              "refId": "Buffers",
+              "expr": "node_memory_Buffers_bytes",
+              "legendFormat": "buffers"
+            },
+            {
+              "refId": "Free",
+              "expr": "node_memory_MemFree_bytes",
+              "legendFormat": "free"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 30, "stacking": { "mode": "normal" } }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          }
+        },
+        {
+          "id": 20,
+          "type": "timeseries",
+          "title": "Disk I/O time (per device)",
+          "description": "Fraction of wall-clock time each block device spent doing I/O. Approaching 1 = saturated.",
+          "gridPos": { "x": 0, "y": 42, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(node_disk_io_time_seconds_total{device!~\"dm-.*|loop.*\"}[$__rate_interval])",
+              "legendFormat": "{{device}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "max": 1,
+              "min": 0,
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          }
+        },
+        {
+          "id": 21,
+          "type": "timeseries",
+          "title": "Per-NIC rx/tx rate",
+          "description": "Bytes/sec per real interface — useful when you suspect one NIC carrying all the traffic.",
+          "gridPos": { "x": 12, "y": 42, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(node_network_receive_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[$__rate_interval])",
+              "legendFormat": "rx {{device}}"
+            },
+            {
+              "refId": "B",
+              "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|docker.*|veth.*|br-.*\"}[$__rate_interval])",
+              "legendFormat": "tx {{device}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 5, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          }
+        }
+      ]
+    }
+  ]
+}
