@@ -9,7 +9,3 @@ sops_age_key*
 secrets/
 
 authelia/config/users.yml
-
-# Borgmatic SSH keys and known hosts
-borgmatic/ssh/id_rsa*
-borgmatic/ssh/known_hosts*

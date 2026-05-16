@@ -85,7 +85,6 @@ services:
       - borg-cache:/root/.cache/borg
       - ./borgmatic/config:/etc/borgmatic.d
       - ./borgmatic/scripts:/scripts:ro
-      - ./borgmatic/ssh:/root/.ssh
       - adguard-conf:/volumes/adguard-conf
       - nextcloud-data:/volumes/nextcloud-data
       - plex-config:/volumes/plex-config
@@ -114,6 +113,12 @@ services:
       - DOCO_CD_GIT_ACCESS_TOKEN
       - DOCO_CD_WEBHOOK_SECRET
       - DOCO_CD_SOPS_AGE_KEY
+      - source: BORGMATIC_SSH_PRIVATE_KEY
+        target: /root/.ssh/id_rsa
+        mode: 0400
+      - source: BORGMATIC_SSH_KNOWN_HOSTS
+        target: /root/.ssh/known_hosts
+        mode: 0400
     restart: unless-stopped
 # ============================================================================ #
 # ================================== GRAFANA ================================= #
@@ -863,3 +868,7 @@ secrets:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY
   SEEDBOX_OPENVPN_CONFIG:
     file: ${SECRETS_DIR:-./}seedbox/secrets/OPENVPN_CONFIG
+  BORGMATIC_SSH_PRIVATE_KEY:
+    file: ${SECRETS_DIR:-./}borgmatic/secrets/SSH_PRIVATE_KEY
+  BORGMATIC_SSH_KNOWN_HOSTS:
+    file: ${SECRETS_DIR:-./}borgmatic/secrets/SSH_KNOWN_HOSTS
