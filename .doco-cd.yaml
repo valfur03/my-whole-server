@@ -1,4 +1,5 @@
 name: my-whole-server
+repository_url: https://github.com/valfur03/my-whole-server.git
 reference: refs/heads/master
 env_files:
   - .sops.env
