@@ -636,6 +636,7 @@ services:
     image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
     environment:
       CONTAINERS: 1
+      NETWORKS: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
