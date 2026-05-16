@@ -4,7 +4,7 @@
   "tags": ["homelab", "home"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -37,11 +37,11 @@
       "id": 1,
       "type": "stat",
       "title": "Reverse proxy",
-      "description": "Traefik liveness via Loki — recent log activity in the last 5 minutes. Will become `up{job=\"traefik\"}` once metrics.prometheus is enabled.",
+      "description": "Traefik scrape target health — `up{job=\"traefik\"}`. Green = Prometheus scraped successfully on the last attempt.",
       "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "up{job=\"traefik\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -287,7 +287,7 @@
       "type": "stat",
       "title": "Successful backups (24 h)",
       "description": "Count of borgmatic completion lines in the last 24 hours. Green > 0, red = 0 (backup missed). Will be replaced by `borgmatic_last_run_timestamp_seconds` once the node-exporter textfile-collector hook is in place.",
-      "gridPos": { "x": 0, "y": 11, "w": 8, "h": 5 },
+      "gridPos": { "x": 0, "y": 11, "w": 6, "h": 5 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)summary.*errors:\\\\s*0|backup.*(complete|success)\" [24h]))", "queryType": "instant" }
@@ -304,11 +304,33 @@
       "links": [{ "title": "Borgmatic dashboard", "url": "/d/backups-borgmatic", "targetBlank": false }]
     },
     {
+      "id": 16,
+      "type": "stat",
+      "title": "Traefik 5xx rate",
+      "description": "Share of HTTP requests answered with a 5xx in the last 5 minutes. Green < 1 %, orange 1–5 %, red beyond. Hard threshold — this query becomes alert #10 unchanged.",
+      "gridPos": { "x": 6, "y": 11, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total{code=~\"5..\"}[5m])) / sum(rate(traefik_router_requests_total[5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Traefik dashboard", "url": "/d/ingress-traefik", "targetBlank": false }]
+    },
+    {
       "id": 14,
       "type": "timeseries",
       "title": "Errors/sec across all logs",
       "description": "Cross-project rate of log lines matching `error|panic|fatal` (case-insensitive). The shape matters more than the absolute number — a sustained step-up is the signal.",
-      "gridPos": { "x": 8, "y": 11, "w": 16, "h": 5 },
+      "gridPos": { "x": 12, "y": 11, "w": 12, "h": 5 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         { "refId": "A", "expr": "sum by (compose_service) (rate({compose_project=\"my-whole-server\"} |~ \"(?i)error|panic|fatal\" [5m]))", "legendFormat": "{{compose_service}}" }

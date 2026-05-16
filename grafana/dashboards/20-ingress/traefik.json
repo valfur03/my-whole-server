@@ -1,10 +1,10 @@
 {
   "uid": "ingress-traefik",
-  "title": "20-Ingress — Traefik (Loki)",
-  "tags": ["homelab", "ingress", "traefik", "transitional"],
+  "title": "20-Ingress — Traefik",
+  "tags": ["homelab", "ingress", "traefik"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -12,11 +12,18 @@
   "templating": {
     "list": [
       {
-        "name": "router_regex",
-        "type": "textbox",
-        "label": "Router (regex)",
-        "query": ".*",
-        "current": { "selected": false, "text": ".*", "value": ".*" }
+        "name": "router",
+        "type": "query",
+        "label": "Router",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "qryType": 1, "query": "label_values(traefik_router_requests_total, router)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "definition": "label_values(traefik_router_requests_total, router)",
+        "regex": "",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
       }
     ]
   },
@@ -36,119 +43,270 @@
     {
       "id": 300,
       "type": "row",
-      "title": "Loki-only — until metrics.prometheus is enabled in traefik.yml",
+      "title": "RED — front door",
       "collapsed": false,
       "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
     },
     {
       "id": 1,
       "type": "stat",
-      "title": "Recent log volume (5 m)",
-      "description": "Lines/sec from the reverse-proxy container. Background hum if accessLog is on; near-zero otherwise.",
+      "title": "Requests / sec",
+      "description": "Total request rate across all routers.",
       "gridPos": { "x": 0, "y": 1, "w": 6, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(rate({compose_service=\"reverse-proxy\"}[5m]))" }
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total[$__rate_interval]))" }
       ],
-      "fieldConfig": { "defaults": { "unit": "logs/sec", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
     },
     {
       "id": 2,
       "type": "stat",
-      "title": "Error lines (5 m)",
-      "description": "Lines matching `error|panic|fatal` from Traefik.",
+      "title": "5xx rate",
+      "description": "Share of requests answered with a 5xx code in the last 5 m. Green < 1 %, orange 1–5 %, red beyond. Same query becomes the alert.",
       "gridPos": { "x": 6, "y": 1, "w": 6, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"(?i)error|panic|fatal\" [5m]))" }
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total{code=~\"5..\"}[5m])) / sum(rate(traefik_router_requests_total[5m]))" }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "percentunit",
+          "decimals": 2,
           "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 10 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
     },
     {
       "id": 3,
       "type": "stat",
-      "title": "5xx (5 m)",
-      "description": "Access-log lines whose status code is 5xx. Requires `accessLog:` enabled in traefik.yml. Will collapse to 0 if accessLog is off.",
+      "title": "4xx rate",
+      "description": "Client-side errors. High values often signal scanners or misconfigured clients more than real bugs.",
       "gridPos": { "x": 12, "y": 1, "w": 6, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"\\\" 5[0-9]{2} \" [5m]))" }
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total{code=~\"4..\"}[5m])) / sum(rate(traefik_router_requests_total[5m]))" }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "percentunit",
+          "decimals": 2,
           "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 25 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.05 }, { "color": "orange", "value": 0.20 }] }
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
     },
     {
       "id": 4,
       "type": "stat",
-      "title": "4xx (5 m)",
-      "description": "Client-side errors. High values often signal scanning or misconfigured clients.",
+      "title": "p95 latency",
+      "description": "95th-percentile request duration across all routers, computed from histogram buckets over the last 5 m.",
       "gridPos": { "x": 18, "y": 1, "w": 6, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"reverse-proxy\"} |~ \"\\\" 4[0-9]{2} \" [5m]))" }
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(traefik_router_request_duration_seconds_bucket[5m])))" }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "s",
+          "decimals": 2,
           "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "orange", "value": 100 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 3 }] }
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 301,
+      "type": "row",
+      "title": "Traffic & errors per router",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }
     },
     {
       "id": 5,
       "type": "timeseries",
-      "title": "Request rate (from access log)",
-      "description": "Lines/sec from the reverse-proxy container, grouped by stream (stdout/stderr). Once accessLog is enabled in traefik.yml, this becomes a per-request count.",
-      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "title": "Request rate — top 10 routers",
+      "description": "Top 10 routers by request rate over the panel range.",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum by (stream) (rate({compose_service=\"reverse-proxy\"}[$__interval]))", "legendFormat": "{{stream}}" }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "logs/sec",
-          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
-    },
-    {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Status-class breakdown",
-      "description": "Stacked rates of 2xx / 3xx / 4xx / 5xx parsed from access logs. Requires `accessLog: { format: common }` (default Common Log Format).",
-      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [
-        { "refId": "A2", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 2[0-9]{2} \" [$__interval]))", "legendFormat": "2xx" },
-        { "refId": "A3", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 3[0-9]{2} \" [$__interval]))", "legendFormat": "3xx" },
-        { "refId": "A4", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 4[0-9]{2} \" [$__interval]))", "legendFormat": "4xx" },
-        { "refId": "A5", "expr": "sum(rate({compose_service=\"reverse-proxy\"} |~ \"\\\" 5[0-9]{2} \" [$__interval]))", "legendFormat": "5xx" }
+        { "refId": "A", "expr": "topk(10, sum by (router) (rate(traefik_router_requests_total{router=~\"$router\"}[$__rate_interval])))", "legendFormat": "{{router}}" }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 50, "showPoints": "never", "stacking": { "mode": "normal" } }
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never", "stacking": { "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "5xx rate by router",
+      "description": "Per-router 5xx request rate — find the offender behind a flat overall ratio.",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (router) (rate(traefik_router_requests_total{router=~\"$router\", code=~\"5..\"}[$__rate_interval])) > 0", "legendFormat": "{{router}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 302,
+      "type": "row",
+      "title": "Latency per router",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 1 }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "p95 latency by router",
+      "description": "p95 derived from `traefik_router_request_duration_seconds_bucket`. Filter via the `$router` variable to keep it readable when many routers are live.",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket{router=~\"$router\"}[5m])))", "legendFormat": "{{router}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "p99 latency by router",
+      "gridPos": { "x": 12, "y": 15, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.99, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket{router=~\"$router\"}[5m])))", "legendFormat": "{{router}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 303,
+      "type": "row",
+      "title": "Per-router RED summary",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 23, "w": 24, "h": 1 }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Per-router rate / error% / p95 / p99",
+      "description": "One row per router. Sort by 5xx% or p95 to spot the worst offenders quickly. RED method in one screen.",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 10 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Rate", "expr": "sum by (router) (rate(traefik_router_requests_total{router=~\"$router\"}[5m]))", "instant": true, "format": "table" },
+        { "refId": "Err5", "expr": "sum by (router) (rate(traefik_router_requests_total{router=~\"$router\", code=~\"5..\"}[5m])) / sum by (router) (rate(traefik_router_requests_total{router=~\"$router\"}[5m]))", "instant": true, "format": "table" },
+        { "refId": "Err4", "expr": "sum by (router) (rate(traefik_router_requests_total{router=~\"$router\", code=~\"4..\"}[5m])) / sum by (router) (rate(traefik_router_requests_total{router=~\"$router\"}[5m]))", "instant": true, "format": "table" },
+        { "refId": "P95", "expr": "histogram_quantile(0.95, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket{router=~\"$router\"}[5m])))", "instant": true, "format": "table" },
+        { "refId": "P99", "expr": "histogram_quantile(0.99, sum by (le, router) (rate(traefik_router_request_duration_seconds_bucket{router=~\"$router\"}[5m])))", "instant": true, "format": "table" }
+      ],
+      "transformations": [
+        { "id": "joinByField", "options": { "byField": "router", "mode": "outer" } },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "Time 5": true
+            },
+            "renameByName": {
+              "router": "Router",
+              "Value #Rate": "Req/s",
+              "Value #Err5": "5xx %",
+              "Value #Err4": "4xx %",
+              "Value #P95": "p95",
+              "Value #P99": "p99"
+            },
+            "indexByName": { "Router": 0, "Req/s": 1, "5xx %": 2, "4xx %": 3, "p95": 4, "p99": 5 }
+          }
+        },
+        { "id": "sortBy", "options": { "fields": {}, "sort": [{ "field": "5xx %", "desc": true }] } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Req/s" }, "properties": [{ "id": "unit", "value": "reqps" }, { "id": "decimals", "value": 2 }] },
+          { "matcher": { "id": "byName", "options": "5xx %" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "decimals", "value": 3 }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.01 }, { "color": "red", "value": 0.05 }] } }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }] },
+          { "matcher": { "id": "byName", "options": "4xx %" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "decimals", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "p95" }, "properties": [{ "id": "unit", "value": "s" }, { "id": "decimals", "value": 2 }] },
+          { "matcher": { "id": "byName", "options": "p99" }, "properties": [{ "id": "unit", "value": "s" }, { "id": "decimals", "value": 2 }] }
+        ]
+      },
+      "options": { "showHeader": true, "footer": { "show": false } }
+    },
+    {
+      "id": 304,
+      "type": "row",
+      "title": "Top-N / breakdown",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 34, "w": 24, "h": 1 }
+    },
+    {
+      "id": 10,
+      "type": "bargauge",
+      "title": "Top 10 routers — last 24 h volume",
+      "description": "Total requests served per router over the trailing 24 h.",
+      "gridPos": { "x": 0, "y": 35, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "topk(10, sum by (router) (increase(traefik_router_requests_total{router=~\"$router\"}[24h])))", "legendFormat": "{{router}}" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "continuous-BlPu" } },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "displayMode": "gradient", "showUnfilled": true, "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Status-code class distribution",
+      "description": "Stacked rate by status-code class (2xx / 3xx / 4xx / 5xx).",
+      "gridPos": { "x": 12, "y": 35, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "S2", "expr": "sum(rate(traefik_router_requests_total{code=~\"2..\"}[$__rate_interval]))", "legendFormat": "2xx" },
+        { "refId": "S3", "expr": "sum(rate(traefik_router_requests_total{code=~\"3..\"}[$__rate_interval]))", "legendFormat": "3xx" },
+        { "refId": "S4", "expr": "sum(rate(traefik_router_requests_total{code=~\"4..\"}[$__rate_interval]))", "legendFormat": "4xx" },
+        { "refId": "S5", "expr": "sum(rate(traefik_router_requests_total{code=~\"5..\"}[$__rate_interval]))", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 40, "showPoints": "never", "stacking": { "mode": "normal" } }
         },
         "overrides": [
           { "matcher": { "id": "byName", "options": "2xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
@@ -160,25 +318,93 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
     },
     {
-      "id": 7,
-      "type": "logs",
-      "title": "Live log — reverse-proxy",
-      "description": "Live tail of the Traefik container.",
-      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 12 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "id": 305,
+      "type": "row",
+      "title": "Entrypoints & internals",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 44, "w": 24, "h": 1 }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Request rate by entrypoint",
+      "description": "Per-entrypoint rate (http on :80, https on :443). The redirect from http→https shows here.",
+      "gridPos": { "x": 0, "y": 45, "w": 16, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "{compose_service=\"reverse-proxy\"} |~ \"$router_regex\"" }
+        { "refId": "A", "expr": "sum by (entrypoint) (rate(traefik_entrypoint_requests_total[$__rate_interval]))", "legendFormat": "{{entrypoint}}" }
       ],
-      "options": {
-        "showTime": true,
-        "showLabels": false,
-        "showCommonLabels": false,
-        "wrapLogMessage": true,
-        "prettifyLogMessage": false,
-        "enableLogDetails": true,
-        "dedupStrategy": "none",
-        "sortOrder": "Descending"
-      }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Config last reload OK",
+      "description": "1 = the last dynamic-config reload succeeded; 0 = it failed. Drops to 0 when a docker label is malformed.",
+      "gridPos": { "x": 16, "y": 45, "w": 4, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "traefik_config_last_reload_success" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "mappings": [{ "type": "value", "options": { "0": { "text": "FAIL" }, "1": { "text": "OK" } } }]
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Config reloads (24 h)",
+      "description": "Total config reloads in the last 24 h — should bump with every doco-cd deploy.",
+      "gridPos": { "x": 20, "y": 45, "w": 4, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "increase(traefik_config_reloads_total[24h])" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 306,
+      "type": "row",
+      "title": "Access-log analytics (Loki — enable `accessLog:` in traefik.yml to populate)",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 51, "w": 24, "h": 1 },
+      "panels": [
+        {
+          "id": 15,
+          "type": "logs",
+          "title": "Live log — reverse-proxy",
+          "description": "Live tail of the Traefik container. Without `accessLog:` enabled this only shows operational logs (config reloads, internal errors).",
+          "gridPos": { "x": 0, "y": 52, "w": 24, "h": 12 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            { "refId": "A", "expr": "{compose_service=\"reverse-proxy\"}" }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupStrategy": "none",
+            "sortOrder": "Descending"
+          }
+        }
+      ]
     }
   ]
 }

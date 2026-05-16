@@ -685,6 +685,7 @@ services:
     networks:
       - proxy
       - traefik
+      - metrics
     extra_hosts:
       - host.docker.internal:172.17.0.1
     volumes:

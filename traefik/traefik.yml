@@ -32,3 +32,9 @@ tracing:
   otlp:
     http:
       endpoint: http://jaeger:4318/v1/traces
+
+metrics:
+  prometheus:
+    addRoutersLabels: true
+    addServicesLabels: true
+    addEntryPointsLabels: true
