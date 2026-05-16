@@ -319,8 +319,10 @@ services:
       - /dev/net/tun
     cap_add:
       - NET_ADMIN
-    volumes:
-      - ./seedbox/openvpn:/vpn:ro
+    secrets:
+      - source: SEEDBOX_OPENVPN_CONFIG
+        target: /vpn/vpn.conf
+        mode: 0400
     dns:
       - "8.8.8.8"
       - "8.8.4.4"
@@ -859,3 +861,5 @@ secrets:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/WEBHOOK_SECRET
   DOCO_CD_SOPS_AGE_KEY:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY
+  SEEDBOX_OPENVPN_CONFIG:
+    file: ${SECRETS_DIR:-./}seedbox/secrets/OPENVPN_CONFIG

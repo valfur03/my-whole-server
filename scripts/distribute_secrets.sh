@@ -40,7 +40,8 @@ for i in \
 	OVH_CONSUMER_KEY,ovh/secrets/CONSUMER_KEY \
 	DOCO_CD_GIT_ACCESS_TOKEN,doco-cd/secrets/GIT_ACCESS_TOKEN \
 	DOCO_CD_WEBHOOK_SECRET,doco-cd/secrets/WEBHOOK_SECRET \
-	DOCO_CD_SOPS_AGE_KEY,doco-cd/secrets/SOPS_AGE_KEY
+	DOCO_CD_SOPS_AGE_KEY,doco-cd/secrets/SOPS_AGE_KEY \
+	SEEDBOX_OPENVPN_CONFIG,seedbox/secrets/OPENVPN_CONFIG
 do
 	IFS=","
 	set -- $i
