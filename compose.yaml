@@ -107,7 +107,6 @@ services:
       - SMTP_PASSWORD
 #      - SYNAPSE_STORAGE_PASSWORD
       - VAULTWARDEN_ADMIN_TOKEN
-      - WEEKLY_MONEY_STORAGE_PASSWORD
       - OVH_APPLICATION_KEY
       - OVH_APPLICATION_SECRET
       - OVH_CONSUMER_KEY
@@ -803,13 +802,11 @@ services:
     environment:
       POSTGRES_DB: weekly-money
       POSTGRES_USER: weekly-money
-      POSTGRES_PASSWORD_FILE: /run/secrets/WEEKLY_MONEY_STORAGE_PASSWORD
+      POSTGRES_PASSWORD: ${WEEKLY_MONEY_DATABASE_PASSWORD}
     volumes:
       - weekly-money-database:/var/lib/postgresql/data
     networks:
       - weekly-money-backend
-    secrets:
-      - WEEKLY_MONEY_STORAGE_PASSWORD
     restart: unless-stopped
 
   weekly-money:
@@ -828,14 +825,12 @@ services:
       DATABASE_HOST: weekly-money-database
       DATABASE_USER: weekly-money
       DATABASE_NAME: weekly-money
-      DATABASE_PASSWORD_FILE: /run/secrets/WEEKLY_MONEY_STORAGE_PASSWORD
+      DATABASE_PASSWORD: ${WEEKLY_MONEY_DATABASE_PASSWORD}
       BASE_DOMAIN: weekly-money.${BASE_DOMAIN}
       LOG_LEVEL: debug
     networks:
       - proxy
       - weekly-money-backend
-    secrets:
-      - WEEKLY_MONEY_STORAGE_PASSWORD
     labels:
       traefik.http.routers.weekly-money.rule: Host(`weekly-money.${BASE_DOMAIN}`)
       traefik.http.routers.weekly-money.tls: true
@@ -975,8 +970,6 @@ secrets:
 #    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
-  WEEKLY_MONEY_STORAGE_PASSWORD:
-    file: ${SECRETS_DIR:-./}weekly-money/secrets/STORAGE_PASSWORD
   OVH_APPLICATION_KEY:
     file: ${SECRETS_DIR:-./}traefik/secrets/OVH_APPLICATION_KEY
   OVH_APPLICATION_SECRET:
