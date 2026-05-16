@@ -503,7 +503,7 @@ services:
     command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=${JOAL_PATH_PREFIX}", "--joal.ui.secret-token=${JOAL_SECRET_TOKEN}"]
 
   transmission:
-    image: linuxserver/transmission:4.0.6@sha256:452310cb020c036d293e879698097acb6cc653db2676610bf8e3b58a3f4d2af5
+    image: linuxserver/transmission:4.1.1@sha256:62a88fbc210fc62d867eab9c67a0f5474db7257013ce598173a9efc1043e97b8
     environment:
       - PUID=1000
       - PGID=1000
