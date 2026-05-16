@@ -1,0 +1,425 @@
+{
+  "uid": "observability-self",
+  "title": "70-Observability — Self-monitoring",
+  "tags": ["homelab", "observability"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
+        "target": { "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"", "refId": "Anno" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 800,
+      "type": "row",
+      "title": "Headline",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Targets up",
+      "description": "Prometheus scrape targets currently reachable.",
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(up == 1)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Targets down",
+      "description": "Scrape targets currently failing. Any non-zero value warrants a look.",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(up == 0) or vector(0)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "TSDB head series",
+      "description": "Active time series in Prometheus' head block. The single most predictive number for 'is my Prometheus about to OOM?' — every active series carries a fixed memory cost.",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "prometheus_tsdb_head_series" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 500000 }, { "color": "red", "value": 1500000 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "TSDB on-disk size",
+      "description": "Sum of bytes in persisted block storage. Compare against the prometheus-data volume size.",
+      "gridPos": { "x": 18, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "prometheus_tsdb_storage_blocks_bytes" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 801,
+      "type": "row",
+      "title": "Targets",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 6, "w": 24, "h": 1 }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "All scrape targets",
+      "description": "One row per Prometheus target. Sorted by job then state — failing targets bubble to the top.",
+      "gridPos": { "x": 0, "y": 7, "w": 24, "h": 10 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Up", "expr": "up", "instant": true, "format": "table" },
+        { "refId": "Dur", "expr": "scrape_duration_seconds", "instant": true, "format": "table" }
+      ],
+      "transformations": [
+        { "id": "joinByField", "options": { "byField": "instance", "mode": "outer" } },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time 1": true, "Time 2": true, "__name__ 1": true, "__name__ 2": true, "job 2": true },
+            "renameByName": {
+              "instance": "Instance",
+              "job 1": "Job",
+              "Value #Up": "Up",
+              "Value #Dur": "Scrape duration"
+            },
+            "indexByName": { "Job": 0, "Instance": 1, "Up": 2, "Scrape duration": 3 }
+          }
+        },
+        { "id": "sortBy", "options": { "fields": {}, "sort": [{ "field": "Up", "desc": false }, { "field": "Job", "desc": false }] } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Up" },
+            "properties": [
+              { "id": "mappings", "value": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }] },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }
+            ]
+          },
+          { "matcher": { "id": "byName", "options": "Scrape duration" }, "properties": [{ "id": "unit", "value": "s" }, { "id": "decimals", "value": 3 }] }
+        ]
+      },
+      "options": { "showHeader": true, "footer": { "show": false } }
+    },
+    {
+      "id": 802,
+      "type": "row",
+      "title": "Prometheus internals",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 17, "w": 24, "h": 1 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Head series & on-disk size",
+      "description": "Series count (left axis) and block-storage bytes (right axis) over time. A steady climb means cardinality growth — investigate.",
+      "gridPos": { "x": 0, "y": 18, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Series", "expr": "prometheus_tsdb_head_series", "legendFormat": "head series" },
+        { "refId": "Bytes", "expr": "prometheus_tsdb_storage_blocks_bytes", "legendFormat": "block bytes" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "block bytes" }, "properties": [{ "id": "unit", "value": "bytes" }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] },
+          { "matcher": { "id": "byName", "options": "head series" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Scrape duration per job",
+      "description": "How long the last scrape took, per target. Slow targets show up here before they start dropping samples.",
+      "gridPos": { "x": 12, "y": 18, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "scrape_duration_seconds", "legendFormat": "{{job}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Samples ingested / sec",
+      "description": "Rate of samples appended to the TSDB head. The product of (scraped targets) × (metrics per scrape) × (1 / scrape interval).",
+      "gridPos": { "x": 0, "y": 25, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(prometheus_tsdb_head_samples_appended_total[5m])", "legendFormat": "samples/sec" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 15, "showPoints": "never" },
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+    },
+    {
+      "id": 803,
+      "type": "row",
+      "title": "Loki",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 31, "w": 24, "h": 1 }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Loki ingestion — bytes & lines / sec",
+      "description": "Distributor receive rates. The shape gives an immediate read on logging volume.",
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Bytes", "expr": "sum(rate(loki_distributor_bytes_received_total[$__rate_interval]))", "legendFormat": "bytes/sec" },
+        { "refId": "Lines", "expr": "sum(rate(loki_distributor_lines_received_total[$__rate_interval]))", "legendFormat": "lines/sec" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "bytes/sec" }, "properties": [{ "id": "unit", "value": "Bps" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "lines/sec" }, "properties": [{ "id": "unit", "value": "logs/sec" }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "purple" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Loki — chunks in memory",
+      "description": "Ingester chunks currently held in memory. Climbs during high write load, settles after flushes to storage.",
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "loki_ingester_memory_chunks", "legendFormat": "chunks" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" },
+          "color": { "mode": "fixed", "fixedColor": "blue" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Loki query latency — p95 per route",
+      "description": "p95 of `loki_request_duration_seconds`, grouped by API route. Spikes on `query_range` = slow dashboards.",
+      "gridPos": { "x": 0, "y": 39, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "histogram_quantile(0.95, sum by (le, route) (rate(loki_request_duration_seconds_bucket[5m])))", "legendFormat": "{{route}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 0, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 804,
+      "type": "row",
+      "title": "Alloy (logs + traces)",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 45, "w": 24, "h": 1 }
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Alloy-logs components",
+      "description": "Components Alloy is currently running. 0 here is bad.",
+      "gridPos": { "x": 0, "y": 46, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "alloy_component_controller_running_components{job=\"alloy-logs\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "otel-collector components",
+      "description": "Same as above for the OTLP-receiver Alloy instance.",
+      "gridPos": { "x": 6, "y": 46, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "alloy_component_controller_running_components{job=\"otel-collector\"}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Alloy-logs — sent vs dropped",
+      "description": "Log lines Alloy sends to Loki vs lines it dropped (queue full, network error, retries exhausted). Any sustained dropped > 0 means lossy ingestion.",
+      "gridPos": { "x": 12, "y": 46, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Sent", "expr": "sum(rate(loki_write_sent_entries_total{job=\"alloy-logs\"}[5m]))", "legendFormat": "sent" },
+        { "refId": "Dropped", "expr": "sum(rate(loki_write_dropped_entries_total{job=\"alloy-logs\"}[5m])) or vector(0)", "legendFormat": "dropped" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "logs/sec",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "sent" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "dropped" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "OTel-collector — spans accepted vs refused",
+      "description": "OTLP receiver throughput. Refused = pipeline backpressure or bad data.",
+      "gridPos": { "x": 0, "y": 53, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Accepted", "expr": "sum(rate(otelcol_receiver_accepted_spans_total{job=\"otel-collector\"}[5m]))", "legendFormat": "accepted" },
+        { "refId": "Refused", "expr": "sum(rate(otelcol_receiver_refused_spans_total{job=\"otel-collector\"}[5m])) or vector(0)", "legendFormat": "refused" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "accepted" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "refused" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 805,
+      "type": "row",
+      "title": "Jaeger",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 59, "w": 24, "h": 1 }
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Jaeger — spans received & saved",
+      "description": "Receive vs persist rate. A gap = spans rejected or dropped at the storage layer.",
+      "gridPos": { "x": 0, "y": 60, "w": 16, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "R", "expr": "sum(rate(jaeger_collector_spans_received_total[5m]))", "legendFormat": "received" },
+        { "refId": "S", "expr": "sum(rate(jaeger_collector_spans_saved_by_svc_total[5m]))", "legendFormat": "saved" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "received" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "saved" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "Spans saved (1 h)",
+      "description": "Trace volume landed in the badger store over the last hour.",
+      "gridPos": { "x": 16, "y": 60, "w": 8, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(increase(jaeger_collector_spans_saved_by_svc_total[1h]))" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    }
+  ]
+}
