@@ -328,6 +328,37 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
+# ==================================== LOKI ================================== #
+# ============================================================================ #
+  loki:
+    image: grafana/loki:3.7.2@sha256:191d4fdfb7264f16989f0a57f320872620a5a7c2ceeec6229212c4190ec49b86
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    networks:
+      - metrics
+    restart: unless-stopped
+
+  alloy-logs:
+    image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    depends_on:
+      - loki
+      - socket-proxy
+    volumes:
+      - ./loki/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-logs-data:/var/lib/alloy/data
+    networks:
+      - metrics
+      - traefik
+    restart: unless-stopped
+
+# ============================================================================ #
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
   vpn:
@@ -805,6 +836,8 @@ volumes:
   jellyfin-config:
   ldap-config:
   ldap-database:
+  alloy-logs-data:
+  loki-data:
   otel-collector-data:
   otel-data:
   plex-config:

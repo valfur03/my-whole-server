@@ -1,0 +1,43 @@
+// Discover every container running on the host via the existing socket-proxy
+// (CONTAINERS=1 is enough — no extra permission needed).
+discovery.docker "containers" {
+	host             = "tcp://socket-proxy:2375"
+	refresh_interval = "15s"
+}
+
+// Promote a few Docker meta labels into actual Loki labels so logs are
+// queryable by container / compose service / project / stream out of the box.
+discovery.relabel "containers" {
+	targets = discovery.docker.containers.targets
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/(.*)"
+		target_label  = "container"
+	}
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+		target_label  = "compose_service"
+	}
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+		target_label  = "compose_project"
+	}
+	rule {
+		source_labels = ["__meta_docker_container_log_stream"]
+		target_label  = "stream"
+	}
+}
+
+// Stream container logs via Docker API and ship to Loki.
+loki.source.docker "containers" {
+	host       = "tcp://socket-proxy:2375"
+	targets    = discovery.relabel.containers.output
+	forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
