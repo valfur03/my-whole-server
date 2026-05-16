@@ -107,6 +107,7 @@ services:
       - SMTP_PASSWORD
 #      - SYNAPSE_STORAGE_PASSWORD
       - VAULTWARDEN_ADMIN_TOKEN
+      - WEEKLY_MONEY_STORAGE_PASSWORD
       - OVH_APPLICATION_KEY
       - OVH_APPLICATION_SECRET
       - OVH_CONSUMER_KEY
@@ -795,6 +796,56 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
+# ================================ WEEKLY-MONEY ============================== #
+# ============================================================================ #
+  weekly-money-database:
+    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
+    environment:
+      POSTGRES_DB: weekly-money
+      POSTGRES_USER: weekly-money
+      POSTGRES_PASSWORD_FILE: /run/secrets/WEEKLY_MONEY_STORAGE_PASSWORD
+    volumes:
+      - weekly-money-database:/var/lib/postgresql/data
+    networks:
+      - weekly-money-backend
+    secrets:
+      - WEEKLY_MONEY_STORAGE_PASSWORD
+    restart: unless-stopped
+
+  weekly-money:
+    image: ghcr.io/valfur03/weekly-money:main
+    depends_on:
+      - weekly-money-database
+    environment:
+      NOTION_ACCESS_TOKEN: ${NOTION_ACCESS_TOKEN}
+      NOTION_PRODUCTS_DATASOURCE_ID: ${NOTION_PRODUCTS_DATASOURCE_ID}
+      NOTION_PORTFOLIO_DATASOURCE_ID: ${NOTION_PORTFOLIO_DATASOURCE_ID}
+      NOTION_PORTFOLIO_ACCOUNT_ID: ${NOTION_PORTFOLIO_ACCOUNT_ID}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_USER_ID: ${DISCORD_USER_ID}
+      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
+      DATABASE_HOST: weekly-money-database
+      DATABASE_USER: weekly-money
+      DATABASE_NAME: weekly-money
+      DATABASE_PASSWORD_FILE: /run/secrets/WEEKLY_MONEY_STORAGE_PASSWORD
+      BASE_DOMAIN: weekly-money.${BASE_DOMAIN}
+      LOG_LEVEL: debug
+    networks:
+      - proxy
+      - weekly-money-backend
+    secrets:
+      - WEEKLY_MONEY_STORAGE_PASSWORD
+    labels:
+      traefik.http.routers.weekly-money.rule: Host(`weekly-money.${BASE_DOMAIN}`)
+      traefik.http.routers.weekly-money.tls: true
+      traefik.http.routers.weekly-money.tls.certresolver: letsencrypt
+      traefik.http.routers.weekly-money.middlewares: authelia@docker
+      traefik.http.services.weekly-money.loadbalancer.server.port: 3000
+      traefik.enable: true
+    restart: unless-stopped
+
+# ============================================================================ #
 # ================================= WIREGUARD ================================ #
 # ============================================================================ #
   adguard:
@@ -873,6 +924,7 @@ volumes:
   transmission-config:
   vaultwarden-data:
   vidlvery-public-directory:
+  weekly-money-database:
   wireguard:
 
 networks:
@@ -890,6 +942,7 @@ networks:
   seedbox-torrenting:
 #  synapse-backend:
   traefik:
+  weekly-money-backend:
   AAA-vpn:
     # The network is named this way to ensure (as much as I have understood)
     # that the interface used inside the container is eth0.
@@ -922,6 +975,8 @@ secrets:
 #    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
+  WEEKLY_MONEY_STORAGE_PASSWORD:
+    file: ${SECRETS_DIR:-./}weekly-money/secrets/STORAGE_PASSWORD
   OVH_APPLICATION_KEY:
     file: ${SECRETS_DIR:-./}traefik/secrets/OVH_APPLICATION_KEY
   OVH_APPLICATION_SECRET:

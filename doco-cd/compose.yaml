@@ -17,6 +17,9 @@ services:
       - DOCO_CD_GIT_ACCESS_TOKEN
       - DOCO_CD_WEBHOOK_SECRET
       - DOCO_CD_SOPS_AGE_KEY
+      - source: DOCO_CD_DOCKER_CONFIG
+        target: /root/.docker/config.json
+        mode: 0400
     cap_drop:
       - ALL
     healthcheck:
@@ -48,3 +51,5 @@ secrets:
     file: ${SECRETS_DIR:-../}doco-cd/secrets/WEBHOOK_SECRET
   DOCO_CD_SOPS_AGE_KEY:
     file: ${SECRETS_DIR:-../}doco-cd/secrets/SOPS_AGE_KEY
+  DOCO_CD_DOCKER_CONFIG:
+    file: ${SECRETS_DIR:-../}doco-cd/secrets/DOCKER_CONFIG
