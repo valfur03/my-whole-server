@@ -1,0 +1,383 @@
+{
+  "uid": "apps-nextcloud",
+  "title": "30-Apps — Nextcloud",
+  "tags": ["homelab", "apps", "nextcloud"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
+        "target": { "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"", "refId": "Anno" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 700,
+      "type": "row",
+      "title": "Headline",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Requests / sec",
+      "description": "Aggregate request rate across the nextcloud Traefik routers.",
+      "gridPos": { "x": 0, "y": 1, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\"}[$__rate_interval]))" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "5xx rate (Nextcloud)",
+      "description": "Share of nextcloud-routed requests answered with a 5xx in the last 5 m.",
+      "gridPos": { "x": 5, "y": 1, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\", code=~\"5..\"}[5m])) / sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\"}[5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 3,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 0.01 }, { "color": "red", "value": 0.05 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "DB queries / sec",
+      "description": "Per-second rate of MariaDB queries (Questions).",
+      "gridPos": { "x": 10, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(mysql_global_status_queries[5m])" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "qps", "decimals": 1, "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Redis ops / sec",
+      "description": "Commands processed per second by nextcloud-redis.",
+      "gridPos": { "x": 14, "y": 1, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(redis_commands_processed_total[5m])" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 1, "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Redis hit ratio",
+      "description": "Keyspace cache hit ratio. Green > 95 %, orange 80–95 %, red below. Sustained low hit ratio = either memory pressure (evictions) or a workload that doesn't benefit from caching.",
+      "gridPos": { "x": 19, "y": 1, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2,
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 0.80 }, { "color": "green", "value": 0.95 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 701,
+      "type": "row",
+      "title": "Traefik — Nextcloud routers (RED)",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Request rate by router",
+      "description": "Per-router rate, scoped to routers matching `nextcloud.*`.",
+      "gridPos": { "x": 0, "y": 6, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (router) (rate(traefik_router_requests_total{router=~\"nextcloud.*\"}[$__rate_interval]))", "legendFormat": "{{router}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Status code class breakdown",
+      "description": "Stacked rate by status code class.",
+      "gridPos": { "x": 8, "y": 6, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "S2", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\", code=~\"2..\"}[$__rate_interval]))", "legendFormat": "2xx" },
+        { "refId": "S3", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\", code=~\"3..\"}[$__rate_interval]))", "legendFormat": "3xx" },
+        { "refId": "S4", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\", code=~\"4..\"}[$__rate_interval]))", "legendFormat": "4xx" },
+        { "refId": "S5", "expr": "sum(rate(traefik_router_requests_total{router=~\"nextcloud.*\", code=~\"5..\"}[$__rate_interval]))", "legendFormat": "5xx" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 40, "showPoints": "never", "stacking": { "mode": "normal" } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "2xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "3xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "4xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "5xx" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "p95 / p99 latency",
+      "description": "Histogram quantiles from `traefik_router_request_duration_seconds_bucket` filtered to nextcloud routers.",
+      "gridPos": { "x": 16, "y": 6, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "P95", "expr": "histogram_quantile(0.95, sum by (le) (rate(traefik_router_request_duration_seconds_bucket{router=~\"nextcloud.*\"}[5m])))", "legendFormat": "p95" },
+        { "refId": "P99", "expr": "histogram_quantile(0.99, sum by (le) (rate(traefik_router_request_duration_seconds_bucket{router=~\"nextcloud.*\"}[5m])))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 5, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 702,
+      "type": "row",
+      "title": "MariaDB",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 1 }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Commands by type",
+      "description": "Per-second rate of SELECT / INSERT / UPDATE / DELETE on the nextcloud database. Useful for understanding workload shape.",
+      "gridPos": { "x": 0, "y": 15, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (command) (rate(mysql_global_status_commands_total{command=~\"select|insert|update|delete\"}[$__rate_interval]))", "legendFormat": "{{command}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "qps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Connections vs cap",
+      "description": "Threads connected and the `max_connections` ceiling. Climbing toward the ceiling = connection-pool exhaustion risk.",
+      "gridPos": { "x": 12, "y": 15, "w": 6, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Used", "expr": "mysql_global_status_threads_connected", "legendFormat": "connected" },
+        { "refId": "Max", "expr": "mysql_global_variables_max_connections", "legendFormat": "max" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 5, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "max" }, "properties": [{ "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [5, 5] } }, { "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "InnoDB buffer pool hit",
+      "description": "1 − (disk reads / logical read requests). Green > 99 %, orange 95–99 %, red below — large dataset or insufficient `innodb_buffer_pool_size`.",
+      "gridPos": { "x": 18, "y": 15, "w": 6, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "1 - (rate(mysql_global_status_innodb_buffer_pool_reads[5m]) / clamp_min(rate(mysql_global_status_innodb_buffer_pool_read_requests[5m]), 1))" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 4,
+          "min": 0,
+          "max": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 0.95 }, { "color": "green", "value": 0.99 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Slow queries / sec",
+      "description": "Queries exceeding `long_query_time`. Sustained non-zero = an index missing somewhere or a heavy report.",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "rate(mysql_global_status_slow_queries[5m])", "legendFormat": "slow/sec" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "qps",
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80 },
+          "color": { "mode": "fixed", "fixedColor": "orange" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+    },
+    {
+      "id": 703,
+      "type": "row",
+      "title": "Redis",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Memory used",
+      "description": "Working memory usage of nextcloud-redis. No `maxmemory` is configured, so the limit is host RAM.",
+      "gridPos": { "x": 0, "y": 28, "w": 8, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "redis_memory_used_bytes", "legendFormat": "used" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 15, "showPoints": "never" },
+          "color": { "mode": "fixed", "fixedColor": "purple" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Hits vs misses",
+      "description": "Keyspace hit/miss rate. Green band = hits (good); red = misses (cache cold).",
+      "gridPos": { "x": 8, "y": 28, "w": 8, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "H", "expr": "rate(redis_keyspace_hits_total[$__rate_interval])", "legendFormat": "hits" },
+        { "refId": "M", "expr": "rate(redis_keyspace_misses_total[$__rate_interval])", "legendFormat": "misses" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 30, "showPoints": "never", "stacking": { "mode": "normal" } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "hits" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "misses" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Connected clients & evictions",
+      "description": "Connected clients (left), evicted keys per second (right). Evictions > 0 with no `maxmemory` set means redis is rejecting writes — investigate.",
+      "gridPos": { "x": 16, "y": 28, "w": 8, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Clients", "expr": "redis_connected_clients", "legendFormat": "clients" },
+        { "refId": "Evictions", "expr": "rate(redis_evicted_keys_total[5m])", "legendFormat": "evictions/sec" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 5, "showPoints": "never" }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "evictions/sec" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }, { "id": "custom.axisPlacement", "value": "right" }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 704,
+      "type": "row",
+      "title": "Logs",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 35, "w": 24, "h": 1 },
+      "panels": [
+        {
+          "id": 16,
+          "type": "logs",
+          "title": "Nextcloud — warnings & errors",
+          "description": "Lines from nextcloud-app and nextcloud-web matching `error|warn|critical|exception`.",
+          "gridPos": { "x": 0, "y": 36, "w": 24, "h": 12 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "targets": [
+            { "refId": "A", "expr": "{compose_service=~\"nextcloud-(app|web)\"} |~ \"(?i)error|warn|critical|exception\"" }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupStrategy": "none",
+            "sortOrder": "Descending"
+          }
+        }
+      ]
+    }
+  ]
+}
