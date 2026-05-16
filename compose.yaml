@@ -121,6 +121,27 @@ services:
         mode: 0400
     restart: unless-stopped
 # ============================================================================ #
+# ==================================== FRP =================================== #
+# ============================================================================ #
+  frps:
+    image: snowdreamtech/frps:alpine@sha256:e4cf3032e7227e52cb5531c9c32180de9957e0137ed9a6779aec3d7ab7a16af3
+    command: -c /etc/frps/frps.toml
+    environment:
+      FRP_AUTH_TOKEN: ${FRP_AUTH_TOKEN}
+    volumes:
+      - ./frps/frps.toml:/etc/frps/frps.toml:ro
+    ports:
+      - 7000:7000
+    networks:
+      - proxy
+    labels:
+      traefik.http.routers.frps.rule: HostRegexp(`^.+-tunnel\.${BASE_DOMAIN}$`)
+      traefik.http.routers.frps.tls: true
+      traefik.http.routers.frps.tls.certresolver: letsencrypt
+      traefik.http.services.frps.loadbalancer.server.port: 8080
+      traefik.enable: true
+    restart: unless-stopped
+# ============================================================================ #
 # ================================== GRAFANA ================================= #
 # ============================================================================ #
   prometheus:
