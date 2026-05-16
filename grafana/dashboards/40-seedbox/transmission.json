@@ -1,10 +1,10 @@
 {
   "uid": "seedbox-transmission",
-  "title": "40-Seedbox — Transmission",
-  "tags": ["homelab", "seedbox", "transmission"],
+  "title": "40-Seedbox — Transmission & *arr",
+  "tags": ["homelab", "seedbox", "transmission", "sonarr", "radarr"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -535,6 +535,153 @@
         "overrides": []
       },
       "options": { "orientation": "vertical", "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" }, "barWidth": 0.8 }
+    },
+    {
+      "id": 104,
+      "type": "row",
+      "title": "Sonarr",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 68, "w": 24, "h": 1 }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Series",
+      "description": "Total number of series Sonarr tracks. Metric names follow onedr0p/exportarr — verify with `curl -s sonarr-exporter:9707/metrics | grep sonarr_` after first scrape.",
+      "gridPos": { "x": 0, "y": 69, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_series_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Episodes downloaded",
+      "gridPos": { "x": 6, "y": 69, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_episode_downloaded_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Episodes missing",
+      "description": "Episodes Sonarr knows about but hasn't grabbed yet — a non-zero value isn't bad, but a steadily-growing trend is.",
+      "gridPos": { "x": 12, "y": 69, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_episode_missing_total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 200 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 25,
+      "type": "stat",
+      "title": "Queue",
+      "description": "Items in Sonarr's download queue right now.",
+      "gridPos": { "x": 18, "y": 69, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_queue_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 105,
+      "type": "row",
+      "title": "Radarr",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 73, "w": 24, "h": 1 }
+    },
+    {
+      "id": 26,
+      "type": "stat",
+      "title": "Movies",
+      "gridPos": { "x": 0, "y": 74, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 27,
+      "type": "stat",
+      "title": "Movies downloaded",
+      "gridPos": { "x": 6, "y": 74, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_downloaded_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 28,
+      "type": "stat",
+      "title": "Movies missing",
+      "gridPos": { "x": 12, "y": 74, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_missing_total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 200 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 29,
+      "type": "stat",
+      "title": "Queue",
+      "gridPos": { "x": 18, "y": 74, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_queue_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "Queue length over time",
+      "description": "Watch for steady growth — that means downloads are queuing faster than they're completing.",
+      "gridPos": { "x": 0, "y": 78, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "S", "expr": "sonarr_queue_total", "legendFormat": "sonarr" },
+        { "refId": "R", "expr": "radarr_queue_total", "legendFormat": "radarr" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
     }
   ]
 }

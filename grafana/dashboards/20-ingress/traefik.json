@@ -1,10 +1,10 @@
 {
   "uid": "ingress-traefik",
-  "title": "20-Ingress — Traefik",
-  "tags": ["homelab", "ingress", "traefik"],
+  "title": "20-Ingress — Traefik & FRPS",
+  "tags": ["homelab", "ingress", "traefik", "frps"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -403,6 +403,93 @@
             "dedupStrategy": "none",
             "sortOrder": "Descending"
           }
+        }
+      ]
+    },
+    {
+      "id": 309,
+      "type": "row",
+      "title": "FRPS — tunnel ingress (collapsed)",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 52, "w": 24, "h": 1 },
+      "panels": [
+        {
+          "id": 16,
+          "type": "stat",
+          "title": "Active connections",
+          "description": "Current open connections on the FRP control channel. Metric names from FRP's prometheus.go — verify with `curl -s frps:7500/metrics | grep ^frps_` after first scrape.",
+          "gridPos": { "x": 0, "y": 53, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "frps_server_current_connections" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+          "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+        },
+        {
+          "id": 17,
+          "type": "stat",
+          "title": "Connected clients",
+          "description": "Number of FRP clients currently registered with the server.",
+          "gridPos": { "x": 6, "y": 53, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "frps_server_client_counts" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+          "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+        },
+        {
+          "id": 18,
+          "type": "stat",
+          "title": "Registered proxies",
+          "description": "Sum across proxy types (tcp / http / https / etc).",
+          "gridPos": { "x": 12, "y": 53, "w": 6, "h": 4 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "sum(frps_server_proxy_count)" }
+          ],
+          "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+          "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+        },
+        {
+          "id": 19,
+          "type": "timeseries",
+          "title": "Tunnel traffic — total in / out",
+          "description": "Aggregate bytes per second across all tunnels.",
+          "gridPos": { "x": 0, "y": 57, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "In", "expr": "rate(frps_server_total_traffic_in[$__rate_interval])", "legendFormat": "in" },
+            { "refId": "Out", "expr": "rate(frps_server_total_traffic_out[$__rate_interval])", "legendFormat": "out" }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+        },
+        {
+          "id": 20,
+          "type": "timeseries",
+          "title": "Per-proxy traffic out",
+          "description": "Per-proxy egress bytes/sec, labelled by proxy name.",
+          "gridPos": { "x": 12, "y": 57, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "sum by (name) (rate(frps_server_proxy_total_traffic_out[$__rate_interval]))", "legendFormat": "{{name}}" }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 5, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
         }
       ]
     }

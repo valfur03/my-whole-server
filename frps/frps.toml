@@ -3,3 +3,8 @@ bindPort = 7000
 auth.token = "{{ .Envs.FRP_AUTH_TOKEN }}"
 
 vhostHTTPPort = 8080
+
+webServer.addr = "0.0.0.0"
+webServer.port = 7500
+
+enablePrometheus = true
