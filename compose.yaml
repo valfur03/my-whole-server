@@ -231,7 +231,7 @@ services:
       - nextcloud-backend
 
   nextcloud-app:
-    image: nextcloud:32.0.9-fpm@sha256:ed815bbcd424df9c6bd7cb68599cacf1e93597668779084459adfad428bd92a9
+    image: nextcloud:33.0.3-fpm@sha256:6d730635a2d223a75d955b33510dfc84eb7f25a0c737f973a54dea041317ab80
     depends_on:
       - nextcloud-database
       - nextcloud-redis
