@@ -1,0 +1,62 @@
+// OTLP receiver — gRPC on :4317, HTTP on :4318 (Traefik routes to the HTTP one)
+otelcol.receiver.otlp "default" {
+	grpc { }
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		traces = [otelcol.processor.batch.default.input]
+	}
+}
+
+otelcol.processor.batch "default" {
+	output {
+		traces = [
+			otelcol.exporter.otlp.jaeger.input,
+			otelcol.connector.spanmetrics.default.input,
+		]
+	}
+}
+
+// Traces → Jaeger (gRPC, in-cluster, TLS off)
+otelcol.exporter.otlp "jaeger" {
+	client {
+		endpoint = "jaeger:4317"
+		tls {
+			insecure = true
+		}
+	}
+}
+
+// Span → RED metrics
+otelcol.connector.spanmetrics "default" {
+	histogram {
+		explicit { }
+	}
+
+	output {
+		metrics = [otelcol.exporter.prometheus.spanmetrics.input]
+	}
+}
+
+// OTel metrics → Prometheus format → relabel → remote_write to Prometheus.
+// The relabel step injects job="aggregated-trace-metrics" so the timeseries
+// keep the same identity they had under the old pull-based scrape job.
+otelcol.exporter.prometheus "spanmetrics" {
+	forward_to = [prometheus.relabel.spanmetrics.receiver]
+}
+
+prometheus.relabel "spanmetrics" {
+	rule {
+		target_label = "job"
+		replacement  = "aggregated-trace-metrics"
+	}
+	forward_to = [prometheus.remote_write.prometheus.receiver]
+}
+
+prometheus.remote_write "prometheus" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
+}

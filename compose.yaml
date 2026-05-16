@@ -125,6 +125,12 @@ services:
 # ============================================================================ #
   prometheus:
     build: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.enable-remote-write-receiver
     volumes:
       - prometheus-data:/prometheus
     networks:
@@ -298,12 +304,17 @@ services:
     restart: unless-stopped
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.152.0@sha256:f41d7995565df3733b7568702073a9c490792f9c6ac60684fe6a4da21a313f8d
-    command: --config /etc/otelcol/otel-collector-config.yml
+    image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
     depends_on:
       - jaeger
     volumes:
-      - ./otel/collector/config.yml:/etc/otelcol/otel-collector-config.yml
+      - ./otel/collector/config.alloy:/etc/alloy/config.alloy:ro
+      - otel-collector-data:/var/lib/alloy/data
     networks:
       - proxy
       - seedbox-metrics
@@ -314,6 +325,7 @@ services:
       traefik.http.routers.jaeger-http-collector.middlewares: authelia@docker
       traefik.http.services.jaeger-http-collector.loadbalancer.server.port: 4318
       traefik.enable: true
+    restart: unless-stopped
 
 # ============================================================================ #
 # ================================== SEEDBOX ================================= #
@@ -793,6 +805,7 @@ volumes:
   jellyfin-config:
   ldap-config:
   ldap-database:
+  otel-collector-data:
   otel-data:
   plex-config:
   prometheus-data:
