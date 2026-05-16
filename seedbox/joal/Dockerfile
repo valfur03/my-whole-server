@@ -1,4 +1,4 @@
-FROM anthonyraymond/joal:2.1.36@sha256:832718170bd2d3da97de1216a6fd2f3caf2d5d56065336320780dadaf4952c1e
+FROM anthonyraymond/joal:2.1.37@sha256:fc942567c5649b29377e50aa0ca934e4750534d02b4ecf5a0eda3984630f35d7
 
 COPY ./data/config.json /data/config.json
 COPY ./data/clients /data/clients
