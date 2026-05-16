@@ -88,14 +88,14 @@ services:
       - adguard-conf:/volumes/adguard-conf
       - nextcloud-data:/volumes/nextcloud-data
       - plex-config:/volumes/plex-config
-      - synapse-data:/volumes/synapse-data
+#      - synapse-data:/volumes/synapse-data
       - vaultwarden-data:/volumes/vaultwarden-data
       - /backup/local/borg/docker:/backup/local
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - authelia-backend
       - nextcloud-backend
-      - synapse-backend
+#      - synapse-backend
     secrets:
       - AUTHELIA_JWT_SECRET
       - AUTHELIA_SESSION_SECRET
@@ -105,7 +105,7 @@ services:
       - LDAP_ADMIN_PASSWORD
       - NEXTCLOUD_STORAGE_PASSWORD
       - SMTP_PASSWORD
-      - SYNAPSE_STORAGE_PASSWORD
+#      - SYNAPSE_STORAGE_PASSWORD
       - VAULTWARDEN_ADMIN_TOKEN
       - OVH_APPLICATION_KEY
       - OVH_APPLICATION_SECRET
@@ -519,20 +519,20 @@ services:
 # ============================================================================ #
 # ================================== SYNAPSE ================================= #
 # ============================================================================ #
-  synapse-database:
-    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-    volumes:
-      - synapse-database:/var/lib/postgresql/data
-    networks:
-      - synapse-backend
-    environment:
-      POSTGRES_DB: synapse
-      POSTGRES_USER: synapse
-      POSTGRES_PASSWORD_FILE: /run/secrets/SYNAPSE_STORAGE_PASSWORD
-      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
-    secrets:
-      - SYNAPSE_STORAGE_PASSWORD
-    restart: unless-stopped
+#  synapse-database:
+#    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
+#    volumes:
+#      - synapse-database:/var/lib/postgresql/data
+#    networks:
+#      - synapse-backend
+#    environment:
+#      POSTGRES_DB: synapse
+#      POSTGRES_USER: synapse
+#      POSTGRES_PASSWORD_FILE: /run/secrets/SYNAPSE_STORAGE_PASSWORD
+#      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+#    secrets:
+#      - SYNAPSE_STORAGE_PASSWORD
+#    restart: unless-stopped
 
 #  synapse-app:
 #    image: matrixdotorg/synapse:v1.98.0
@@ -551,20 +551,20 @@ services:
 #      traefik.enable: true
 #    restart: unless-stopped
 
-  synapse-syncv3-database:
-    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-    volumes:
-      - synapse-syncv3-database:/var/lib/postgresql/data
-    networks:
-      - synapse-backend
-    environment:
-      POSTGRES_DB: synapse-syncv3
-      POSTGRES_USER: synapse-syncv3
-      POSTGRES_PASSWORD: ${SYNAPSE_SYNCV3_STORAGE_PASSWORD}
-      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
-    secrets:
-      - SYNAPSE_STORAGE_PASSWORD
-    restart: unless-stopped
+#  synapse-syncv3-database:
+#    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
+#    volumes:
+#      - synapse-syncv3-database:/var/lib/postgresql/data
+#    networks:
+#      - synapse-backend
+#    environment:
+#      POSTGRES_DB: synapse-syncv3
+#      POSTGRES_USER: synapse-syncv3
+#      POSTGRES_PASSWORD: ${SYNAPSE_SYNCV3_STORAGE_PASSWORD}
+#      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+#    secrets:
+#      - SYNAPSE_STORAGE_PASSWORD
+#    restart: unless-stopped
 
 #  synapse-syncv3-proxy:
 #    image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
@@ -798,9 +798,9 @@ volumes:
   prometheus-data:
   sonarr-config:
   radarr-config:
-  synapse-data:
-  synapse-database:
-  synapse-syncv3-database:
+#  synapse-data:
+#  synapse-database:
+#  synapse-syncv3-database:
   traefik-acme:
   transmission-config:
   vaultwarden-data:
@@ -820,7 +820,7 @@ networks:
   seedbox-indexer:
   seedbox-metrics:
   seedbox-torrenting:
-  synapse-backend:
+#  synapse-backend:
   traefik:
   AAA-vpn:
     # The network is named this way to ensure (as much as I have understood)
@@ -850,8 +850,8 @@ secrets:
     file: ${SECRETS_DIR:-./}nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
     file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
-  SYNAPSE_STORAGE_PASSWORD:
-    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
+#  SYNAPSE_STORAGE_PASSWORD:
+#    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
   OVH_APPLICATION_KEY:
