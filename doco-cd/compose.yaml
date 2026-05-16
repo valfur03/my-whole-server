@@ -1,0 +1,50 @@
+name: doco-cd
+services:
+  doco-cd:
+    image: ghcr.io/kimdre/doco-cd:0.85.1@sha256:2f4650dfcd25c17d7c6b274a47b1e205d8408e3ee12a33aa3a2459b4604757ef
+    environment:
+      TZ: Europe/Paris
+      LOG_LEVEL: INFO
+      GIT_ACCESS_TOKEN_FILE: /run/secrets/DOCO_CD_GIT_ACCESS_TOKEN
+      WEBHOOK_SECRET_FILE: /run/secrets/DOCO_CD_WEBHOOK_SECRET
+      SOPS_AGE_KEY_FILE: /run/secrets/DOCO_CD_SOPS_AGE_KEY
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+    networks:
+      - proxy
+    secrets:
+      - DOCO_CD_GIT_ACCESS_TOKEN
+      - DOCO_CD_WEBHOOK_SECRET
+      - DOCO_CD_SOPS_AGE_KEY
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/doco-cd", "healthcheck"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      traefik.http.routers.doco-cd.rule: Host(`cd.${BASE_DOMAIN}`) && Path(`/v1/webhook`)
+      traefik.http.routers.doco-cd.tls: true
+      traefik.http.routers.doco-cd.tls.certresolver: letsencrypt
+      traefik.http.services.doco-cd.loadbalancer.server.port: 80
+      traefik.enable: true
+    restart: unless-stopped
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    external: true
+    name: my-whole-server_proxy
+
+secrets:
+  DOCO_CD_GIT_ACCESS_TOKEN:
+    file: ${SECRETS_DIR:-../}doco-cd/secrets/GIT_ACCESS_TOKEN
+  DOCO_CD_WEBHOOK_SECRET:
+    file: ${SECRETS_DIR:-../}doco-cd/secrets/WEBHOOK_SECRET
+  DOCO_CD_SOPS_AGE_KEY:
+    file: ${SECRETS_DIR:-../}doco-cd/secrets/SOPS_AGE_KEY
