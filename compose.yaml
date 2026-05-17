@@ -331,7 +331,7 @@ services:
       MYSQL_HOST: nextcloud-database
       MYSQL_PASSWORD_FILE: /run/secrets/NEXTCLOUD_STORAGE_PASSWORD
       REDIS_HOST: nextcloud-redis
-      NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN}
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN} nextcloud-web
       TRUSTED_PROXIES: reverse-proxy
     networks:
       - nextcloud-backend
