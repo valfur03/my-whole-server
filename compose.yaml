@@ -568,7 +568,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:4.7.5@sha256:a7e8acff3f429351d2dfa1c887d751d13b8e974cd423841ed52be4203a4b1941
+    image: lscr.io/linuxserver/radarr:5.28.0@sha256:b2c7710f6eda0f745e2647783de47e1bb750d838d012bb2dc1df535ee2228c9b
     environment:
       - PUID=0
       - PGID=0
@@ -585,7 +585,7 @@ services:
       traefik.http.services.radarr.loadbalancer.server.port: 7878
       traefik.http.routers.radarr.tls: true
       traefik.http.routers.radarr.tls.certresolver: letsencrypt
-      traefik.http.routers.radarr.middlewares: authelia@docker
+      traefik.http.routers.radarr.middlewares: authelia@docker, radarr-auth-header@docker
       traefik.enable: true
     restart: unless-stopped
   sonarr-exporter:
@@ -784,6 +784,7 @@ services:
       traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
       traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
 
+      traefik.http.middlewares.radarr-auth-header.headers.customrequestheaders.Authorization: Basic ${RADARR_BASIC_AUTH_TOKEN}
       traefik.http.middlewares.sonarr-auth-header.headers.customrequestheaders.Authorization: Basic ${SONARR_BASIC_AUTH_TOKEN}
       traefik.http.routers.traefik.rule: Host(`proxy.${BASE_DOMAIN}`)
       traefik.http.routers.traefik.tls: true
