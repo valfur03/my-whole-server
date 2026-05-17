@@ -13,6 +13,13 @@ entryPoints:
           scheme: https
   https:
     address: ":443"
+  # Internal entrypoint for /ping and /metrics. Not routed externally — only
+  # reachable from the proxy network for health probes and Prometheus scraping.
+  traefik:
+    address: ":8080"
+
+ping:
+  entryPoint: traefik
 
 certificatesResolvers:
   letsencrypt:
