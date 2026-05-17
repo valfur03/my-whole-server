@@ -208,7 +208,7 @@ services:
     restart: unless-stopped
 
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.25.0
+    image: prom/blackbox-exporter:v0.25.0@sha256:b04a9fef4fa086a02fc7fcd8dcdbc4b7b35cc30cdee860fdc6a19dd8b208d63e
     command:
       - --config.file=/etc/blackbox_exporter/config.yml
     volumes:
@@ -219,7 +219,7 @@ services:
       - seedbox-metrics
     restart: unless-stopped
   cadvisor:
-    image: ghcr.io/google/cadvisor:v0.57.0
+    image: ghcr.io/google/cadvisor:v0.57.0@sha256:e75bdb03b74b0b6995f208f166fead2e6e555dde73e44200113bb26f41b1981d
     privileged: true
     command:
       - --housekeeping_interval=15s
@@ -310,7 +310,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis-exporter:
-    image: oliver006/redis_exporter:v1.66.0-alpine
+    image: oliver006/redis_exporter:v1.66.0-alpine@sha256:117e28099cf52e284c43073935a3beb8dd7a29aa4972a7c1a062dba421e986fa
     depends_on:
       - nextcloud-redis
     environment:
@@ -591,7 +591,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   sonarr-exporter:
-    image: ghcr.io/onedr0p/exportarr:v2.3.0
+    image: ghcr.io/onedr0p/exportarr:v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
     command: ["sonarr"]
     depends_on:
       - sonarr
@@ -604,7 +604,7 @@ services:
       - metrics
     restart: unless-stopped
   radarr-exporter:
-    image: ghcr.io/onedr0p/exportarr:v2.3.0
+    image: ghcr.io/onedr0p/exportarr:v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
     command: ["radarr"]
     depends_on:
       - radarr
