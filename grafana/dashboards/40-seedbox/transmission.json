@@ -585,11 +585,11 @@
       "id": 25,
       "type": "stat",
       "title": "Queue",
-      "description": "Items in Sonarr's download queue right now.",
+      "description": "Items in Sonarr's download queue right now. exportarr only emits `sonarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
       "gridPos": { "x": 18, "y": 69, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sonarr_queue_total" }
+        { "refId": "A", "expr": "sum(sonarr_queue_total) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -648,10 +648,11 @@
       "id": 29,
       "type": "stat",
       "title": "Queue",
+      "description": "Items in Radarr's download queue right now. exportarr only emits `radarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
       "gridPos": { "x": 18, "y": 74, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "radarr_queue_total" }
+        { "refId": "A", "expr": "sum(radarr_queue_total) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -664,8 +665,8 @@
       "gridPos": { "x": 0, "y": 78, "w": 24, "h": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "S", "expr": "sonarr_queue_total", "legendFormat": "sonarr" },
-        { "refId": "R", "expr": "radarr_queue_total", "legendFormat": "radarr" }
+        { "refId": "S", "expr": "sum(sonarr_queue_total) or vector(0)", "legendFormat": "sonarr" },
+        { "refId": "R", "expr": "sum(radarr_queue_total) or vector(0)", "legendFormat": "radarr" }
       ],
       "fieldConfig": {
         "defaults": {
