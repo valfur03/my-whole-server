@@ -53,6 +53,14 @@ scrape_configs:
     static_configs:
       - targets: ["nextcloud-redis-exporter:9121"]
 
+  - job_name: "sonarr"
+    static_configs:
+      - targets: ["sonarr-exporter:9707"]
+
+  - job_name: "radarr"
+    static_configs:
+      - targets: ["radarr-exporter:9708"]
+
   # ── Blackbox: internal HTTP uptime probes ───────────────────────────────
   # `probe_success{instance=...}` becomes the canonical "is this service
   # responding?" metric. Each target is the URL blackbox actually GETs.
