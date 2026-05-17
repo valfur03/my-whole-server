@@ -470,6 +470,8 @@ services:
       - seedbox-indexer
       - seedbox-metrics
       - seedbox-torrenting
+    ports:
+      - 53490:34095
     labels:
       traefik.http.routers.joal.rule: Host(`joal.${BASE_DOMAIN}`)
       traefik.http.routers.joal.service: joal
