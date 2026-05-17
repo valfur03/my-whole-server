@@ -26,6 +26,7 @@
         "includeAll": true,
         "allValue": ".*",
         "query": "Stopped : 0, Check wait : 1, Checking : 2, Download wait : 3, Downloading : 4, Seed wait : 5, Seeding : 6",
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
         "options": [
           { "selected": true, "text": "All", "value": "$__all" },
           { "selected": false, "text": "Stopped", "value": "0" },
