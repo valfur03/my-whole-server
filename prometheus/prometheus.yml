@@ -3,45 +3,94 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-- job_name: "transmission"
-  static_configs:
-    - targets: ["transmission-exporter:19091"]
-- job_name: "node"
-  static_configs:
-    - targets: ["node-exporter:9100"]
-- job_name: "traefik"
-  static_configs:
-    - targets: ["reverse-proxy:8080"]
-- job_name: "cadvisor"
-  static_configs:
-    - targets: ["cadvisor:8080"]
-- job_name: "nextcloud-mysqld"
-  static_configs:
-    - targets: ["nextcloud-mysqld-exporter:9104"]
-- job_name: "nextcloud-redis"
-  static_configs:
-    - targets: ["nextcloud-redis-exporter:9121"]
-- job_name: "sonarr"
-  static_configs:
-    - targets: ["sonarr-exporter:9707"]
-- job_name: "radarr"
-  static_configs:
-    - targets: ["radarr-exporter:9708"]
-- job_name: "frps"
-  static_configs:
-    - targets: ["frps:7500"]
-- job_name: "prometheus"
-  static_configs:
-    - targets: ["prometheus:9090"]
-- job_name: "loki"
-  static_configs:
-    - targets: ["loki:3100"]
-- job_name: "alloy-logs"
-  static_configs:
-    - targets: ["alloy-logs:12345"]
-- job_name: "otel-collector"
-  static_configs:
-    - targets: ["otel-collector:12345"]
-- job_name: "jaeger"
-  static_configs:
-    - targets: ["jaeger:14269"]
+  # ── Self-monitoring ──────────────────────────────────────────────────────
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:3000"]
+
+  - job_name: "loki"
+    static_configs:
+      - targets: ["loki:3100"]
+
+  - job_name: "jaeger"
+    static_configs:
+      - targets: ["jaeger:14269"]
+
+  - job_name: "otel-collector"
+    static_configs:
+      - targets: ["otel-collector:12345"]
+
+  - job_name: "alloy-logs"
+    static_configs:
+      - targets: ["alloy-logs:12345"]
+
+  - job_name: "blackbox-exporter"
+    static_configs:
+      - targets: ["blackbox-exporter:9115"]
+
+  # ── Host / app exporters ────────────────────────────────────────────────
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: "transmission"
+    static_configs:
+      - targets: ["transmission-exporter:19091"]
+
+  # ── Blackbox: internal HTTP uptime probes ───────────────────────────────
+  # `probe_success{instance=...}` becomes the canonical "is this service
+  # responding?" metric. Each target is the URL blackbox actually GETs.
+  - job_name: "blackbox-uptime"
+    metrics_path: /probe
+    params:
+      module: [http_2xx_or_redirect]
+    static_configs:
+      - targets:
+          - http://reverse-proxy:8080/ping
+          - http://authelia:9091/api/health
+          - http://nextcloud-web:80/status.php
+          - http://vaultwarden:80/alive
+          - http://plex:32400/identity
+          - http://adguard:80
+          - http://s-pdf:8080
+          - http://vidlvery:3000
+          - http://jaeger:16686
+          - http://web:80
+          - http://sonarr:8989/ping
+          - http://radarr:7878/ping
+          - http://vpn:9091/transmission/web/
+          - http://vpn:9117
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # ── Blackbox: external cert-expiry probes ───────────────────────────────
+  # Real TLS handshake against the public hostname. Exposes
+  # probe_ssl_earliest_cert_expiry — used by the cert-expiry alert.
+  - job_name: "blackbox-cert"
+    metrics_path: /probe
+    params:
+      module: [http_cert_check]
+    static_configs:
+      - targets:
+          - https://${BASE_DOMAIN}
+          - https://cloud.${BASE_DOMAIN}
+          - https://vault.${BASE_DOMAIN}
+          - https://auth.${BASE_DOMAIN}
+          - https://plex.${BASE_DOMAIN}
+          - https://metrics.${BASE_DOMAIN}
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

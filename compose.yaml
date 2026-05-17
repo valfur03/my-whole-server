@@ -153,6 +153,8 @@ services:
       - --web.console.libraries=/usr/share/prometheus/console_libraries
       - --web.console.templates=/usr/share/prometheus/consoles
       - --web.enable-remote-write-receiver
+    environment:
+      BASE_DOMAIN: ${BASE_DOMAIN}
     volumes:
       - prometheus-data:/prometheus
     networks:
@@ -200,6 +202,18 @@ services:
       - /:/rootfs:ro
     networks:
       - metrics
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - metrics
+      - proxy
+      - seedbox-metrics
     restart: unless-stopped
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.57.0

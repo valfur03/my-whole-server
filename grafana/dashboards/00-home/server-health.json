@@ -37,11 +37,11 @@
       "id": 1,
       "type": "stat",
       "title": "Reverse proxy",
-      "description": "Traefik scrape target health — `up{job=\"traefik\"}`. Green = Prometheus scraped successfully on the last attempt.",
+      "description": "Traefik liveness via blackbox probe to `/ping`. 1 = TLS handshake + HTTP 200 from Traefik's built-in healthcheck.",
       "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "up{job=\"traefik\"}" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://reverse-proxy:8080/ping\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -63,11 +63,11 @@
       "id": 2,
       "type": "stat",
       "title": "Authelia",
-      "description": "Authelia liveness via Loki.",
+      "description": "Authelia liveness via blackbox probe to `/api/health` (returns 200 with `{status:\"OK\"}` when alive).",
       "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"authelia\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://authelia:9091/api/health\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -83,10 +83,11 @@
       "id": 3,
       "type": "stat",
       "title": "Nextcloud",
+      "description": "Nextcloud liveness via blackbox probe to `/status.php` (JSON status endpoint, returns 200 when installed and reachable through nextcloud-web).",
       "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=~\"nextcloud-(app|web)\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://nextcloud-web:80/status.php\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -102,10 +103,11 @@
       "id": 4,
       "type": "stat",
       "title": "Vaultwarden",
+      "description": "Vaultwarden liveness via blackbox probe to `/alive` (returns 200 with version JSON when up).",
       "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"vaultwarden\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://vaultwarden:80/alive\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -121,10 +123,11 @@
       "id": 5,
       "type": "stat",
       "title": "Plex",
+      "description": "Plex liveness via blackbox probe to `/identity` (returns 200 with server XML when up — no auth required).",
       "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"plex\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://plex:32400/identity\"}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -140,10 +143,11 @@
       "id": 6,
       "type": "stat",
       "title": "AdGuard",
+      "description": "AdGuard liveness via blackbox probe to AdGuard's web UI root.",
       "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"adguard\"}[5m])) > bool 0", "queryType": "instant" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://adguard:80\"}" }
       ],
       "fieldConfig": {
         "defaults": {

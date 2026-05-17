@@ -1,0 +1,35 @@
+modules:
+  # Service uptime probe — strict 200.
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      ip_protocol_fallback: false
+      valid_status_codes: [200]
+      method: GET
+
+  # Service uptime probe — lenient. 30x means proxy/auth redirect, 401 means
+  # the backend is alive and (rightly) refusing unauthenticated access.
+  http_2xx_or_redirect:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      ip_protocol_fallback: false
+      valid_status_codes: [200, 301, 302, 401]
+      method: GET
+
+  # Cert-expiry probe — runs a real TLS handshake against the public hostname
+  # and validates the chain. Exposes probe_ssl_earliest_cert_expiry regardless
+  # of HTTP status, so we accept any code that means "TLS succeeded."
+  http_cert_check:
+    prober: http
+    timeout: 10s
+    http:
+      preferred_ip_protocol: ip4
+      method: HEAD
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      valid_status_codes: [200, 301, 302, 401, 403, 404]
