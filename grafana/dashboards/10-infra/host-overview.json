@@ -180,7 +180,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "node_load1 / count(node_cpu_seconds_total{mode=\"idle\"}) by (instance)",
+          "expr": "node_load1 / on(instance) count by (instance) (node_cpu_seconds_total{mode=\"idle\"})",
           "legendFormat": "load"
         }
       ],

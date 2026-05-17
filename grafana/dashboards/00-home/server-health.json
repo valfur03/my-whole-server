@@ -254,7 +254,7 @@
       "gridPos": { "x": 16, "y": 6, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "node_load1 / count(node_cpu_seconds_total{mode=\"idle\"}) by (instance)" }
+        { "refId": "A", "expr": "node_load1 / on(instance) count by (instance) (node_cpu_seconds_total{mode=\"idle\"})" }
       ],
       "fieldConfig": {
         "defaults": {
