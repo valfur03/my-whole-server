@@ -1,0 +1,14 @@
+# Emits node-exporter textfile-collector metrics about each borgmatic run,
+# labelled by the config file processed. Uses the newer `commands` syntax
+# (borgmatic 1.9+) so it doesn't override the per-config legacy
+# `before_backup`/`after_backup` lists used elsewhere (e.g. by
+# nextcloud-maintenance.yaml).
+commands:
+    -   after: everything
+        states: [finish]
+        run:
+            - sh /scripts/prometheus-textfile.sh success
+    -   after: everything
+        states: [fail]
+        run:
+            - sh /scripts/prometheus-textfile.sh failure

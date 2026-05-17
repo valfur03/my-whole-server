@@ -3,6 +3,7 @@
     - ../constants/repositories.yaml
     - ../encryption/docker-secret.yaml
     - ../hooks/repositories-all.yaml
+    - ../hooks/prometheus-textfile.yaml
     - ../name-formats/docker.yaml
     - ../retention/7d.yaml
     - ../repositories/all.yaml

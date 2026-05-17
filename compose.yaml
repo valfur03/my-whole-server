@@ -92,6 +92,7 @@ services:
       - vaultwarden-data:/volumes/vaultwarden-data
       - /backup/local/borg/docker:/backup/local
       - /var/run/docker.sock:/var/run/docker.sock
+      - node-textfile-collector:/var/lib/node_exporter/textfile_collector
     networks:
       - authelia-backend
       - nextcloud-backend
@@ -196,10 +197,12 @@ services:
       - "--path.rootfs=/rootfs"
       - "--path.sysfs=/host/sys"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|run|tmp)($$|/)"
+      - "--collector.textfile.directory=/var/lib/node_exporter/textfile_collector"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
+      - node-textfile-collector:/var/lib/node_exporter/textfile_collector:ro
     networks:
       - metrics
     restart: unless-stopped
@@ -993,6 +996,7 @@ volumes:
   ldap-database:
   alloy-logs-data:
   loki-data:
+  node-textfile-collector:
   otel-collector-data:
   otel-data:
   plex-config:

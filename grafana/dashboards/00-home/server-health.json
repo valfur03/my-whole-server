@@ -289,18 +289,18 @@
     {
       "id": 13,
       "type": "stat",
-      "title": "Successful backups (24 h)",
-      "description": "Count of borgmatic completion lines in the last 24 hours. Green > 0, red = 0 (backup missed). Will be replaced by `borgmatic_last_run_timestamp_seconds` once the node-exporter textfile-collector hook is in place.",
+      "title": "Time since last backup",
+      "description": "Longest gap (across all borgmatic configs) since the last successful backup, from `borgmatic_last_success_timestamp_seconds` emitted by the node-exporter textfile-collector hook. Green < 24 h, yellow 24–48 h, red beyond — daily cadence means anything ≥ 24 h is a missed cycle.",
       "gridPos": { "x": 0, "y": 11, "w": 6, "h": 5 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)summary.*errors:\\\\s*0|backup.*(complete|success)\" [24h]))", "queryType": "instant" }
+        { "refId": "A", "expr": "max(time() - borgmatic_last_success_timestamp_seconds)" }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "dtdurations",
           "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 86400 }, { "color": "red", "value": 172800 }] }
         },
         "overrides": []
       },

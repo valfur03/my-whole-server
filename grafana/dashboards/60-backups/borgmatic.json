@@ -1,10 +1,10 @@
 {
   "uid": "backups-borgmatic",
-  "title": "60-Backups — Borgmatic (Loki)",
-  "tags": ["homelab", "backups", "borgmatic", "transitional"],
+  "title": "60-Backups — Borgmatic",
+  "tags": ["homelab", "backups", "borgmatic"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "1m",
@@ -26,19 +26,40 @@
     {
       "id": 400,
       "type": "row",
-      "title": "Status — derived from Loki until textfile-collector hook is in place",
+      "title": "Status — from node-exporter textfile-collector hook",
       "collapsed": false,
       "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
     },
     {
       "id": 1,
       "type": "stat",
-      "title": "Backups completed (24 h)",
-      "description": "Borgmatic completion lines in the last 24 hours. Green ≥ 1, red = 0 (cycle missed — borgmatic runs daily at 02:00 Europe/Paris per compose.yaml). Regex matches both `summary errors: 0` (borg summary line) and free-text completion phrases — verify on first run.",
+      "title": "Oldest last-success across configs",
+      "description": "`max(time() - borgmatic_last_success_timestamp_seconds)` — how stale the most-overdue config is. Green < 24 h, yellow 24–48 h, red beyond.",
       "gridPos": { "x": 0, "y": 1, "w": 6, "h": 5 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)summary.*errors:\\\\s*0|backup.*(complete|success)\" [24h]))", "queryType": "instant" }
+        { "refId": "A", "expr": "max(time() - borgmatic_last_success_timestamp_seconds)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dtdurations",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 86400 }, { "color": "red", "value": 172800 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Configs OK",
+      "description": "Number of configs whose last run succeeded over total configs reporting. `sum(borgmatic_last_run_status) / count(borgmatic_last_run_status)`.",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(borgmatic_last_run_status)", "legendFormat": "ok" },
+        { "refId": "B", "expr": "count(borgmatic_last_run_status)", "legendFormat": "total" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -51,64 +72,87 @@
       "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
     },
     {
-      "id": 2,
+      "id": 3,
       "type": "stat",
-      "title": "Errors (24 h)",
-      "description": "Borgmatic log lines matching `error|exception|fatal` in the last 24 h.",
-      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 5 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "title": "Last run (any config)",
+      "description": "Time since *any* config's last run finished (success or failure). Useful for confirming the daily cron actually fires.",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)error|exception|fatal\" [24h]))", "queryType": "instant" }
+        { "refId": "A", "expr": "min(time() - borgmatic_last_run_timestamp_seconds)" }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "dtdurations",
           "color": { "mode": "thresholds" },
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 86400 }, { "color": "red", "value": 172800 }] }
         },
         "overrides": []
       },
       "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
     },
     {
-      "id": 3,
-      "type": "stat",
-      "title": "Backup activity (24 h)",
-      "description": "Total log lines from borgmatic in 24 h — proxy for 'did anything run at all?'",
-      "gridPos": { "x": 12, "y": 1, "w": 12, "h": 5 },
-      "datasource": { "type": "loki", "uid": "loki" },
-      "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"}[24h]))", "queryType": "instant" }
-      ],
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
-      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
-    },
-    {
       "id": 4,
-      "type": "timeseries",
-      "title": "Completions per hour — last 7 days",
-      "description": "Hourly count of borgmatic completion lines. Expected pattern: one spike per day around 02:00 Europe/Paris.",
-      "gridPos": { "x": 0, "y": 6, "w": 24, "h": 7 },
-      "datasource": { "type": "loki", "uid": "loki" },
+      "type": "table",
+      "title": "Per-config status",
+      "description": "One row per borgmatic config. Sort by `last_success` ascending to spot stale entries first.",
+      "gridPos": { "x": 0, "y": 6, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)summary.*errors:|backup.*(complete|success)\" [1h]))", "legendFormat": "completions" }
+        { "refId": "A", "expr": "borgmatic_last_run_timestamp_seconds", "legendFormat": "{{config}}", "format": "table", "instant": true },
+        { "refId": "B", "expr": "borgmatic_last_success_timestamp_seconds", "legendFormat": "{{config}}", "format": "table", "instant": true },
+        { "refId": "C", "expr": "borgmatic_last_run_status", "legendFormat": "{{config}}", "format": "table", "instant": true }
+      ],
+      "transformations": [
+        { "id": "joinByField", "options": { "byField": "config", "mode": "outer" } },
+        { "id": "organize", "options": { "excludeByName": { "Time 1": true, "Time 2": true, "Time 3": true, "__name__ 1": true, "__name__ 2": true, "__name__ 3": true, "job 1": true, "job 2": true, "job 3": true, "instance 1": true, "instance 2": true, "instance 3": true }, "renameByName": { "config": "config", "Value #A": "last_run", "Value #B": "last_success", "Value #C": "status" } } }
       ],
       "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80 },
-          "color": { "mode": "fixed", "fixedColor": "green" }
-        },
-        "overrides": []
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "last_run" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }] },
+          { "matcher": { "id": "byName", "options": "last_success" }, "properties": [{ "id": "unit", "value": "dateTimeAsLocal" }] },
+          { "matcher": { "id": "byName", "options": "status" }, "properties": [
+            { "id": "mappings", "value": [{ "type": "value", "options": { "0": { "text": "FAIL", "color": "red" }, "1": { "text": "OK", "color": "green" } } }] },
+            { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+          ] }
+        ]
       },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "last_success", "desc": false }] }
     },
     {
       "id": 5,
       "type": "timeseries",
+      "title": "Time since last success — per config (last 7 days)",
+      "description": "Sawtooth pattern: ramps up by 1 second per second between runs, drops to ~0 when a successful run completes. A flat line that keeps climbing = that config has stopped succeeding.",
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "time() - borgmatic_last_success_timestamp_seconds", "legendFormat": "{{config}}" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "dtdurations",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10 },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 86400 }, { "color": "red", "value": 172800 }] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } }
+    },
+    {
+      "id": 401,
+      "type": "row",
+      "title": "Log-derived — supplementary (errors / activity / raw lines)",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 21, "w": 24, "h": 1 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
       "title": "Errors per hour — last 7 days",
       "description": "Hourly count of error-level lines from borgmatic. Should be flat at zero between scheduled runs.",
-      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 6 },
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 6 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         { "refId": "A", "expr": "sum(count_over_time({compose_service=\"borgmatic\"} |~ \"(?i)error|exception|fatal\" [1h]))", "legendFormat": "errors" }
@@ -124,11 +168,11 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
     },
     {
-      "id": 6,
+      "id": 7,
       "type": "logs",
       "title": "Borgmatic — summary / error log",
       "description": "Lines matching `summary|error|exception|fatal`. Read top-to-bottom to follow a recent run.",
-      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 14 },
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 14 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         { "refId": "A", "expr": "{compose_service=\"borgmatic\"} |~ \"(?i)summary|error|exception|fatal\"" }
