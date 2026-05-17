@@ -5,8 +5,11 @@
 # textfile-collector metrics describing the most recent borgmatic run,
 # labelled by the config file the run was for.
 #
-# Usage: prometheus-textfile.sh <status>
+# Usage: prometheus-textfile.sh <status> [config_filename]
 #   <status>: "success" or "failure"
+#   <config_filename>: path to the borgmatic config file (passed via the
+#                      `{configuration_filename}` interpolation placeholder).
+#                      Falls back to "all" if absent.
 #
 # One .prom file per config. Each invocation:
 #   - emits {config="<name>"} for the three metrics below,
@@ -24,6 +27,7 @@
 set -eu
 
 STATUS="${1:-failure}"
+CONFIG_FILE="${2:-}"
 OUT_DIR="${TEXTFILE_DIR:-/var/lib/node_exporter/textfile_collector}"
 NOW="$(date +%s)"
 
@@ -31,8 +35,8 @@ STATUS_VAL=0
 [ "$STATUS" = "success" ] && STATUS_VAL=1
 
 CONFIG="all"
-if [ -n "${BORGMATIC_CONFIG_FILENAME:-}" ]; then
-  CONFIG="$(basename "$BORGMATIC_CONFIG_FILENAME" .yaml)"
+if [ -n "$CONFIG_FILE" ]; then
+  CONFIG="$(basename "$CONFIG_FILE" .yaml)"
 fi
 
 mkdir -p "$OUT_DIR"

@@ -3,12 +3,20 @@
 # (borgmatic 1.9+) so it doesn't override the per-config legacy
 # `before_backup`/`after_backup` lists used elsewhere (e.g. by
 # nextcloud-maintenance.yaml).
+#
+# Scope is `after: configuration` (not `everything`) for two reasons:
+#   - `states:` is silently ignored at `everything` scope, so both success
+#     and failure hooks would fire on every run.
+#   - `everything` fires once globally; we want one .prom file per config.
+# The configuration filename is passed via the `{configuration_filename}`
+# interpolation placeholder because borgmatic does not export it as an
+# environment variable.
 commands:
-    -   after: everything
+    -   after: configuration
         states: [finish]
         run:
-            - sh /scripts/prometheus-textfile.sh success
-    -   after: everything
+            - sh /scripts/prometheus-textfile.sh success "{configuration_filename}"
+    -   after: configuration
         states: [fail]
         run:
-            - sh /scripts/prometheus-textfile.sh failure
+            - sh /scripts/prometheus-textfile.sh failure "{configuration_filename}"
