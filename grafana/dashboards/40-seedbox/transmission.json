@@ -4,7 +4,7 @@
   "tags": ["homelab", "seedbox", "transmission", "sonarr", "radarr"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
@@ -478,11 +478,52 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
     },
     {
+      "id": 31,
+      "type": "state-timeline",
+      "title": "Upload activity — which torrent uploaded when",
+      "description": "One row per torrent, X = time, colour = upload-rate bucket. Reads like the original heatmap idea but uses State Timeline because Grafana heatmaps require numeric Y buckets, not torrent names. Horizontal coloured band = a torrent that seeded consistently; vertical stripe across many rows = a moment when many torrents got peer interest. Capped to the 40 currently-active torrents (upload > 0) per scrape — narrow further with `$torrent_name`.",
+      "gridPos": { "x": 0, "y": 51, "w": 24, "h": 14 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(40, transmission_torrent_upload_bytes{name=~\"$torrent_name\", status=~\"$state\"} > 0)",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "#3274d9", "value": 1 },
+              { "color": "#56a64b", "value": 102400 },
+              { "color": "#f2cc0c", "value": 1048576 },
+              { "color": "#e02f44", "value": 10485760 }
+            ]
+          },
+          "noValue": "idle"
+        },
+        "overrides": []
+      },
+      "options": {
+        "mergeValues": false,
+        "showValue": "never",
+        "alignValue": "left",
+        "rowHeight": 0.9,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
       "id": 19,
       "type": "bargauge",
       "title": "Top 10 by upload (last 24 h)",
       "description": "Top torrents by uploaded-bytes increase over the last 24 h.",
-      "gridPos": { "x": 0, "y": 51, "w": 12, "h": 9 },
+      "gridPos": { "x": 0, "y": 65, "w": 12, "h": 9 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "topk(10, increase(transmission_torrent_uploaded_ever[24h]))", "legendFormat": "{{name}}" }
@@ -498,7 +539,7 @@
       "type": "bargauge",
       "title": "Top 10 by ratio",
       "description": "Best ratios first — your strongest seeds.",
-      "gridPos": { "x": 12, "y": 51, "w": 12, "h": 9 },
+      "gridPos": { "x": 12, "y": 65, "w": 12, "h": 9 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "topk(10, transmission_torrent_ratio)", "legendFormat": "{{name}}" }
@@ -514,7 +555,7 @@
       "type": "barchart",
       "title": "Daily upload — last 30 days",
       "description": "Sum of `increase(transmission_torrent_uploaded_ever)` per calendar day. Spot weekday/weekend patterns and quiet stretches.",
-      "gridPos": { "x": 0, "y": 60, "w": 24, "h": 8 },
+      "gridPos": { "x": 0, "y": 74, "w": 24, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sum(increase(transmission_torrent_uploaded_ever[1d]))", "legendFormat": "upload" }
@@ -534,14 +575,14 @@
       "type": "row",
       "title": "Sonarr",
       "collapsed": false,
-      "gridPos": { "x": 0, "y": 68, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 82, "w": 24, "h": 1 }
     },
     {
       "id": 22,
       "type": "stat",
       "title": "Series",
       "description": "Total number of series Sonarr tracks. Metric names follow onedr0p/exportarr — verify with `curl -s sonarr-exporter:9707/metrics | grep sonarr_` after first scrape.",
-      "gridPos": { "x": 0, "y": 69, "w": 6, "h": 4 },
+      "gridPos": { "x": 0, "y": 83, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sonarr_series_total" }
@@ -553,7 +594,7 @@
       "id": 23,
       "type": "stat",
       "title": "Episodes downloaded",
-      "gridPos": { "x": 6, "y": 69, "w": 6, "h": 4 },
+      "gridPos": { "x": 6, "y": 83, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sonarr_episode_downloaded_total" }
@@ -566,7 +607,7 @@
       "type": "stat",
       "title": "Episodes missing",
       "description": "Episodes Sonarr knows about but hasn't grabbed yet — a non-zero value isn't bad, but a steadily-growing trend is.",
-      "gridPos": { "x": 12, "y": 69, "w": 6, "h": 4 },
+      "gridPos": { "x": 12, "y": 83, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sonarr_episode_missing_total" }
@@ -586,7 +627,7 @@
       "type": "stat",
       "title": "Queue",
       "description": "Items in Sonarr's download queue right now. exportarr only emits `sonarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
-      "gridPos": { "x": 18, "y": 69, "w": 6, "h": 4 },
+      "gridPos": { "x": 18, "y": 83, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sum(sonarr_queue_total) or vector(0)" }
@@ -599,13 +640,13 @@
       "type": "row",
       "title": "Radarr",
       "collapsed": false,
-      "gridPos": { "x": 0, "y": 73, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 87, "w": 24, "h": 1 }
     },
     {
       "id": 26,
       "type": "stat",
       "title": "Movies",
-      "gridPos": { "x": 0, "y": 74, "w": 6, "h": 4 },
+      "gridPos": { "x": 0, "y": 88, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "radarr_movie_total" }
@@ -617,7 +658,7 @@
       "id": 27,
       "type": "stat",
       "title": "Movies downloaded",
-      "gridPos": { "x": 6, "y": 74, "w": 6, "h": 4 },
+      "gridPos": { "x": 6, "y": 88, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "radarr_movie_downloaded_total" }
@@ -629,7 +670,7 @@
       "id": 28,
       "type": "stat",
       "title": "Movies missing",
-      "gridPos": { "x": 12, "y": 74, "w": 6, "h": 4 },
+      "gridPos": { "x": 12, "y": 88, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "radarr_movie_missing_total" }
@@ -649,7 +690,7 @@
       "type": "stat",
       "title": "Queue",
       "description": "Items in Radarr's download queue right now. exportarr only emits `radarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
-      "gridPos": { "x": 18, "y": 74, "w": 6, "h": 4 },
+      "gridPos": { "x": 18, "y": 88, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "A", "expr": "sum(radarr_queue_total) or vector(0)" }
@@ -662,7 +703,7 @@
       "type": "timeseries",
       "title": "Queue length over time",
       "description": "Watch for steady growth — that means downloads are queuing faster than they're completing.",
-      "gridPos": { "x": 0, "y": 78, "w": 24, "h": 6 },
+      "gridPos": { "x": 0, "y": 92, "w": 24, "h": 6 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "S", "expr": "sum(sonarr_queue_total) or vector(0)", "legendFormat": "sonarr" },
