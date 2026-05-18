@@ -659,7 +659,7 @@ services:
 # =================================== S-PDF ================================== #
 # ============================================================================ #
   s-pdf:
-    image: frooodle/s-pdf:0.46.2@sha256:396ca949b81198a65b9abfec38518fa44e871b1970dad9f9718ffd030eef9b92
+    image: frooodle/s-pdf:2.10.1@sha256:950c596db26e0764f642def2fd4f9ee904ff2ac16d83fe621ff731b771d9b385
     networks:
       - proxy
     labels:
