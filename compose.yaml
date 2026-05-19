@@ -591,7 +591,7 @@ services:
       - metrics
     restart: unless-stopped
   plex:
-    image: lscr.io/linuxserver/plex:1.41.3@sha256:ec54f85c19b3575c63929c260a0d8c360d57d41f3597ac9184cb134b6c634137
+    image: lscr.io/linuxserver/plex:1.43.2@sha256:626eb0d52b4522db3be91110a89161be6ccffc0741e9abf0e93aaf4fea98ccb9
     environment:
       PUID: 1000
       PGID: 1000
