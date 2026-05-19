@@ -1,7 +1,8 @@
 #!/bin/sh
 # borgmatic → Prometheus textfile-collector hook.
 #
-# Invoked from borgmatic's `commands` hooks. Writes node_exporter
+# Invoked from borgmatic's `after_actions` (success) and `on_error`
+# (failure) hooks. Writes node_exporter
 # textfile-collector metrics describing the most recent borgmatic run,
 # labelled by the config file the run was for.
 #
