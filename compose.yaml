@@ -321,7 +321,7 @@ services:
     restart: unless-stopped
 
   nextcloud-app:
-    image: nextcloud:32.0.9-fpm@sha256:ed815bbcd424df9c6bd7cb68599cacf1e93597668779084459adfad428bd92a9
+    image: nextcloud:32.0.9-fpm@sha256:9d8409d2abbbbe5b8d0e7fa49c6c1783baa4ad2d69fcc55e1cfb04062bdb37ad
     depends_on:
       - nextcloud-database
       - nextcloud-redis
