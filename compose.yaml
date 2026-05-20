@@ -928,7 +928,6 @@ services:
       traefik.http.routers.weekly-money.rule: Host(`weekly-money.${BASE_DOMAIN}`)
       traefik.http.routers.weekly-money.tls: true
       traefik.http.routers.weekly-money.tls.certresolver: letsencrypt
-      traefik.http.routers.weekly-money.middlewares: authelia@docker
       traefik.http.services.weekly-money.loadbalancer.server.port: 3000
       traefik.enable: true
     restart: unless-stopped
