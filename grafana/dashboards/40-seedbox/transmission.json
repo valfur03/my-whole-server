@@ -204,6 +204,12 @@
           "expr": "transmission_torrent_status{name=~\"$torrent_name\", status=~\"$state\"}",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "Added",
+          "expr": "transmission_torrent_added{name=~\"$torrent_name\"} * 1000",
+          "instant": true,
+          "format": "table"
         }
       ],
       "transformations": [
@@ -215,7 +221,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "names": ["name", "Value #Status", "Value #Done", "Value #Ratio", "Value #Size", "Value #Uploaded", "Value #UpSpeed"]
+              "names": ["name", "Value #Status", "Value #Done", "Value #Ratio", "Value #Size", "Value #Uploaded", "Value #UpSpeed", "Value #Added"]
             }
           }
         },
@@ -229,7 +235,8 @@
               "Value #Ratio": "Ratio",
               "Value #Size": "Size",
               "Value #Uploaded": "Up total",
-              "Value #UpSpeed": "Up rate"
+              "Value #UpSpeed": "Up rate",
+              "Value #Added": "Added"
             },
             "indexByName": {
               "Name": 0,
@@ -238,7 +245,8 @@
               "Ratio": 3,
               "Size": 4,
               "Up total": 5,
-              "Up rate": 6
+              "Up rate": 6,
+              "Added": 7
             }
           }
         },
@@ -255,6 +263,7 @@
           { "matcher": { "id": "byName", "options": "Size" }, "properties": [{ "id": "unit", "value": "bytes" }] },
           { "matcher": { "id": "byName", "options": "Up total" }, "properties": [{ "id": "unit", "value": "bytes" }] },
           { "matcher": { "id": "byName", "options": "Up rate" }, "properties": [{ "id": "unit", "value": "Bps" }] },
+          { "matcher": { "id": "byName", "options": "Added" }, "properties": [{ "id": "unit", "value": "dateTimeAsIso" }] },
           {
             "matcher": { "id": "byName", "options": "State" },
             "properties": [
