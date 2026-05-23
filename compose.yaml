@@ -125,7 +125,7 @@ services:
 # ==================================== FRP =================================== #
 # ============================================================================ #
   frps:
-    image: snowdreamtech/frps:alpine@sha256:e4cf3032e7227e52cb5531c9c32180de9957e0137ed9a6779aec3d7ab7a16af3
+    image: snowdreamtech/frps:alpine@sha256:9266755999eea2ce3f4c0f41eeaf62b3955b2938582fdeaa6fcd8513a7be10b0
     command: -c /etc/frps/frps.toml
     environment:
       FRP_AUTH_TOKEN: ${FRP_AUTH_TOKEN}
