@@ -363,28 +363,16 @@ services:
 # ============================================================================ #
 # =================================== OTEL =================================== #
 # ============================================================================ #
-  jaeger:
-    build:
-      context: otel
-      dockerfile: jaeger.Dockerfile
-    environment:
-      SPAN_STORAGE_TYPE: badger
-      BADGER_EPHEMERAL: false
-      BADGER_DIRECTORY_VALUE: /badger/data
-      BADGER_DIRECTORY_KEY: /badger/key
+  tempo:
+    image: grafana/tempo:2.10.5
+    user: "0"
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
     volumes:
-      - otel-data:/badger
+      - ./otel/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
     networks:
-      - proxy
+      - metrics
       - seedbox-metrics
-      - traefik
-    labels:
-      traefik.http.routers.jaeger.rule: Host(`traces.${BASE_DOMAIN}`)
-      traefik.http.routers.jaeger.tls: true
-      traefik.http.routers.jaeger.tls.certresolver: letsencrypt
-      traefik.http.routers.jaeger.middlewares: authelia@docker
-      traefik.http.services.jaeger.loadbalancer.server.port: 16686
-      traefik.enable: true
     restart: unless-stopped
 
   otel-collector:
@@ -395,7 +383,7 @@ services:
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
     depends_on:
-      - jaeger
+      - tempo
     volumes:
       - ./otel/collector/config.alloy:/etc/alloy/config.alloy:ro
       - otel-collector-data:/var/lib/alloy/data
@@ -403,11 +391,11 @@ services:
       - proxy
       - seedbox-metrics
     labels:
-      traefik.http.routers.jaeger-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
-      traefik.http.routers.jaeger-http-collector.tls: true
-      traefik.http.routers.jaeger-http-collector.tls.certresolver: letsencrypt
-      traefik.http.routers.jaeger-http-collector.middlewares: authelia@docker
-      traefik.http.services.jaeger-http-collector.loadbalancer.server.port: 4318
+      traefik.http.routers.otel-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
+      traefik.http.routers.otel-http-collector.tls: true
+      traefik.http.routers.otel-http-collector.tls.certresolver: letsencrypt
+      traefik.http.routers.otel-http-collector.middlewares: authelia@docker
+      traefik.http.services.otel-http-collector.loadbalancer.server.port: 4318
       traefik.enable: true
     restart: unless-stopped
 
@@ -986,7 +974,7 @@ volumes:
   loki-data:
   node-textfile-collector:
   otel-collector-data:
-  otel-data:
+  tempo-data:
   plex-config:
   prometheus-data:
   sonarr-config:

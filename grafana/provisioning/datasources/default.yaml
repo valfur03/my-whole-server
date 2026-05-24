@@ -12,7 +12,7 @@ datasources:
       timeInterval: 15s
       exemplarTraceIdDestinations:
         - name: trace_id
-          datasourceUid: jaeger
+          datasourceUid: tempo
 
   - name: Loki
     uid: loki
@@ -25,13 +25,13 @@ datasources:
         - name: TraceID
           matcherRegex: 'trace[_-]?id["= ]+([a-f0-9]{16,32})'
           url: '${__value.raw}'
-          datasourceUid: jaeger
+          datasourceUid: tempo
 
-  - name: Jaeger
-    uid: jaeger
-    type: jaeger
+  - name: Tempo
+    uid: tempo
+    type: tempo
     access: proxy
-    url: http://jaeger:16686
+    url: http://tempo:3200
     editable: false
     jsonData:
       tracesToLogsV2:
@@ -39,5 +39,15 @@ datasources:
         tags:
           - key: service.name
             value: compose_service
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
       tracesToMetrics:
         datasourceUid: prometheus
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki

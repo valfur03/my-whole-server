@@ -16,9 +16,9 @@ scrape_configs:
     static_configs:
       - targets: ["loki:3100"]
 
-  - job_name: "jaeger"
+  - job_name: "tempo"
     static_configs:
-      - targets: ["jaeger:14269"]
+      - targets: ["tempo:3200"]
 
   - job_name: "otel-collector"
     static_configs:
@@ -82,7 +82,7 @@ scrape_configs:
           - http://adguard:80
           - http://s-pdf:8080
           - http://vidlvery:3000
-          - http://jaeger:16686
+          - http://tempo:3200/ready
           - http://web:80
           - http://sonarr:8989/ping
           - http://radarr:7878/ping

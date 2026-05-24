@@ -13,16 +13,16 @@ otelcol.receiver.otlp "default" {
 otelcol.processor.batch "default" {
 	output {
 		traces = [
-			otelcol.exporter.otlp.jaeger.input,
+			otelcol.exporter.otlp.tempo.input,
 			otelcol.connector.spanmetrics.default.input,
 		]
 	}
 }
 
-// Traces → Jaeger (gRPC, in-cluster, TLS off)
-otelcol.exporter.otlp "jaeger" {
+// Traces → Tempo (gRPC, in-cluster, TLS off)
+otelcol.exporter.otlp "tempo" {
 	client {
-		endpoint = "jaeger:4317"
+		endpoint = "tempo:4317"
 		tls {
 			insecure = true
 		}
