@@ -10,6 +10,9 @@
   "refresh": "1m",
   "time": { "from": "now-7d", "to": "now" },
   "templating": { "list": [] },
+  "links": [
+    { "title": "Home", "type": "link", "icon": "home", "url": "/d/home-server-health", "tooltip": "00-Home — Server health", "targetBlank": false, "keepTime": true, "includeVars": false }
+  ],
   "annotations": {
     "list": [
       {

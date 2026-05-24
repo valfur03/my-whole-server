@@ -4,12 +4,22 @@
   "tags": ["homelab", "home"],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 2,
+  "version": 3,
   "editable": false,
   "graphTooltip": 1,
   "refresh": "30s",
   "time": { "from": "now-1h", "to": "now" },
   "templating": { "list": [] },
+  "links": [
+    { "title": "Host",          "type": "link", "icon": "dashboard", "url": "/d/host-overview",          "tooltip": "10-Infra — Host overview",            "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Containers",    "type": "link", "icon": "dashboard", "url": "/d/infra-containers",       "tooltip": "10-Infra — Containers",               "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Traefik",       "type": "link", "icon": "dashboard", "url": "/d/ingress-traefik",        "tooltip": "20-Ingress — Traefik & FRPS",         "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Nextcloud",     "type": "link", "icon": "dashboard", "url": "/d/apps-nextcloud",         "tooltip": "30-Apps — Nextcloud",                 "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Seedbox",       "type": "link", "icon": "dashboard", "url": "/d/seedbox-transmission",   "tooltip": "40-Seedbox — Transmission & *arr",    "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Backups",       "type": "link", "icon": "dashboard", "url": "/d/backups-borgmatic",      "tooltip": "60-Backups — Borgmatic",              "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Observability", "type": "link", "icon": "dashboard", "url": "/d/observability-self",     "tooltip": "70-Observability — Self-monitoring",  "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Tracing",       "type": "link", "icon": "dashboard", "url": "/d/observability-tracing",  "tooltip": "70-Observability — Tracing",          "targetBlank": false, "keepTime": true, "includeVars": false }
+  ],
   "annotations": {
     "list": [
       {
@@ -77,7 +87,10 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [
+        { "title": "Open Ingress dashboard (Authelia is rolled into 20-Ingress)", "url": "/d/ingress-traefik", "targetBlank": false }
+      ]
     },
     {
       "id": 3,
@@ -97,7 +110,10 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [
+        { "title": "Open Nextcloud dashboard", "url": "/d/apps-nextcloud", "targetBlank": false }
+      ]
     },
     {
       "id": 4,
@@ -137,7 +153,10 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [
+        { "title": "Open Seedbox dashboard (Plex panels land here per Section 3.8)", "url": "/d/seedbox-transmission", "targetBlank": false }
+      ]
     },
     {
       "id": 6,
@@ -205,7 +224,8 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Host overview", "url": "/d/host-overview", "targetBlank": false }]
     },
     {
       "id": 9,
@@ -226,7 +246,8 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Host overview", "url": "/d/host-overview", "targetBlank": false }]
     },
     {
       "id": 10,
@@ -245,7 +266,8 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Host overview", "url": "/d/host-overview", "targetBlank": false }]
     },
     {
       "id": 11,
@@ -265,7 +287,8 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Host overview", "url": "/d/host-overview", "targetBlank": false }]
     },
     {
       "id": 12,
@@ -277,7 +300,8 @@
         { "refId": "A", "expr": "time() - node_boot_time_seconds" }
       ],
       "fieldConfig": { "defaults": { "unit": "dtdurations", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
-      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+      "links": [{ "title": "Host overview", "url": "/d/host-overview", "targetBlank": false }]
     },
     {
       "id": 202,

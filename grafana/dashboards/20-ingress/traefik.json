@@ -27,6 +27,9 @@
       }
     ]
   },
+  "links": [
+    { "title": "Home", "type": "link", "icon": "home", "url": "/d/home-server-health", "tooltip": "00-Home — Server health", "targetBlank": false, "keepTime": true, "includeVars": false }
+  ],
   "annotations": {
     "list": [
       {
