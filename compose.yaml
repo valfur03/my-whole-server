@@ -171,7 +171,7 @@ services:
       traefik.enable: true
     restart: unless-stopped
   grafana:
-    image: grafana/grafana-oss:10.4.19@sha256:a9043254ba16fb10945cc27333963dfd08eccbb43b51f1222d831cc564e3a1f4
+    image: grafana/grafana-oss:11.6.5@sha256:d552f949693c54d17c6f867ff6aeb128b021e54e923895dcf9cd6aa8176c0d74
     depends_on:
       - prometheus
     environment:
