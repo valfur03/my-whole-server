@@ -20,8 +20,8 @@
         "datasource": { "type": "loki", "uid": "loki" },
         "enable": true,
         "iconColor": "rgba(0, 211, 255, 1)",
-        "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"",
-        "target": { "expr": "{compose_service=\"doco-cd\"} |~ \"(?i)deploy.*success\"", "refId": "Anno" }
+        "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s",
+        "target": { "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s", "refId": "Anno" }
       }
     ]
   },
