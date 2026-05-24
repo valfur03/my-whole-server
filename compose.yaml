@@ -488,16 +488,6 @@ services:
      - transmission-config:/config
     restart: unless-stopped
 
-  flaresolverr:
-    image: alexfozor/flaresolverr:pr-1300-experimental@sha256:3e5e1335c31365b5b0d9a737097c6a719de0ba49fed7db65cd828d75ae1bbecb
-    environment:
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - LOG_HTML=${LOG_HTML:-false}
-      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=Europe/Paris
-    network_mode: "service:vpn"
-    restart: unless-stopped
-
   fleischel:
     image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
     networks:
@@ -509,8 +499,6 @@ services:
 
   jackett:
     image: lscr.io/linuxserver/jackett:0.24.1440@sha256:cdea5d3209a6ab1fb8eb954ec0b8169b7d54274617f42bf5c74f22a92075755f
-    depends_on:
-      - flaresolverr
     environment:
       - PUID=1000
       - PGID=1000
