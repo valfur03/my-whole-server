@@ -176,7 +176,7 @@ services:
       - prometheus
     environment:
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/00-home/server-health.json
-      GF_INSTALL_PLUGINS: grafana-lokiexplore-app
+      GF_INSTALL_PLUGINS: grafana-lokiexplore-app 2.0.4
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
