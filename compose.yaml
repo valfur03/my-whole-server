@@ -434,25 +434,23 @@ services:
 # ================================== SEEDBOX ================================= #
 # ============================================================================ #
   vpn:
-    image: dperson/openvpn-client@sha256:d174047b57d51734143325ad7395210643025e6516ba60a937e9319dbb462293
-    devices:
-      - /dev/net/tun
+    image: qmcgaw/gluetun:v3.41.1@sha256:1a5bf4b4820a879cdf8d93d7ef0d2d963af56670c9ebff8981860b6804ebc8ab
     cap_add:
       - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
     secrets:
-      - source: SEEDBOX_OPENVPN_CONFIG
-        target: /vpn/vpn.conf
+      - source: SEEDBOX_WIREGUARD_CONFIG
+        target: /gluetun/wireguard/wg0.conf
         mode: 0400
-    dns:
-      - "8.8.8.8"
-      - "8.8.4.4"
     logging:
       options:
         max-size: "2m"
         max-file: "3"
     environment:
-      - FIREWALL
-      - TZ=Europe/Paris
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+      TZ: Europe/Paris
     networks:
       - proxy
       - seedbox-indexer
@@ -478,6 +476,10 @@ services:
 
   transmission:
     image: linuxserver/transmission:4.1.1@sha256:7d1f96f26f433d5bfa518f6392021e17fc74a7eb0322190746981143644ce29e
+    depends_on:
+      vpn:
+        condition: service_healthy
+        restart: true
     environment:
       - PUID=1000
       - PGID=1000
@@ -499,6 +501,10 @@ services:
 
   jackett:
     image: lscr.io/linuxserver/jackett:0.24.1440@sha256:cdea5d3209a6ab1fb8eb954ec0b8169b7d54274617f42bf5c74f22a92075755f
+    depends_on:
+      vpn:
+        condition: service_healthy
+        restart: true
     environment:
       - PUID=1000
       - PGID=1000
@@ -1087,8 +1093,8 @@ secrets:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/WEBHOOK_SECRET
   DOCO_CD_SOPS_AGE_KEY:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY
-  SEEDBOX_OPENVPN_CONFIG:
-    file: ${SECRETS_DIR:-./}seedbox/secrets/OPENVPN_CONFIG
+  SEEDBOX_WIREGUARD_CONFIG:
+    file: ${SECRETS_DIR:-./}seedbox/secrets/WIREGUARD_CONFIG
   BORGMATIC_SSH_PRIVATE_KEY:
     file: ${SECRETS_DIR:-./}borgmatic/secrets/SSH_PRIVATE_KEY
   BORGMATIC_SSH_KNOWN_HOSTS:
