@@ -3,6 +3,11 @@
   "extends": [
     "config:best-practices"
   ],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days"
+  },
   "packageRules": [
     {
       "matchPackageNames": ["traefik"],
