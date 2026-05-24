@@ -473,12 +473,6 @@ services:
     ports:
       - 53490:34095
     labels:
-      traefik.http.routers.joal.rule: Host(`joal.${BASE_DOMAIN}`)
-      traefik.http.routers.joal.service: joal
-      traefik.http.routers.joal.tls: true
-      traefik.http.routers.joal.tls.certresolver: letsencrypt
-      traefik.http.routers.joal.middlewares: authelia@docker
-      traefik.http.services.joal.loadbalancer.server.port: 4494
       traefik.http.routers.transmission.rule: Host(`transmission.${BASE_DOMAIN}`)
       traefik.http.routers.transmission.service: transmission
       traefik.http.routers.transmission.tls: true
@@ -493,14 +487,6 @@ services:
       traefik.http.routers.jackett.middlewares: authelia@docker
       traefik.enable: true
     restart: unless-stopped
-
-  joal:
-    build: seedbox/joal
-    restart: unless-stopped
-    network_mode: "service:vpn"
-    volumes:
-      - ./seedbox/joal/data:/data
-    command: ["--joal-conf=/data", "--spring.main.web-environment=true", "--server.port=4494", "--joal.ui.path.prefix=${JOAL_PATH_PREFIX}", "--joal.ui.secret-token=${JOAL_SECRET_TOKEN}"]
 
   transmission:
     image: linuxserver/transmission:4.1.1@sha256:62a88fbc210fc62d867eab9c67a0f5474db7257013ce598173a9efc1043e97b8

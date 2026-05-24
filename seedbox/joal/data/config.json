@@ -1,7 +1,0 @@
-{
-  "minUploadRate" : 7613,
-  "maxUploadRate" : 9764,
-  "simultaneousSeed" : 20,
-  "client" : "transmission-3.00.client",
-  "keepTorrentWithZeroLeechers" : true
-}
