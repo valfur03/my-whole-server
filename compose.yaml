@@ -617,6 +617,53 @@ services:
       - seedbox-torrenting
     restart: unless-stopped
 
+  seerr-database:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: seerr
+      POSTGRES_USER: seerr
+      POSTGRES_PASSWORD: ${SEERR_DATABASE_PASSWORD}
+    volumes:
+      - seerr-database:/var/lib/postgresql
+    networks:
+      - seerr-backend
+    restart: unless-stopped
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3.0.0
+    init: true
+    depends_on:
+      - seerr-database
+    environment:
+      LOG_LEVEL: info
+      TZ: Europe/Paris
+      PORT: 5055
+      DB_TYPE: postgres
+      DB_HOST: seerr-database
+      DB_PORT: 5432
+      DB_USER: seerr
+      DB_PASS: ${SEERR_DATABASE_PASSWORD}
+      DB_NAME: seerr
+    volumes:
+      - seerr-config:/app/config
+    networks:
+      - seerr-backend
+      - proxy
+      - seedbox-indexer
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 30s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      traefik.http.routers.seerr.rule: Host(`seerr.${BASE_DOMAIN}`)
+      traefik.http.routers.seerr.tls: true
+      traefik.http.routers.seerr.tls.certresolver: letsencrypt
+      traefik.http.services.seerr.loadbalancer.server.port: 5055
+      traefik.enable: true
+    restart: unless-stopped
+
 # ============================================================================ #
 # =================================== S-PDF ================================== #
 # ============================================================================ #
@@ -967,6 +1014,8 @@ volumes:
   prometheus-data:
   sonarr-config:
   radarr-config:
+  seerr-config:
+  seerr-database:
 #  synapse-data:
 #  synapse-database:
 #  synapse-syncv3-database:
@@ -990,6 +1039,7 @@ networks:
   seedbox-indexer:
   seedbox-metrics:
   seedbox-torrenting:
+  seerr-backend:
 #  synapse-backend:
   traefik:
   weekly-money-backend:
