@@ -5,6 +5,7 @@
   ],
   "minimumReleaseAge": "7 days",
   "internalChecksFilter": "strict",
+  "separateMultipleMajor": true,
   "vulnerabilityAlerts": {
     "minimumReleaseAge": "0 days"
   },
