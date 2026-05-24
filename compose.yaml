@@ -310,7 +310,7 @@ services:
     restart: unless-stopped
 
   nextcloud-redis-exporter:
-    image: oliver006/redis_exporter:v1.66.0-alpine@sha256:117e28099cf52e284c43073935a3beb8dd7a29aa4972a7c1a062dba421e986fa
+    image: oliver006/redis_exporter:v1.83.0-alpine@sha256:7643b705adca0ef5c700cae28cfd8798c3d3b653ef17096084359d17b70ea5ca
     depends_on:
       - nextcloud-redis
     environment:
