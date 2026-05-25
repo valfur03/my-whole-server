@@ -632,6 +632,21 @@ services:
     environment:
       TRANSMISSION_ADDR: http://vpn:9091
 
+  qbittorrent-exporter:
+    image: ghcr.io/martabal/qbittorrent-exporter:2.0.1
+    restart: unless-stopped
+    networks:
+      - seedbox-metrics
+    environment:
+      QBITTORRENT_BASE_URL: http://vpn:8090
+      QBITTORRENT_USERNAME: ${QBITTORRENT_EXPORTER_USERNAME}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_EXPORTER_PASSWORD}
+      EXPORTER_PORT: 17871
+      ENABLE_LABEL_WITH_HASH: "true"
+      ENABLE_LABEL_WITH_TRACKER: "true"
+      ENABLE_LABEL_WITH_TAG: "true"
+      ENABLE_INCREASED_CARDINALITY: "true"
+
   cross-seed:
     image: ghcr.io/cross-seed/cross-seed:6.13.7@sha256:9555dc70f6753fef32d54bfc1ff504899377a6a0b73687f95d58fa27dfa0a7c7
     command: daemon
