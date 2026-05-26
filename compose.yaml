@@ -890,7 +890,7 @@ services:
       traefik.http.routers.web.rule: Host(`${BASE_DOMAIN}`)
       traefik.http.routers.web.tls: true
       traefik.http.routers.web.tls.domains[0].main: ${BASE_DOMAIN}
-      traefik.http.routers.web.tls.domains[0].sans: "*.${BASE_DOMAIN}"
+      traefik.http.routers.web.tls.domains[1].main: "*.${BASE_DOMAIN}"
       traefik.http.routers.web.tls.certresolver: letsencrypt
       traefik.enable: true
     restart: unless-stopped
