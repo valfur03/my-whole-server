@@ -1,0 +1,608 @@
+{
+  "uid": "seedbox-qbittorrent",
+  "title": "40-Seedbox — qBittorrent & *arr",
+  "tags": ["homelab", "seedbox", "qbittorrent", "sonarr", "radarr"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": { "from": "now-7d", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "tracker",
+        "type": "query",
+        "label": "Tracker",
+        "description": "Multi-select. Every aggregate and the table are filtered by this, so deselecting a tracker (e.g. the one your Linux ISOs live on) removes those torrents from the totals too — no more polluted aggregates. Default is All.",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "qryType": 1, "query": "label_values(qbittorrent_torrent_info, tracker)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "definition": "label_values(qbittorrent_torrent_info, tracker)",
+        "regex": "",
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+      },
+      {
+        "name": "torrent",
+        "type": "query",
+        "label": "Single torrent (optional drill-down)",
+        "description": "Only used by the collapsed 'Per-torrent history' row at the bottom. Cross-seeded names show one line per tracker.",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": { "qryType": 1, "query": "label_values(qbittorrent_torrent_ratio, name)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "definition": "label_values(qbittorrent_torrent_ratio, name)",
+        "regex": "",
+        "sort": 1,
+        "includeAll": false,
+        "multi": false,
+        "current": { "selected": false, "text": "", "value": "" }
+      }
+    ]
+  },
+  "links": [
+    { "title": "Home", "type": "link", "icon": "home", "url": "/d/home-server-health", "tooltip": "00-Home — Server health", "targetBlank": false, "keepTime": true, "includeVars": false }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s",
+        "target": {
+          "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s",
+          "refId": "Anno"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Counts",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Total",
+      "description": "Torrents matching the selected `$tracker`(s), excluding any tagged `vpn-check`.",
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_ratio{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Seeding",
+      "description": "qBittorrent states uploading / stalledUP / forcedUP / queuedUP.",
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"uploading|stalledUP|forcedUP|queuedUP\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Downloading",
+      "description": "States downloading / stalledDL / forcedDL / metaDL / forcedMetaDL / queuedDL.",
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"downloading|stalledDL|forcedDL|metaDL|forcedMetaDL|queuedDL\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Stopped",
+      "description": "States stoppedUP / stoppedDL (and legacy pausedUP / pausedDL).",
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"stoppedUP|stoppedDL|pausedUP|pausedDL\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "red" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Errored",
+      "description": "States error / missingFiles — needs attention.",
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"error|missingFiles\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Checking / other",
+      "description": "States checkingUP / checkingDL / checkingResumeData / moving / allocating / unknown.",
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"checkingUP|checkingDL|checkingResumeData|moving|allocating|unknown\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "yellow" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Torrents — find / sort / filter (one row per torrent, cross-seeds included)",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Torrents",
+      "description": "One row per torrent, keyed on `hash` so cross-seeded copies of the same name each get their own row (sorted by name so they sit together). Use the per-column filter icons in the header to search by name, tracker or state — that replaces the old name-regex box. Filtered by `$tracker`. Ratio/up/down are cumulative all-time totals from qBittorrent.",
+      "gridPos": { "x": 0, "y": 6, "w": 24, "h": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "Info", "expr": "qbittorrent_torrent_info{tracker=~\"$tracker\"}", "instant": true, "format": "table" },
+        { "refId": "Ratio", "expr": "sum by (hash) (qbittorrent_torrent_ratio{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
+        { "refId": "UpTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
+        { "refId": "DownTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
+        { "refId": "Size", "expr": "sum by (hash) (qbittorrent_torrent_size_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
+        { "refId": "Progress", "expr": "sum by (hash) (qbittorrent_torrent_progress{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
+        { "refId": "Added", "expr": "sum by (hash) (qbittorrent_torrent_added_on{tracker=~\"$tracker\"}) * 1000", "instant": true, "format": "table" }
+      ],
+      "transformations": [
+        { "id": "joinByField", "options": { "byField": "hash", "mode": "outer" } },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["hash", "name", "tracker", "state", "Value #Ratio", "Value #UpTotal", "Value #DownTotal", "Value #Size", "Value #Progress", "Value #Added"]
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "hash": true },
+            "renameByName": {
+              "name": "Name",
+              "tracker": "Tracker",
+              "state": "State",
+              "Value #Ratio": "Ratio",
+              "Value #UpTotal": "Up total",
+              "Value #DownTotal": "Down total",
+              "Value #Size": "Size",
+              "Value #Progress": "Progress",
+              "Value #Added": "Added"
+            },
+            "indexByName": {
+              "name": 0,
+              "tracker": 1,
+              "state": 2,
+              "Value #Ratio": 3,
+              "Value #UpTotal": 4,
+              "Value #DownTotal": 5,
+              "Value #Size": 6,
+              "Value #Added": 7,
+              "Value #Progress": 8,
+              "hash": 9
+            }
+          }
+        },
+        { "id": "sortBy", "options": { "fields": {}, "sort": [{ "field": "Name", "desc": false }] } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "filterable": true, "align": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Progress" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 1 }] },
+          { "matcher": { "id": "byName", "options": "Ratio" }, "properties": [{ "id": "decimals", "value": 2 }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "green", "value": 1 }] } }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] },
+          { "matcher": { "id": "byName", "options": "Size" }, "properties": [{ "id": "unit", "value": "bytes" }] },
+          { "matcher": { "id": "byName", "options": "Up total" }, "properties": [{ "id": "unit", "value": "bytes" }] },
+          { "matcher": { "id": "byName", "options": "Down total" }, "properties": [{ "id": "unit", "value": "bytes" }] },
+          { "matcher": { "id": "byName", "options": "Added" }, "properties": [{ "id": "unit", "value": "dateTimeAsIso" }] },
+          {
+            "matcher": { "id": "byName", "options": "State" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": {
+                    "uploading": { "text": "Seeding", "color": "green" },
+                    "stalledUP": { "text": "Seeding (idle)", "color": "green" },
+                    "forcedUP": { "text": "Seeding (forced)", "color": "green" },
+                    "queuedUP": { "text": "Queued seed", "color": "yellow" },
+                    "downloading": { "text": "Downloading", "color": "orange" },
+                    "stalledDL": { "text": "Stalled DL", "color": "orange" },
+                    "forcedDL": { "text": "Downloading (forced)", "color": "orange" },
+                    "metaDL": { "text": "Metadata", "color": "orange" },
+                    "forcedMetaDL": { "text": "Metadata (forced)", "color": "orange" },
+                    "queuedDL": { "text": "Queued DL", "color": "yellow" },
+                    "checkingUP": { "text": "Checking", "color": "yellow" },
+                    "checkingDL": { "text": "Checking", "color": "yellow" },
+                    "checkingResumeData": { "text": "Checking", "color": "yellow" },
+                    "moving": { "text": "Moving", "color": "blue" },
+                    "allocating": { "text": "Allocating", "color": "yellow" },
+                    "error": { "text": "Error", "color": "red" },
+                    "missingFiles": { "text": "Missing files", "color": "red" },
+                    "stoppedUP": { "text": "Stopped", "color": "red" },
+                    "stoppedDL": { "text": "Stopped", "color": "red" },
+                    "pausedUP": { "text": "Paused", "color": "red" },
+                    "pausedDL": { "text": "Paused", "color": "red" },
+                    "unknown": { "text": "Unknown", "color": "text" }
+                  } }
+                ]
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "footer": { "show": false },
+        "sortBy": [{ "displayName": "Name", "desc": false }]
+      }
+    },
+    {
+      "id": 103,
+      "type": "row",
+      "title": "Totals & activity",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Uploaded (selected range)",
+      "description": "Total bytes uploaded over the dashboard's time range — `sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__range]))`. A real total, not a bytes/sec rate. Filtered by `$tracker`.",
+      "gridPos": { "x": 0, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__range]))" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Downloaded (selected range)",
+      "description": "Total bytes downloaded over the dashboard's time range — `sum(increase(qbittorrent_torrent_total_downloaded_bytes[$__range]))`. Filtered by `$tracker`.",
+      "gridPos": { "x": 6, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"}[$__range]))" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "Ratio (lifetime)",
+      "description": "True all-time ratio: `sum(total_uploaded) / sum(total_downloaded)` across the selected `$tracker`(s), excluding `vpn-check`. qBittorrent exposes cumulative downloaded (Transmission did not), so this is exact, not an average-of-ratios approximation.",
+      "gridPos": { "x": 12, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) / sum(qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "Upload rate (now)",
+      "description": "Current aggregate upload speed across the selected `$tracker`(s), excluding `vpn-check`. The 'am I seeding right now?' signal.",
+      "gridPos": { "x": 18, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "Bps", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Throughput — current up/down rate",
+      "description": "Aggregate up/down speed over the selected range, filtered by `$tracker`, excluding `vpn-check`. Inherently spiky because peers come and go — for a smoother 'how much moved' view use the bars below.",
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "upload" },
+        { "refId": "B", "expr": "sum(qbittorrent_torrent_download_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "download" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 15, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Uploaded per bucket (follows time range)",
+      "description": "Bytes uploaded per time bucket — `sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__interval]))`. Bucket width scales with the dashboard range (no hardcoded 24h/30d), and being a cumulative delta it reads cleanly even when instantaneous rate is spiky. Filtered by `$tracker`. (vpn-check not excluded here — it uploads ~nothing, and `unless` can't live inside an `increase()` range.)",
+      "gridPos": { "x": 0, "y": 35, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__interval]))", "legendFormat": "uploaded" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 70, "showPoints": "never", "barAlignment": 0 }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } }
+    },
+    {
+      "id": 31,
+      "type": "state-timeline",
+      "title": "Upload activity — who uploaded, and when",
+      "description": "One row per torrent that actively uploaded; a coloured band marks the times its upload speed was > 0. Gap-free (no bytes/sec buckets), so it reads as a simple 'seeding yes/no' history. Filtered by `$tracker`, excludes `vpn-check`. Long names truncate on narrow screens — narrow the `$tracker` filter on mobile for fewer, wider rows.",
+      "gridPos": { "x": 0, "y": 43, "w": 24, "h": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "clamp_max(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"} > 0, 1)",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "mappings": [
+            { "type": "value", "options": { "1": { "text": "uploading", "color": "green" } } }
+          ],
+          "custom": { "fillOpacity": 90 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "mergeValues": true,
+        "showValue": "never",
+        "alignValue": "left",
+        "rowHeight": 0.9,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "Per-torrent history (optional drill-down — pick a torrent in $torrent)",
+      "collapsed": true,
+      "gridPos": { "x": 0, "y": 55, "w": 24, "h": 1 },
+      "panels": [
+        {
+          "id": 12,
+          "type": "timeseries",
+          "title": "Uploaded per bucket — $torrent",
+          "description": "Cumulative bytes uploaded per bucket for the selected torrent, over the dashboard range (no more fixed 'last 7 days'). Cross-seeded copies show one line per tracker, so each is distinct.",
+          "gridPos": { "x": 0, "y": 56, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "increase(qbittorrent_torrent_total_uploaded_bytes{name=~\"$torrent\"}[$__interval])", "legendFormat": "{{tracker}}" }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 70, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+        },
+        {
+          "id": 13,
+          "type": "timeseries",
+          "title": "Ratio over time — $torrent",
+          "description": "Ratio trend for the selected torrent. One line per tracker (cross-seeds), so you read a single current value per copy instead of the old multi-value stat.",
+          "gridPos": { "x": 12, "y": 56, "w": 12, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "refId": "A", "expr": "qbittorrent_torrent_ratio{name=~\"$torrent\"}", "legendFormat": "{{tracker}}" }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "decimals": 2,
+              "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never" }
+            },
+            "overrides": []
+          },
+          "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "type": "row",
+      "title": "Sonarr",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 56, "w": 24, "h": 1 }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Series",
+      "description": "Total number of series Sonarr tracks. Metric names follow onedr0p/exportarr — verify with `curl -s sonarr-exporter:9707/metrics | grep sonarr_` after first scrape.",
+      "gridPos": { "x": 0, "y": 57, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_series_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Episodes downloaded",
+      "gridPos": { "x": 6, "y": 57, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_episode_downloaded_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Episodes missing",
+      "description": "Episodes Sonarr knows about but hasn't grabbed yet — a non-zero value isn't bad, but a steadily-growing trend is.",
+      "gridPos": { "x": 12, "y": 57, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sonarr_episode_missing_total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 200 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 25,
+      "type": "stat",
+      "title": "Queue",
+      "description": "Items in Sonarr's download queue right now. exportarr only emits `sonarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
+      "gridPos": { "x": 18, "y": 57, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(sonarr_queue_total) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 105,
+      "type": "row",
+      "title": "Radarr",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 61, "w": 24, "h": 1 }
+    },
+    {
+      "id": 26,
+      "type": "stat",
+      "title": "Movies",
+      "gridPos": { "x": 0, "y": 62, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 27,
+      "type": "stat",
+      "title": "Movies downloaded",
+      "gridPos": { "x": 6, "y": 62, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_downloaded_total" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 28,
+      "type": "stat",
+      "title": "Movies missing",
+      "gridPos": { "x": 12, "y": 62, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "radarr_movie_missing_total" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 50 }, { "color": "red", "value": 200 }] }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 29,
+      "type": "stat",
+      "title": "Queue",
+      "description": "Items in Radarr's download queue right now. exportarr only emits `radarr_queue_total` when the queue is non-empty, so we sum + fall back to 0.",
+      "gridPos": { "x": 18, "y": 62, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "sum(radarr_queue_total) or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "Queue length over time",
+      "description": "Watch for steady growth — that means downloads are queuing faster than they're completing.",
+      "gridPos": { "x": 0, "y": 66, "w": 24, "h": 6 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "S", "expr": "sum(sonarr_queue_total) or vector(0)", "legendFormat": "sonarr" },
+        { "refId": "R", "expr": "sum(radarr_queue_total) or vector(0)", "legendFormat": "radarr" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "lineWidth": 1, "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    }
+  ]
+}

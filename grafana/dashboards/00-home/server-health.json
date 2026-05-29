@@ -15,7 +15,7 @@
     { "title": "Containers",    "type": "link", "icon": "dashboard", "url": "/d/infra-containers",       "tooltip": "10-Infra — Containers",               "targetBlank": false, "keepTime": true, "includeVars": false },
     { "title": "Traefik",       "type": "link", "icon": "dashboard", "url": "/d/ingress-traefik",        "tooltip": "20-Ingress — Traefik & FRPS",         "targetBlank": false, "keepTime": true, "includeVars": false },
     { "title": "Nextcloud",     "type": "link", "icon": "dashboard", "url": "/d/apps-nextcloud",         "tooltip": "30-Apps — Nextcloud",                 "targetBlank": false, "keepTime": true, "includeVars": false },
-    { "title": "Seedbox",       "type": "link", "icon": "dashboard", "url": "/d/seedbox-transmission",   "tooltip": "40-Seedbox — Transmission & *arr",    "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "Seedbox",       "type": "link", "icon": "dashboard", "url": "/d/seedbox-qbittorrent",    "tooltip": "40-Seedbox — qBittorrent & *arr",     "targetBlank": false, "keepTime": true, "includeVars": false },
     { "title": "Backups",       "type": "link", "icon": "dashboard", "url": "/d/backups-borgmatic",      "tooltip": "60-Backups — Borgmatic",              "targetBlank": false, "keepTime": true, "includeVars": false },
     { "title": "Observability", "type": "link", "icon": "dashboard", "url": "/d/observability-self",     "tooltip": "70-Observability — Self-monitoring",  "targetBlank": false, "keepTime": true, "includeVars": false },
     { "title": "Tracing",       "type": "link", "icon": "dashboard", "url": "/d/observability-tracing",  "tooltip": "70-Observability — Tracing",          "targetBlank": false, "keepTime": true, "includeVars": false }
@@ -155,7 +155,7 @@
       },
       "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
       "links": [
-        { "title": "Open Seedbox dashboard (Plex panels land here per Section 3.8)", "url": "/d/seedbox-transmission", "targetBlank": false }
+        { "title": "Open Seedbox dashboard (Plex panels land here per Section 3.8)", "url": "/d/seedbox-qbittorrent", "targetBlank": false }
       ]
     },
     {
