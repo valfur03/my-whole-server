@@ -627,13 +627,6 @@ services:
       traefik.http.routers.plex.tls.certresolver: letsencrypt
       traefik.enable: true
     restart: unless-stopped
-  transmission-exporter:
-    build: transmission-exporter
-    restart: always
-    networks:
-      - seedbox-metrics
-    environment:
-      TRANSMISSION_ADDR: http://vpn:9091
 
   qbittorrent-exporter:
     image: ghcr.io/martabal/qbittorrent-exporter:v2.0.1
