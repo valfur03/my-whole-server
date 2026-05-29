@@ -512,14 +512,17 @@ services:
       - qbittorrent-config:/config
     restart: unless-stopped
 
-  fleischel:
-    image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
-    networks:
-      - seedbox-torrenting
-    environment:
-      TRANSMISSION_HOST: vpn
-      LOG_LEVEL: debug
-    restart: unless-stopped
+  # Disabled during the Transmission → qBittorrent migration: fleischel talks to
+  # Transmission's RPC (TRANSMISSION_HOST) and has no qBittorrent-compatible mode.
+  # Kept here pending a qBittorrent-compatible replacement.
+  # fleischel:
+  #   image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
+  #   networks:
+  #     - seedbox-torrenting
+  #   environment:
+  #     TRANSMISSION_HOST: vpn
+  #     LOG_LEVEL: debug
+  #   restart: unless-stopped
 
   jackett:
     image: lscr.io/linuxserver/jackett:0.24.1440@sha256:cdea5d3209a6ab1fb8eb954ec0b8169b7d54274617f42bf5c74f22a92075755f
