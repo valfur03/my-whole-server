@@ -633,7 +633,7 @@ services:
       TRANSMISSION_ADDR: http://vpn:9091
 
   qbittorrent-exporter:
-    image: ghcr.io/martabal/qbittorrent-exporter:2.0.1
+    image: ghcr.io/martabal/qbittorrent-exporter:v2.0.1
     restart: unless-stopped
     networks:
       - seedbox-metrics
