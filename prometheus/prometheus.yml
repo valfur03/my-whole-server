@@ -86,7 +86,6 @@ scrape_configs:
           - http://web:80
           - http://sonarr:8989/ping
           - http://radarr:7878/ping
-          - http://vpn:9091/transmission/web/
           - http://vpn:9117
     relabel_configs:
       - source_labels: [__address__]

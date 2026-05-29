@@ -457,12 +457,6 @@ services:
     ports:
       - 53490:34095
     labels:
-      traefik.http.routers.transmission.rule: Host(`transmission.${BASE_DOMAIN}`)
-      traefik.http.routers.transmission.service: transmission
-      traefik.http.routers.transmission.tls: true
-      traefik.http.routers.transmission.tls.certresolver: letsencrypt
-      traefik.http.services.transmission.loadbalancer.server.port: 9091
-      traefik.http.routers.transmission.middlewares: authelia@docker
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.${BASE_DOMAIN}`)
       traefik.http.routers.qbittorrent.service: qbittorrent
       traefik.http.routers.qbittorrent.tls: true
@@ -484,22 +478,6 @@ services:
       traefik.enable: true
     restart: unless-stopped
 
-  transmission:
-    image: linuxserver/transmission:4.1.1@sha256:7d1f96f26f433d5bfa518f6392021e17fc74a7eb0322190746981143644ce29e
-    depends_on:
-      vpn:
-        condition: service_healthy
-        restart: true
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-    network_mode: "service:vpn"
-    volumes:
-     - /data:/data
-     - transmission-config:/config
-    restart: unless-stopped
-
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.0.4@sha256:46f4e80af074fa2ffc0214fe0b7d59384748cfb34685892a53b7a3c87407a333
     depends_on:
@@ -511,7 +489,7 @@ services:
       - PGID=1000
       - TZ=Europe/Paris
       - WEBUI_PORT=8090
-      - TORRENTING_PORT=34096
+      - TORRENTING_PORT=34095
     network_mode: "service:vpn"
     volumes:
       - /data:/data
@@ -1075,7 +1053,6 @@ volumes:
 #  synapse-database:
 #  synapse-syncv3-database:
   traefik-acme:
-  transmission-config:
   vaultwarden-data:
   vidlvery-public-directory:
   weekly-money-database:
