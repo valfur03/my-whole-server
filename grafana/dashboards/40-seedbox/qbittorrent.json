@@ -15,11 +15,11 @@
         "name": "tracker",
         "type": "query",
         "label": "Tracker",
-        "description": "Multi-select. Every aggregate and the table are filtered by this, so deselecting a tracker (e.g. the one your Linux ISOs live on) removes those torrents from the totals too — no more polluted aggregates. Default is All.",
+        "description": "Multi-select tracker, sourced from the `tracker-*` tags qbit_manage assigns (the prefix is stripped for display). Every aggregate and the table filter on it via a hash-join on those tags, so deselecting a tracker removes its torrents from the totals too. Works even for cross-seeds whose qBittorrent working-tracker field is blank. Default is All.",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "query": { "qryType": 1, "query": "label_values(qbittorrent_torrent_info, tracker)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
-        "definition": "label_values(qbittorrent_torrent_info, tracker)",
-        "regex": "",
+        "query": { "qryType": 1, "query": "label_values(qbittorrent_torrent_tags, tag)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "definition": "label_values(qbittorrent_torrent_tags, tag)",
+        "regex": "/^tracker-(.*)$/",
         "sort": 1,
         "multi": true,
         "includeAll": true,
@@ -94,7 +94,7 @@
       "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_ratio{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_ratio and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -107,7 +107,7 @@
       "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"uploading|stalledUP|forcedUP|queuedUP\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"uploading|stalledUP|forcedUP|queuedUP\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -120,7 +120,7 @@
       "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"downloading|stalledDL|forcedDL|metaDL|forcedMetaDL|queuedDL\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"downloading|stalledDL|forcedDL|metaDL|forcedMetaDL|queuedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -133,7 +133,7 @@
       "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"stoppedUP|stoppedDL|pausedUP|pausedDL\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"stoppedUP|stoppedDL|pausedUP|pausedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "red" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -146,7 +146,7 @@
       "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"error|missingFiles\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"error|missingFiles\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -166,7 +166,7 @@
       "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{tracker=~\"$tracker\", state=~\"checkingUP|checkingDL|checkingResumeData|moving|allocating|unknown\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"checkingUP|checkingDL|checkingResumeData|moving|allocating|unknown\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "yellow" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -186,13 +186,14 @@
       "gridPos": { "x": 0, "y": 6, "w": 24, "h": 16 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "Info", "expr": "qbittorrent_torrent_info{tracker=~\"$tracker\"}", "instant": true, "format": "table" },
-        { "refId": "Ratio", "expr": "sum by (hash) (qbittorrent_torrent_ratio{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
-        { "refId": "UpTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
-        { "refId": "DownTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
-        { "refId": "Size", "expr": "sum by (hash) (qbittorrent_torrent_size_bytes{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
-        { "refId": "Progress", "expr": "sum by (hash) (qbittorrent_torrent_progress{tracker=~\"$tracker\"})", "instant": true, "format": "table" },
-        { "refId": "Added", "expr": "sum by (hash) (qbittorrent_torrent_added_on{tracker=~\"$tracker\"}) * 1000", "instant": true, "format": "table" }
+        { "refId": "Info", "expr": "qbittorrent_torrent_info and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"}", "instant": true, "format": "table" },
+        { "refId": "TrackerTag", "expr": "sum by (hash, tag) (qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "Ratio", "expr": "sum by (hash) (qbittorrent_torrent_ratio and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "UpTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_uploaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "DownTotal", "expr": "sum by (hash) (qbittorrent_torrent_total_downloaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "Size", "expr": "sum by (hash) (qbittorrent_torrent_size_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "Progress", "expr": "sum by (hash) (qbittorrent_torrent_progress and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "instant": true, "format": "table" },
+        { "refId": "Added", "expr": "sum by (hash) (qbittorrent_torrent_added_on and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"}) * 1000", "instant": true, "format": "table" }
       ],
       "transformations": [
         { "id": "joinByField", "options": { "byField": "hash", "mode": "outer" } },
@@ -200,7 +201,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "names": ["hash", "name", "tracker", "state", "Value #Ratio", "Value #UpTotal", "Value #DownTotal", "Value #Size", "Value #Progress", "Value #Added"]
+              "names": ["hash", "name", "tag", "state", "Value #Ratio", "Value #UpTotal", "Value #DownTotal", "Value #Size", "Value #Progress", "Value #Added"]
             }
           }
         },
@@ -210,7 +211,7 @@
             "excludeByName": { "hash": true },
             "renameByName": {
               "name": "Name",
-              "tracker": "Tracker",
+              "tag": "Tracker",
               "state": "State",
               "Value #Ratio": "Ratio",
               "Value #UpTotal": "Up total",
@@ -221,7 +222,7 @@
             },
             "indexByName": {
               "name": 0,
-              "tracker": 1,
+              "tag": 1,
               "state": 2,
               "Value #Ratio": 3,
               "Value #UpTotal": 4,
@@ -238,6 +239,7 @@
       "fieldConfig": {
         "defaults": { "unit": "short", "custom": { "filterable": true, "align": "auto" } },
         "overrides": [
+          { "matcher": { "id": "byName", "options": "Tracker" }, "properties": [{ "id": "mappings", "value": [{ "type": "regex", "options": { "pattern": "^tracker-(.*)$", "result": { "text": "$1", "index": 0 } } }] }] },
           { "matcher": { "id": "byName", "options": "Progress" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 1 }] },
           { "matcher": { "id": "byName", "options": "Ratio" }, "properties": [{ "id": "decimals", "value": 2 }, { "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "green", "value": 1 }] } }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] },
           { "matcher": { "id": "byName", "options": "Size" }, "properties": [{ "id": "unit", "value": "bytes" }] },
@@ -302,7 +304,7 @@
       "gridPos": { "x": 0, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__range]))" }
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__range]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})" }
       ],
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -315,7 +317,7 @@
       "gridPos": { "x": 6, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"}[$__range]))" }
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_downloaded_bytes[$__range]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})" }
       ],
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -328,7 +330,7 @@
       "gridPos": { "x": 12, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) / sum(qbittorrent_torrent_total_downloaded_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_total_uploaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) / sum(qbittorrent_torrent_total_downloaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -349,7 +351,7 @@
       "gridPos": { "x": 18, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
       ],
       "fieldConfig": { "defaults": { "unit": "Bps", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -362,8 +364,8 @@
       "gridPos": { "x": 0, "y": 27, "w": 24, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "upload" },
-        { "refId": "B", "expr": "sum(qbittorrent_torrent_download_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "download" }
+        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "upload" },
+        { "refId": "B", "expr": "sum(qbittorrent_torrent_download_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "download" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -382,7 +384,7 @@
       "gridPos": { "x": 0, "y": 35, "w": 24, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__interval]))", "legendFormat": "uploaded" }
+        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__interval]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "legendFormat": "uploaded" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -403,7 +405,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "clamp_max((qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} > 0) unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}, 1) and on(hash) (increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__range]) > ${min_upload})",
+          "expr": "clamp_max((qbittorrent_torrent_upload_speed_bytes > 0) unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}, 1) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} and on(hash) (increase(qbittorrent_torrent_total_uploaded_bytes[$__range]) > ${min_upload})",
           "legendFormat": "{{name}}"
         }
       ],
