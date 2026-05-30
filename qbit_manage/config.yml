@@ -26,6 +26,10 @@ settings:
 directory:
   root_dir: "/data/torrent/complete"
 
+cat:
+  series: "/data/torrent/complete/series"
+  movies: "/data/torrent/complete/movies"
+
 tracker:
   c411.org:
     tag: tracker-c411
