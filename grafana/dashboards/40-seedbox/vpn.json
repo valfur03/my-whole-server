@@ -1,0 +1,168 @@
+{
+  "uid": "seedbox-vpn",
+  "title": "40-Seedbox — VPN egress (gluetun)",
+  "tags": ["homelab", "seedbox", "vpn", "gluetun"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "description": "Health of the gluetun VPN tunnel that the seedbox containers (qBittorrent, Prowlarr, Jackett) egress through. It is container-egress only — not a VPN endpoint you connect devices to — so this tracks 'is the tunnel up, what public IP/geo am I exposing, is it flapping'. Metrics from thecfu/gluetun-exporter via gluetun's control server.",
+  "links": [
+    { "title": "Home", "type": "link", "icon": "home", "url": "/d/home-server-health", "tooltip": "00-Home — Server health", "targetBlank": false, "keepTime": true, "includeVars": false },
+    { "title": "qBittorrent & *arr", "type": "link", "icon": "external link", "url": "/d/seedbox-qbittorrent", "tooltip": "40-Seedbox — qBittorrent & *arr", "targetBlank": false, "keepTime": true, "includeVars": false }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s",
+        "target": {
+          "expr": "{compose_service=\"doco-cd\"} | json | msg=\"job completed successfully\" | elapsed_time > 10s",
+          "refId": "Anno"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Status",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Tunnel",
+      "description": "gluetun VPN connection state. Up = traffic is flowing through the tunnel. Down/Error here means the seedbox containers have no working egress (qBittorrent etc. lose connectivity). Note: the exporter reports 0 (Down) if it can't reach gluetun's control server, so a sudden 'Down' can also mean the exporter/control-server path broke.",
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_vpn_status" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": {
+              "1": { "text": "Up", "color": "green" },
+              "0": { "text": "Down", "color": "red" },
+              "-1": { "text": "Error", "color": "red" },
+              "-2": { "text": "Unknown", "color": "yellow" }
+            } }
+          ],
+          "color": { "mode": "fixed", "fixedColor": "text" }
+        },
+        "overrides": []
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Public IP",
+      "description": "Current egress IP as seen from the public internet — what trackers/peers see. This is the gluetun VPN exit IP, never your home IP (if it ever shows your ISP's IP, the tunnel has leaked). From `gluetun_vpn_infos{ip}`.",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_vpn_infos", "legendFormat": "{{ip}}", "instant": true }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "name", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Location",
+      "description": "Geo of the egress IP (`gluetun_vpn_infos{city,country}`). Confirms you're exiting in the expected region. May be blank if gluetun's public-IP geo lookup is disabled or failed.",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_vpn_infos", "legendFormat": "{{city}}, {{country}}", "instant": true }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "name", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Forwarded ports",
+      "description": "Count of ports gluetun has forwarded (`gluetun_forwarded_ports_total`). Expected to be 0 on a custom/WireGuard provider without port forwarding — that's normal, seeding still works, you just won't accept inbound peer connections beyond the single published BT port.",
+      "gridPos": { "x": 18, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_forwarded_ports_total or vector(0)" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "text" } }, "overrides": [] },
+      "options": { "colorMode": "value", "graphMode": "none", "textMode": "value", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "History",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 }
+    },
+    {
+      "id": 5,
+      "type": "state-timeline",
+      "title": "Tunnel status over time",
+      "description": "gluetun connection state across the range — green Up bands, red gaps mark drops/reconnects. Watch for flapping (repeated short drops), which means an unstable VPN endpoint.",
+      "gridPos": { "x": 0, "y": 6, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_vpn_status", "legendFormat": "VPN" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": {
+              "1": { "text": "Up", "color": "green" },
+              "0": { "text": "Down", "color": "red" },
+              "-1": { "text": "Error", "color": "red" },
+              "-2": { "text": "Unknown", "color": "yellow" }
+            } }
+          ],
+          "color": { "mode": "fixed", "fixedColor": "text" },
+          "custom": { "fillOpacity": 90 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "mergeValues": true,
+        "showValue": "never",
+        "alignValue": "left",
+        "rowHeight": 0.9,
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Public IP over time",
+      "description": "One line per egress IP seen in the range (`gluetun_vpn_infos`, legend = IP), value 1 while that IP is active. A handover from one line to another marks an IP rotation/reconnect — your audit trail that the egress IP only ever changed between VPN exit IPs, never to your home IP.",
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "gluetun_vpn_infos", "legendFormat": "{{ip}} ({{city}}, {{country}})" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 1,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 25, "showPoints": "never", "lineInterpolation": "stepAfter" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } }
+    }
+  ]
+}
