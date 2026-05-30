@@ -644,13 +644,12 @@ services:
     restart: unless-stopped
 
   qbit_manage:
-    image: ghcr.io/stuffanthings/qbit_manage:v4.7.1@sha256:56e1eeec5582e202e82479b42b588e3807ececca25716f91c7a29f5c597c55d0
+    build: qbit_manage
     user: 1000:1000
     environment:
       TZ: Europe/Paris
       QBT_SCHEDULE: "30"
     volumes:
-      - ./qbit_manage/config.yml:/config/config.yml:ro
       - /data:/data
     networks:
       - seedbox-torrenting
