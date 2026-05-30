@@ -645,10 +645,11 @@ services:
 
   qbit_manage:
     build: qbit_manage
-    user: 1000:1000
     environment:
       TZ: Europe/Paris
       QBT_SCHEDULE: "30"
+      PUID: "1000"
+      PGID: "1000"
     volumes:
       - /data:/data
     networks:
