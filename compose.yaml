@@ -463,12 +463,6 @@ services:
       traefik.http.routers.qbittorrent.tls.certresolver: letsencrypt
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8090
       traefik.http.routers.qbittorrent.middlewares: authelia@docker
-      traefik.http.routers.jackett.rule: Host(`jackett.${BASE_DOMAIN}`)
-      traefik.http.routers.jackett.service: jackett
-      traefik.http.services.jackett.loadbalancer.server.port: 9117
-      traefik.http.routers.jackett.tls: true
-      traefik.http.routers.jackett.tls.certresolver: letsencrypt
-      traefik.http.routers.jackett.middlewares: authelia@docker
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.${BASE_DOMAIN}`)
       traefik.http.routers.prowlarr.service: prowlarr
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
@@ -507,22 +501,6 @@ services:
   #     TRANSMISSION_HOST: vpn
   #     LOG_LEVEL: debug
   #   restart: unless-stopped
-
-  jackett:
-    image: lscr.io/linuxserver/jackett:0.24.1440@sha256:cdea5d3209a6ab1fb8eb954ec0b8169b7d54274617f42bf5c74f22a92075755f
-    depends_on:
-      vpn:
-        condition: service_healthy
-        restart: true
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-    volumes:
-      - jackett-config:/config
-      - jackett-downloads:/downloads
-    network_mode: "service:vpn"
-    restart: unless-stopped
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:2.3.5.5327-ls147@sha256:c9fe528f34b1fd3715438b6f6d6991d64e2965f2c055db36398bc66a0e7eab01
@@ -1044,8 +1022,6 @@ volumes:
   grafana-data:
   nextcloud-data:
   nextcloud-database:
-  jackett-config:
-  jackett-downloads:
   prowlarr-config:
   jellyfin-config:
   ldap-config:
