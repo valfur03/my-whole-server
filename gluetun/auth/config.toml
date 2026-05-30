@@ -1,0 +1,9 @@
+# gluetun HTTP control-server auth (gluetun >= 3.39 makes all routes private by default).
+# Grants ONLY the three read-only routes gluetun-exporter scrapes, with no auth: the
+# control server (:8000) is never published and is reachable only on internal docker
+# networks, and these routes expose nothing sensitive (VPN status, public egress IP,
+# forwarded port). Mounted at /gluetun/auth/config.toml.
+[[roles]]
+name = "exporter"
+routes = ["GET /v1/vpn/status", "GET /v1/publicip/ip", "GET /v1/openvpn/portforwarded"]
+auth = "none"

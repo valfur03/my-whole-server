@@ -437,6 +437,8 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./gluetun/auth/config.toml:/gluetun/auth/config.toml:ro
     secrets:
       - source: SEEDBOX_WIREGUARD_CONFIG
         target: /gluetun/wireguard/wg0.conf
@@ -617,6 +619,16 @@ services:
       ENABLE_LABEL_WITH_TRACKER: "true"
       ENABLE_LABEL_WITH_TAGS: "true"
       ENABLE_INCREASED_CARDINALITY: "true"
+
+  gluetun-exporter:
+    image: ghcr.io/thecfu/gluetun-exporter:0.1.1-standalone@sha256:bafeabb2a9638bf6b0800c2d3d47d49c6236d879bd01eec8caea45dfca2b50c5
+    restart: unless-stopped
+    networks:
+      - seedbox-metrics
+    environment:
+      GLUETUN_URL: http://vpn:8000
+      EXPORTER_PORT: 8001
+      EXPORTER_INTERVAL: 30
 
   cross-seed:
     image: ghcr.io/cross-seed/cross-seed:6.13.7@sha256:9555dc70f6753fef32d54bfc1ff504899377a6a0b73687f95d58fa27dfa0a7c7
