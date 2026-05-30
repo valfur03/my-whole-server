@@ -39,6 +39,24 @@
         "includeAll": false,
         "multi": false,
         "current": { "selected": false, "text": "", "value": "" }
+      },
+      {
+        "name": "min_upload",
+        "type": "custom",
+        "label": "Min upload (activity panel)",
+        "description": "The 'Upload activity' timeline only shows torrents that uploaded at least this much over the selected range. Raise it to declutter when many torrents are seeding.",
+        "query": "0 (show all) : 0, 1 MiB : 1048576, 10 MiB : 10485760, 100 MiB : 104857600, 1 GiB : 1073741824, 10 GiB : 10737418240",
+        "includeAll": false,
+        "multi": false,
+        "options": [
+          { "selected": false, "text": "0 (show all)", "value": "0" },
+          { "selected": false, "text": "1 MiB", "value": "1048576" },
+          { "selected": true, "text": "10 MiB", "value": "10485760" },
+          { "selected": false, "text": "100 MiB", "value": "104857600" },
+          { "selected": false, "text": "1 GiB", "value": "1073741824" },
+          { "selected": false, "text": "10 GiB", "value": "10737418240" }
+        ],
+        "current": { "selected": true, "text": "10 MiB", "value": "10485760" }
       }
     ]
   },
@@ -378,14 +396,14 @@
     {
       "id": 31,
       "type": "state-timeline",
-      "title": "Upload activity — who uploaded, and when",
-      "description": "One row per torrent that actively uploaded; a coloured band marks the times its upload speed was > 0. Gap-free (no bytes/sec buckets), so it reads as a simple 'seeding yes/no' history. Filtered by `$tracker`, excludes `vpn-check`. Long names truncate on narrow screens — narrow the `$tracker` filter on mobile for fewer, wider rows.",
+      "title": "Upload activity — who actually uploaded, and when",
+      "description": "One row per torrent that uploaded at least `$min_upload` over the selected range; a coloured band marks the times its upload speed was actually > 0. Torrents merely seeding (stalled) at 0 B/s no longer paint a row. Filtered by `$tracker`, excludes `vpn-check`. Long names truncate on narrow screens — raise `$min_upload` or narrow `$tracker` on mobile for fewer, wider rows.",
       "gridPos": { "x": 0, "y": 43, "w": 24, "h": 12 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "refId": "A",
-          "expr": "clamp_max(qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"} > 0, 1)",
+          "expr": "clamp_max((qbittorrent_torrent_upload_speed_bytes{tracker=~\"$tracker\"} > 0) unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}, 1) and on(hash) (increase(qbittorrent_torrent_total_uploaded_bytes{tracker=~\"$tracker\"}[$__range]) > ${min_upload})",
           "legendFormat": "{{name}}"
         }
       ],
