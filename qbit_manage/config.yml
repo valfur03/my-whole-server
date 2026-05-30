@@ -1,0 +1,49 @@
+commands:
+  dry_run: false
+  recheck: false
+  cat_update: false
+  tag_update: true
+  rem_unregistered: false
+  tag_tracker_error: false
+  rem_orphaned: false
+  tag_nohardlinks: true
+  share_limits: false
+  skip_qb_version_check: false
+  skip_cleanup: false
+
+qbt:
+  host: "http://vpn:8090"
+  user: ""
+  pass: ""
+
+settings:
+  force_auto_tmm: false
+  tracker_error_tag: issue
+  nohardlinks_tag: noHL
+  tag_nohardlinks_filter_completed: true
+  cat_filter_completed: true
+
+directory:
+  root_dir: "/data/torrent/complete"
+
+tracker:
+  c411.org:
+    tag: tracker-c411
+  gemini-tracker.org:
+    tag: tracker-gemini-tracker
+  generation-free.org:
+    tag: tracker-generation-free
+  la-cale.space:
+    tag: tracker-la-cale
+  torr9.net:
+    tag: tracker-torr9
+  torr9.xyz:
+    tag: tracker-torr9
+  other:
+    tag: tracker-other
+
+nohardlinks:
+  series:
+    ignore_root_dir: true
+  movies:
+    ignore_root_dir: true
