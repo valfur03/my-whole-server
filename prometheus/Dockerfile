@@ -1,4 +1,4 @@
-FROM prom/prometheus:v2.55.1@sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3
+FROM prom/prometheus:v3.12.0@sha256:69f5241418838263316593f7274a304b095c40bcf22e57272865da91bd60a8ac
 
 USER root
 COPY prometheus.yml /etc/prometheus/prometheus.template.yml
