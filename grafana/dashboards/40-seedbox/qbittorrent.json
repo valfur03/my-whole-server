@@ -7,7 +7,7 @@
   "version": 1,
   "editable": false,
   "graphTooltip": 1,
-  "refresh": "30s",
+  "refresh": "1m",
   "time": { "from": "now-7d", "to": "now" },
   "templating": {
     "list": [
@@ -94,7 +94,7 @@
       "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_ratio and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_ratio and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -107,7 +107,7 @@
       "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"uploading|stalledUP|forcedUP|queuedUP\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_info{state=~\"uploading|stalledUP|forcedUP|queuedUP\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -120,7 +120,7 @@
       "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"downloading|stalledDL|forcedDL|metaDL|forcedMetaDL|queuedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_info{state=~\"downloading|stalledDL|forcedDL|metaDL|forcedMetaDL|queuedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -133,7 +133,7 @@
       "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"stoppedUP|stoppedDL|pausedUP|pausedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_info{state=~\"stoppedUP|stoppedDL|pausedUP|pausedDL\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "red" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -146,7 +146,7 @@
       "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"error|missingFiles\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_info{state=~\"error|missingFiles\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -166,7 +166,7 @@
       "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "count(qbittorrent_torrent_info{state=~\"checkingUP|checkingDL|checkingResumeData|moving|allocating|unknown\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
+        { "refId": "A", "instant": true, "expr": "count(qbittorrent_torrent_info{state=~\"checkingUP|checkingDL|checkingResumeData|moving|allocating|unknown\"} and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) or vector(0)" }
       ],
       "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "yellow" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -300,11 +300,11 @@
       "id": 14,
       "type": "stat",
       "title": "Uploaded (selected range)",
-      "description": "Total bytes uploaded over the dashboard's time range — `sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__range]))`. A real total, not a bytes/sec rate. Filtered by `$tracker`.",
+      "description": "Total bytes uploaded over the dashboard's time range — `sum(increase(qbit:torrent:up_total[$__range]))`. A real total, not a bytes/sec rate. Filtered by `$tracker` (the tag join is baked into the recording rule). Instant query: the range-increase is computed once, not at every step.",
       "gridPos": { "x": 0, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__range]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})" }
+        { "refId": "A", "instant": true, "expr": "sum(increase(qbit:torrent:up_total{tracker=~\"$tracker\"}[$__range]))" }
       ],
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "purple" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -313,11 +313,11 @@
       "id": 15,
       "type": "stat",
       "title": "Downloaded (selected range)",
-      "description": "Total bytes downloaded over the dashboard's time range — `sum(increase(qbittorrent_torrent_total_downloaded_bytes[$__range]))`. Filtered by `$tracker`.",
+      "description": "Total bytes downloaded over the dashboard's time range — `sum(increase(qbit:torrent:down_total[$__range]))`. Filtered by `$tracker` (the tag join is baked into the recording rule). Instant query: the range-increase is computed once, not at every step.",
       "gridPos": { "x": 6, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_downloaded_bytes[$__range]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})" }
+        { "refId": "A", "instant": true, "expr": "sum(increase(qbit:torrent:down_total{tracker=~\"$tracker\"}[$__range]))" }
       ],
       "fieldConfig": { "defaults": { "unit": "bytes", "color": { "mode": "fixed", "fixedColor": "blue" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -330,7 +330,7 @@
       "gridPos": { "x": 12, "y": 23, "w": 6, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_total_uploaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}) / sum(qbittorrent_torrent_total_downloaded_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+        { "refId": "A", "instant": true, "expr": "sum(qbit:up_total:by_tracker{tracker=~\"$tracker\"}) / sum(qbit:down_total:by_tracker{tracker=~\"$tracker\"})" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -349,9 +349,10 @@
       "title": "Upload rate (now)",
       "description": "Current aggregate upload speed across the selected `$tracker`(s), excluding `vpn-check`. The 'am I seeding right now?' signal.",
       "gridPos": { "x": 18, "y": 23, "w": 6, "h": 4 },
+      "interval": "1m",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})" }
+        { "refId": "A", "expr": "sum(qbit:up_speed:by_tracker{tracker=~\"$tracker\"})" }
       ],
       "fieldConfig": { "defaults": { "unit": "Bps", "color": { "mode": "fixed", "fixedColor": "green" } }, "overrides": [] },
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } }
@@ -362,10 +363,12 @@
       "title": "Throughput — current up/down rate",
       "description": "Aggregate up/down speed over the selected range, filtered by `$tracker`, excluding `vpn-check`. Inherently spiky because peers come and go — for a smoother 'how much moved' view use the bars below.",
       "gridPos": { "x": 0, "y": 27, "w": 24, "h": 8 },
+      "interval": "1m",
+      "maxDataPoints": 800,
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(qbittorrent_torrent_upload_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "upload" },
-        { "refId": "B", "expr": "sum(qbittorrent_torrent_download_speed_bytes and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"})", "legendFormat": "download" }
+        { "refId": "A", "expr": "sum(qbit:up_speed:by_tracker{tracker=~\"$tracker\"})", "legendFormat": "upload" },
+        { "refId": "B", "expr": "sum(qbit:down_speed:by_tracker{tracker=~\"$tracker\"})", "legendFormat": "download" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -380,11 +383,13 @@
       "id": 21,
       "type": "timeseries",
       "title": "Uploaded per bucket (follows time range)",
-      "description": "Bytes uploaded per time bucket — `sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__interval]))`. Bucket width scales with the dashboard range (no hardcoded 24h/30d), and being a cumulative delta it reads cleanly even when instantaneous rate is spiky. Filtered by `$tracker`. (vpn-check not excluded here — it uploads ~nothing, and `unless` can't live inside an `increase()` range.)",
+      "description": "Bytes uploaded per time bucket — `sum(increase(qbit:torrent:up_total[$__interval]))`. Bucket width scales with the dashboard range (no hardcoded 24h/30d), and being a cumulative delta it reads cleanly even when instantaneous rate is spiky. Filtered by `$tracker` (the tag join is baked into the recording rule); vpn-check is excluded before the counter is recorded.",
       "gridPos": { "x": 0, "y": 35, "w": 24, "h": 8 },
+      "interval": "1m",
+      "maxDataPoints": 800,
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "sum(increase(qbittorrent_torrent_total_uploaded_bytes[$__interval]) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"})", "legendFormat": "uploaded" }
+        { "refId": "A", "expr": "sum(increase(qbit:torrent:up_total{tracker=~\"$tracker\"}[$__interval]))", "legendFormat": "uploaded" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -401,11 +406,13 @@
       "title": "Upload activity — who actually uploaded, and when",
       "description": "One row per torrent that uploaded at least `$min_upload` over the selected range; a coloured band marks the times its upload speed was actually > 0. Torrents merely seeding (stalled) at 0 B/s no longer paint a row. Filtered by `$tracker`, excludes `vpn-check`. Long names truncate on narrow screens — raise `$min_upload` or narrow `$tracker` on mobile for fewer, wider rows.",
       "gridPos": { "x": 0, "y": 43, "w": 24, "h": 12 },
+      "interval": "1m",
+      "maxDataPoints": 800,
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         {
           "refId": "A",
-          "expr": "clamp_max((qbittorrent_torrent_upload_speed_bytes > 0) unless on(hash) qbittorrent_torrent_tags{tag=\"vpn-check\"}, 1) and on(hash) qbittorrent_torrent_tags{tag=~\"tracker-($tracker)\"} and on(hash) (increase(qbittorrent_torrent_total_uploaded_bytes[$__range]) > ${min_upload})",
+          "expr": "clamp_max(qbit:torrent:up_speed{tracker=~\"$tracker\"} > 0, 1) and on(hash) (increase(qbit:torrent:up_total{tracker=~\"$tracker\"}[$__range] @ end()) > ${min_upload})",
           "legendFormat": "{{name}}"
         }
       ],
@@ -441,6 +448,7 @@
           "title": "Uploaded per bucket — $torrent",
           "description": "Cumulative bytes uploaded per bucket for the selected torrent, over the dashboard range (no more fixed 'last 7 days'). Cross-seeded copies show one line per tracker, so each is distinct.",
           "gridPos": { "x": 0, "y": 56, "w": 12, "h": 8 },
+          "interval": "1m",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             { "refId": "A", "expr": "increase(qbittorrent_torrent_total_uploaded_bytes{name=~\"$torrent\"}[$__interval])", "legendFormat": "{{tracker}}" }
@@ -460,6 +468,7 @@
           "title": "Ratio over time — $torrent",
           "description": "Ratio trend for the selected torrent. One line per tracker (cross-seeds), so you read a single current value per copy instead of the old multi-value stat.",
           "gridPos": { "x": 12, "y": 56, "w": 12, "h": 8 },
+          "interval": "1m",
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             { "refId": "A", "expr": "qbittorrent_torrent_ratio{name=~\"$torrent\"}", "legendFormat": "{{tracker}}" }
@@ -610,6 +619,7 @@
       "title": "Queue length over time",
       "description": "Watch for steady growth — that means downloads are queuing faster than they're completing.",
       "gridPos": { "x": 0, "y": 66, "w": 24, "h": 6 },
+      "interval": "1m",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
         { "refId": "S", "expr": "sum(sonarr_queue_total) or vector(0)", "legendFormat": "sonarr" },

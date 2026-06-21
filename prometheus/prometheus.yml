@@ -2,6 +2,9 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
   # ── Self-monitoring ──────────────────────────────────────────────────────
   - job_name: "prometheus"
@@ -42,8 +45,29 @@ scrape_configs:
       - targets: ["cadvisor:8080"]
 
   - job_name: "qbittorrent"
+    # Highest-cardinality job (one series per torrent). 30s is plenty for a
+    # seedbox and halves sample volume vs the 15s global default.
+    scrape_interval: 30s
     static_configs:
       - targets: ["qbittorrent-exporter:17871"]
+    # Keep only the tags the seedbox dashboard actually uses (tracker routing +
+    # the vpn-check exclusion). qbit_manage assigns many other tags (categories,
+    # noHL, …) that nothing queries; dropping them cuts `qbittorrent_torrent_tags`
+    # cardinality several-fold. `__`-prefixed temp labels are dropped automatically.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "qbittorrent_torrent_tags"
+        target_label: __is_tag
+        replacement: "yes"
+      - source_labels: [__is_tag, tag]
+        separator: ";"
+        regex: "yes;(tracker-.*|vpn-check)"
+        target_label: __keep_tag
+        replacement: "yes"
+      - source_labels: [__is_tag, __keep_tag]
+        separator: ";"
+        regex: "yes;"
+        action: drop
 
   - job_name: "gluetun"
     static_configs:

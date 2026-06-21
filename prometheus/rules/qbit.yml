@@ -1,0 +1,64 @@
+groups:
+  # ── Seedbox pre-aggregation ───────────────────────────────────────────────
+  # The qBittorrent exporter emits one series per torrent (keyed on `hash`), and
+  # the dashboard used to join those against `qbittorrent_torrent_tags` with
+  # `and on(hash)` at *every* step of *every* range query. On a Pi that join,
+  # multiplied across thousands of steps at 7d, is what made panels take ~1min.
+  #
+  # These rules do the join once per scrape instead: they attach a `tracker`
+  # label (the `tracker-*` tag, prefix stripped) to each per-torrent metric and
+  # drop `vpn-check` torrents, so the dashboard can filter with a plain label
+  # selector. Assumes one `tracker-*` tag per torrent (qbit_manage's model);
+  # a torrent carrying two would make the group_left match many-to-many.
+  - name: qbit_seedbox
+    interval: 30s
+    rules:
+      # Per-torrent metrics, vpn-check excluded, with `tracker` attached.
+      # Multiplying by the tags series (value 1) is just the join vehicle;
+      # group_left keeps the left-hand labels (incl. `name`) and copies `tracker`.
+      - record: qbit:torrent:up_speed
+        expr: |
+          (qbittorrent_torrent_upload_speed_bytes
+             unless on(hash) qbittorrent_torrent_tags{tag="vpn-check"})
+          * on(hash) group_left(tracker)
+            label_replace(qbittorrent_torrent_tags{tag=~"tracker-.*"},
+                          "tracker", "$1", "tag", "tracker-(.*)")
+
+      - record: qbit:torrent:down_speed
+        expr: |
+          (qbittorrent_torrent_download_speed_bytes
+             unless on(hash) qbittorrent_torrent_tags{tag="vpn-check"})
+          * on(hash) group_left(tracker)
+            label_replace(qbittorrent_torrent_tags{tag=~"tracker-.*"},
+                          "tracker", "$1", "tag", "tracker-(.*)")
+
+      - record: qbit:torrent:up_total
+        expr: |
+          (qbittorrent_torrent_total_uploaded_bytes
+             unless on(hash) qbittorrent_torrent_tags{tag="vpn-check"})
+          * on(hash) group_left(tracker)
+            label_replace(qbittorrent_torrent_tags{tag=~"tracker-.*"},
+                          "tracker", "$1", "tag", "tracker-(.*)")
+
+      - record: qbit:torrent:down_total
+        expr: |
+          (qbittorrent_torrent_total_downloaded_bytes
+             unless on(hash) qbittorrent_torrent_tags{tag="vpn-check"})
+          * on(hash) group_left(tracker)
+            label_replace(qbittorrent_torrent_tags{tag=~"tracker-.*"},
+                          "tracker", "$1", "tag", "tracker-(.*)")
+
+      # By-tracker aggregates — one tiny series per tracker. These reference the
+      # per-torrent rules above (same group, evaluated in order), so the
+      # dashboard reads a handful of series instead of fanning out over torrents.
+      - record: qbit:up_speed:by_tracker
+        expr: sum by (tracker) (qbit:torrent:up_speed)
+
+      - record: qbit:down_speed:by_tracker
+        expr: sum by (tracker) (qbit:torrent:down_speed)
+
+      - record: qbit:up_total:by_tracker
+        expr: sum by (tracker) (qbit:torrent:up_total)
+
+      - record: qbit:down_total:by_tracker
+        expr: sum by (tracker) (qbit:torrent:down_total)
