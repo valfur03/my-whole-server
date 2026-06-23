@@ -1,4 +1,4 @@
-FROM prom/mysqld-exporter:v0.15.1@sha256:7211a617ec657701ca819aa0ba28e1d5750f5bf2c1391b755cc4a48cc360b0fa
+FROM prom/mysqld-exporter:v0.19.0@sha256:eacb4b18e2ec1e0abdf2d64851b68526c964f6d9cb3e9458fb5d5f5062ea94c1
 
 COPY entrypoint.sh /entrypoint.sh
 
