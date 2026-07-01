@@ -729,7 +729,7 @@ services:
 # =================================== S-PDF ================================== #
 # ============================================================================ #
   s-pdf:
-    image: frooodle/s-pdf:0.46.2@sha256:396ca949b81198a65b9abfec38518fa44e871b1970dad9f9718ffd030eef9b92
+    image: frooodle/s-pdf:2.13.2@sha256:976dfa581b6cb1fb91e9b0b90284a92febe8ba6a4519e28f95c4e8e550d6d70d
     networks:
       - proxy
     labels:
