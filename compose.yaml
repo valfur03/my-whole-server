@@ -95,6 +95,7 @@ services:
       - node-textfile-collector:/var/lib/node_exporter/textfile_collector
     networks:
       - authelia-backend
+      - da-many-backend
       - nextcloud-backend
 #      - synapse-backend
     secrets:
@@ -117,6 +118,60 @@ services:
       - source: BORGMATIC_SSH_KNOWN_HOSTS
         target: /root/.ssh/known_hosts
         mode: 0400
+    restart: unless-stopped
+# ============================================================================ #
+# ================================== DA-MANY ================================= #
+# ============================================================================ #
+  da-many-database:
+    image: postgres:18-alpine@sha256:1b1689b20d16a014a3d195653381cf2caa75a41a92d93b255a9d6ea29fd353aa
+    environment:
+      POSTGRES_DB: da-many
+      POSTGRES_USER: da-many
+      POSTGRES_PASSWORD: ${DA_MANY_DATABASE_PASSWORD}
+    volumes:
+      - da-many-database:/var/lib/postgresql/data
+    networks:
+      - da-many-backend
+    restart: unless-stopped
+
+  da-many-api:
+    image: ghcr.io/valfur03/da-many-api:branch-main
+    depends_on:
+      - da-many-database
+    environment:
+      DATABASE_URL: postgres://da-many:${DA_MANY_DATABASE_PASSWORD}@da-many-database:5432/da-many
+      BETTER_AUTH_URL: https://money.${BASE_DOMAIN}/api
+      WEB_ORIGIN: https://money.${BASE_DOMAIN}
+      BETTER_AUTH_SECRET: ${DA_MANY_AUTH_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: 587
+      SMTP_USER: ${SMTP_USERNAME}
+      SMTP_PASS: ${SMTP_PASSWORD}
+      SMTP_FROM: ${DA_MANY_SYSTEM_EMAIL}
+    networks:
+      - da-many-backend
+      - proxy
+    labels:
+      traefik.http.middlewares.da-many-stripapi.stripprefix.prefixes: /api
+      traefik.http.routers.da-many-api.rule: Host(`money.${BASE_DOMAIN}`) && PathPrefix(`/api`)
+      traefik.http.routers.da-many-api.middlewares: da-many-stripapi
+      traefik.http.routers.da-many-api.service: da-many-api
+      traefik.http.routers.da-many-api.tls: true
+      traefik.http.routers.da-many-api.tls.certresolver: letsencrypt
+      traefik.http.services.da-many-api.loadbalancer.server.port: 3000
+      traefik.enable: true
+    restart: unless-stopped
+
+  da-many-web:
+    image: ghcr.io/valfur03/da-many-web:branch-main
+    networks:
+      - proxy
+    labels:
+      traefik.http.routers.da-many-web.rule: Host(`money.${BASE_DOMAIN}`)
+      traefik.http.routers.da-many-web.tls: true
+      traefik.http.routers.da-many-web.tls.certresolver: letsencrypt
+      traefik.http.services.da-many-web.loadbalancer.server.port: 80
+      traefik.enable: true
     restart: unless-stopped
 # ============================================================================ #
 # ==================================== FRP =================================== #
@@ -1054,6 +1109,7 @@ volumes:
   borg-cache:
   borg-config:
   cross-seed-config:
+  da-many-database:
   grafana-data:
   nextcloud-data:
   nextcloud-database:
@@ -1084,6 +1140,7 @@ volumes:
 
 networks:
   authelia-backend:
+  da-many-backend:
   ldap-backend:
   metrics:
   proxy:

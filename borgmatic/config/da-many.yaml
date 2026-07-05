@@ -1,0 +1,14 @@
+<<: !include
+    - includes/common.yaml
+
+constants:
+    archive_name: da-many
+    borgbase_repo_id: ${BORGBASE_DA_MANY_REPO_ID}
+    pg_name: da-many
+    pg_host: da-many-database
+    pg_user: da-many
+    pg_pass: ${DA_MANY_POSTGRES_PASSWORD}
+    volume_name: da-many-database
+
+postgresql_databases:
+    !include sources/pg-database.yaml
