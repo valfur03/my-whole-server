@@ -129,7 +129,7 @@ services:
       POSTGRES_USER: da-many
       POSTGRES_PASSWORD: ${DA_MANY_DATABASE_PASSWORD}
     volumes:
-      - da-many-database:/var/lib/postgresql/data
+      - da-many-database:/var/lib/postgresql
     networks:
       - da-many-backend
     restart: unless-stopped
@@ -140,7 +140,7 @@ services:
       - da-many-database
     environment:
       DATABASE_URL: postgres://da-many:${DA_MANY_DATABASE_PASSWORD}@da-many-database:5432/da-many
-      BETTER_AUTH_URL: https://money.${BASE_DOMAIN}/api
+      BETTER_AUTH_URL: https://money.${BASE_DOMAIN}
       WEB_ORIGIN: https://money.${BASE_DOMAIN}
       BETTER_AUTH_SECRET: ${DA_MANY_AUTH_SECRET}
       SMTP_HOST: ${SMTP_HOST}
@@ -164,6 +164,8 @@ services:
 
   da-many-web:
     image: ghcr.io/valfur03/da-many-web:branch-main
+    environment:
+      API_URL: https://money.${BASE_DOMAIN}/api
     networks:
       - proxy
     labels:
