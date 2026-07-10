@@ -112,6 +112,7 @@ services:
       - DOCO_CD_GIT_ACCESS_TOKEN
       - DOCO_CD_WEBHOOK_SECRET
       - DOCO_CD_SOPS_AGE_KEY
+      - DOCO_CD_API_SECRET
       - source: BORGMATIC_SSH_PRIVATE_KEY
         target: /root/.ssh/id_rsa
         mode: 0400
@@ -1198,6 +1199,8 @@ secrets:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/WEBHOOK_SECRET
   DOCO_CD_SOPS_AGE_KEY:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/SOPS_AGE_KEY
+  DOCO_CD_API_SECRET:
+    file: ${SECRETS_DIR:-./}doco-cd/secrets/API_SECRET
   SEEDBOX_WIREGUARD_CONFIG:
     file: ${SECRETS_DIR:-./}seedbox/secrets/WIREGUARD_CONFIG
   BORGMATIC_SSH_PRIVATE_KEY:

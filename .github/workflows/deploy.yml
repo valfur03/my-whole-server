@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger doco-cd deployment
+        run: |
+          curl --fail --silent --show-error --request POST \
+            --url "${DOCO_CD_URL}/v1/api/poll/run?wait=false" \
+            --header 'content-type: application/json' \
+            --header "x-api-key: ${DOCO_CD_API_TOKEN}" \
+            --data "[{\"url\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git\", \"reference\": \"${GITHUB_REF}\"}]"
+        env:
+          DOCO_CD_URL: ${{ secrets.DOCO_CD_URL }}
+          DOCO_CD_API_TOKEN: ${{ secrets.DOCO_CD_API_TOKEN }}
