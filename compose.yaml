@@ -118,6 +118,12 @@ services:
       - source: BORGMATIC_SSH_KNOWN_HOSTS
         target: /root/.ssh/known_hosts
         mode: 0400
+    healthcheck:
+      test: ["CMD", "borgmatic", "config", "validate"]
+      interval: 5m
+      timeout: 60s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 # ============================================================================ #
 # ================================== DA-MANY ================================= #
