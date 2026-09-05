@@ -1,18 +1,21 @@
 # Emits node-exporter textfile-collector metrics about each borgmatic run,
 # labelled by the config file processed.
 #
-# Uses legacy `after_actions` / `on_error` hooks: the new-style top-level
-# `commands:` list does not exist in borgmatic 1.9.14's schema, and the root
-# is `additionalProperties: false`, so any unknown key fails parsing.
-#
-# - after_actions fires only on success (run_actions has no surrounding
-#   try/except, so a raising action skips it).
-# - on_error fires only on failure.
-# Both interpolate {configuration_filename} via
-# borgmatic/hooks/command.py:execute_hook. They fire per (config x repo),
+# - `after: repository` fires once per repository. The explicit
+#   `states: [finish]` is load-bearing: since borgmatic 2.0 (#790) "after"
+#   hooks run even when an error occurred, so without it a failed run would
+#   also stamp a fresh borgmatic_last_success_timestamp_seconds.
+# - `after: error` fires only on failure. The `when:` list mirrors what
+#   borgmatic's own on_error normalization uses.
+# Both interpolate {configuration_filename}. They fire per (config x repo),
 # so the .prom file may be rewritten N times per config; the script is
 # idempotent.
-after_actions:
-    - sh /scripts/prometheus-textfile.sh success "{configuration_filename}"
-on_error:
-    - sh /scripts/prometheus-textfile.sh failure "{configuration_filename}"
+commands:
+    - after: repository
+      states: [finish]
+      run:
+          - sh /scripts/prometheus-textfile.sh success "{configuration_filename}"
+    - after: error
+      when: [create, prune, compact, check]
+      run:
+          - sh /scripts/prometheus-textfile.sh failure "{configuration_filename}"
