@@ -119,11 +119,7 @@ services:
         target: /root/.ssh/known_hosts
         mode: 0400
     healthcheck:
-      test: ["CMD", "borgmatic", "config", "validate"]
-      interval: 5m
-      timeout: 60s
-      retries: 3
-      start_period: 60s
+      disable: true
     restart: unless-stopped
 # ============================================================================ #
 # ================================== DA-MANY ================================= #
