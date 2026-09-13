@@ -213,7 +213,6 @@ services:
       - prometheus-data:/prometheus
     networks:
       - metrics
-      - seedbox-metrics
     restart: unless-stopped
   grafana:
     image: grafana/grafana:11.6.14@sha256:ebe075cd4c4520f9d3af2403a1ddc830651ca7d009cbdfdcf21032db574dc3a7
@@ -261,7 +260,6 @@ services:
     networks:
       - metrics
       - proxy
-      - seedbox-metrics
     restart: unless-stopped
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.57.0@sha256:e75bdb03b74b0b6995f208f166fead2e6e555dde73e44200113bb26f41b1981d
@@ -661,6 +659,7 @@ services:
     restart: unless-stopped
     networks:
       - seedbox-metrics
+      - metrics
     environment:
       QBITTORRENT_BASE_URL: http://vpn:8090
       EXPORTER_PORT: 17871
@@ -674,6 +673,7 @@ services:
     restart: unless-stopped
     networks:
       - seedbox-metrics
+      - metrics
     environment:
       GLUETUN_URL: http://vpn:8000
       EXPORTER_PORT: 8001
