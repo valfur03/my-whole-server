@@ -208,297 +208,12 @@ services:
       - logs
     restart: unless-stopped
 
-# ============================================================================ #
-# ================================== SEEDBOX ================================= #
-# ============================================================================ #
-  vpn:
-    image: qmcgaw/gluetun:v3.41.1@sha256:1a5bf4b4820a879cdf8d93d7ef0d2d963af56670c9ebff8981860b6804ebc8ab
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      - ./gluetun/auth/config.toml:/gluetun/auth/config.toml:ro
-    secrets:
-      - source: SEEDBOX_WIREGUARD_CONFIG
-        target: /gluetun/wireguard/wg0.conf
-        mode: 0400
-    logging:
-      options:
-        max-size: "2m"
-        max-file: "3"
-    environment:
-      VPN_SERVICE_PROVIDER: custom
-      VPN_TYPE: wireguard
-      TZ: Europe/Paris
-    networks:
-      - proxy
-      - seedbox-indexer
-      - seedbox-metrics
-      - seedbox-torrenting
-    ports:
-      - 53490:34095
-    labels:
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.${BASE_DOMAIN}`)
-      traefik.http.routers.qbittorrent.service: qbittorrent
-      traefik.http.routers.qbittorrent.tls: true
-      traefik.http.services.qbittorrent.loadbalancer.server.port: 8090
-      traefik.http.routers.qbittorrent.middlewares: authelia@docker
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.${BASE_DOMAIN}`)
-      traefik.http.routers.prowlarr.service: prowlarr
-      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-      traefik.http.routers.prowlarr.tls: true
-      traefik.http.routers.prowlarr.middlewares: authelia@docker
-      traefik.http.routers.autobrr.rule: Host(`autobrr.${BASE_DOMAIN}`)
-      traefik.http.routers.autobrr.service: autobrr
-      traefik.http.services.autobrr.loadbalancer.server.port: 7474
-      traefik.http.routers.autobrr.tls: true
-      traefik.http.routers.autobrr.middlewares: authelia@docker
-      traefik.enable: true
-    restart: unless-stopped
-
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.0.4@sha256:46f4e80af074fa2ffc0214fe0b7d59384748cfb34685892a53b7a3c87407a333
-    depends_on:
-      vpn:
-        condition: service_healthy
-        restart: true
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-      - WEBUI_PORT=8090
-      - TORRENTING_PORT=34095
-    network_mode: "service:vpn"
-    volumes:
-      - /data:/data
-      - qbittorrent-config:/config
-    restart: unless-stopped
-
-  prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.3.5.5327-ls147@sha256:c9fe528f34b1fd3715438b6f6d6991d64e2965f2c055db36398bc66a0e7eab01
-    depends_on:
-      vpn:
-        condition: service_healthy
-        restart: true
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-    volumes:
-      - prowlarr-config:/config
-    network_mode: "service:vpn"
-    restart: unless-stopped
-
-  autobrr:
-    image: ghcr.io/autobrr/autobrr:v1.79.0@sha256:5b8c29a86598907496af01ec75ef21f9c0e4e28ce9d6ae6496ef91c71543ec20
-    depends_on:
-      vpn:
-        condition: service_healthy
-        restart: true
-    user: "1000:1000"
-    environment:
-      - TZ=Europe/Paris
-      - AUTOBRR__HOST=0.0.0.0
-      - AUTOBRR__PORT=7474
-    volumes:
-      - autobrr-config:/config
-    network_mode: "service:vpn"
-    restart: unless-stopped
-
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.12@sha256:ca71add37a9cdbb914c7bd5b06f98bf5d2062848c8de6ac3ee09e69a4c170b27
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Europe/Paris
-    volumes:
-      - sonarr-config:/config
-      - /data:/data
-    networks:
-      - seedbox-indexer
-      - proxy
-      - seedbox-torrenting
-    labels:
-      traefik.http.middlewares.sonarr-auth-header.headers.customrequestheaders.Authorization: Basic ${SONARR_BASIC_AUTH_TOKEN}
-      traefik.http.routers.sonarr.rule: Host(`sonarr.${BASE_DOMAIN}`)
-      traefik.http.services.sonarr.loadbalancer.server.port: 8989
-      traefik.http.routers.sonarr.tls: true
-      traefik.http.routers.sonarr.middlewares: authelia@docker, sonarr-auth-header@docker
-      traefik.enable: true
-    restart: unless-stopped
-
-  radarr:
-    image: lscr.io/linuxserver/radarr:5.28.0@sha256:b2c7710f6eda0f745e2647783de47e1bb750d838d012bb2dc1df535ee2228c9b
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Europe/Paris
-    volumes:
-      - radarr-config:/config
-      - /data:/data
-    networks:
-      - seedbox-indexer
-      - proxy
-      - seedbox-torrenting
-    labels:
-      traefik.http.middlewares.radarr-auth-header.headers.customrequestheaders.Authorization: Basic ${RADARR_BASIC_AUTH_TOKEN}
-      traefik.http.routers.radarr.rule: Host(`radarr.${BASE_DOMAIN}`)
-      traefik.http.services.radarr.loadbalancer.server.port: 7878
-      traefik.http.routers.radarr.tls: true
-      traefik.http.routers.radarr.middlewares: authelia@docker, radarr-auth-header@docker
-      traefik.enable: true
-    restart: unless-stopped
-  sonarr-exporter:
-    image: ghcr.io/onedr0p/exportarr:v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
-    command: ["sonarr"]
-    depends_on:
-      - sonarr
-    environment:
-      PORT: 9707
-      URL: http://sonarr:8989
-      APIKEY: ${SONARR_API_KEY}
-    networks:
-      - seedbox-indexer
-      - metrics
-    restart: unless-stopped
-  radarr-exporter:
-    image: ghcr.io/onedr0p/exportarr:v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
-    command: ["radarr"]
-    depends_on:
-      - radarr
-    environment:
-      PORT: 9708
-      URL: http://radarr:7878
-      APIKEY: ${RADARR_API_KEY}
-    networks:
-      - seedbox-indexer
-      - metrics
-    restart: unless-stopped
-  plex:
-    image: lscr.io/linuxserver/plex:1.43.3@sha256:de95bb12db3ed4e34ad5983113b8af967cfd77786e15669c0703c22133e10107
-    environment:
-      PUID: 1000
-      PGID: 1000
-      VERSION: docker
-    volumes:
-      - plex-config:/config
-      - /data:/data
-    networks:
-      - proxy
-    labels:
-      traefik.http.routers.plex.rule: Host(`plex.${BASE_DOMAIN}`)
-      traefik.http.services.plex.loadbalancer.server.port: 32400
-      traefik.http.routers.plex.tls: true
-      traefik.enable: true
-    restart: unless-stopped
-
-  qbittorrent-exporter:
-    image: ghcr.io/martabal/qbittorrent-exporter:v2.0.1
-    restart: unless-stopped
-    networks:
-      - seedbox-metrics
-      - metrics
-    environment:
-      QBITTORRENT_BASE_URL: http://vpn:8090
-      EXPORTER_PORT: 17871
-      ENABLE_LABEL_WITH_HASH: "true"
-      ENABLE_LABEL_WITH_TRACKER: "true"
-      ENABLE_LABEL_WITH_TAGS: "true"
-      ENABLE_INCREASED_CARDINALITY: "true"
-
-  gluetun-exporter:
-    image: ghcr.io/thecfu/gluetun-exporter:0.1.1-standalone@sha256:bafeabb2a9638bf6b0800c2d3d47d49c6236d879bd01eec8caea45dfca2b50c5
-    restart: unless-stopped
-    networks:
-      - seedbox-metrics
-      - metrics
-    environment:
-      GLUETUN_URL: http://vpn:8000
-      EXPORTER_PORT: 8001
-      EXPORTER_INTERVAL: 30
-
-  cross-seed:
-    image: ghcr.io/cross-seed/cross-seed:6.13.7@sha256:9555dc70f6753fef32d54bfc1ff504899377a6a0b73687f95d58fa27dfa0a7c7
-    command: daemon
-    user: 1000:1000
-    volumes:
-      # TODO configuration is generated at runtime
-      - cross-seed-config:/config
-      - /data:/data
-    networks:
-      - seedbox-indexer
-      - seedbox-torrenting
-    restart: unless-stopped
-
-  qbit_manage:
-    build: qbit_manage
-    environment:
-      TZ: Europe/Paris
-      QBT_SCHEDULE: "30"
-      PUID: "1000"
-      PGID: "1000"
-    volumes:
-      - /data:/data
-    networks:
-      - seedbox-torrenting
-    restart: unless-stopped
-
-  seerr-database:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_DB: seerr
-      POSTGRES_USER: seerr
-      POSTGRES_PASSWORD: ${SEERR_DATABASE_PASSWORD}
-    volumes:
-      - seerr-database:/var/lib/postgresql
-    networks:
-      - seerr-backend
-    restart: unless-stopped
-
-  seerr:
-    image: ghcr.io/seerr-team/seerr:v3.0.0
-    init: true
-    depends_on:
-      - seerr-database
-    environment:
-      LOG_LEVEL: info
-      TZ: Europe/Paris
-      PORT: 5055
-      DB_TYPE: postgres
-      DB_HOST: seerr-database
-      DB_PORT: 5432
-      DB_USER: seerr
-      DB_PASS: ${SEERR_DATABASE_PASSWORD}
-      DB_NAME: seerr
-    volumes:
-      - seerr-config:/app/config
-    networks:
-      - seerr-backend
-      - proxy
-      - seedbox-indexer
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
-      start_period: 30s
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    labels:
-      traefik.http.routers.seerr.rule: Host(`seerr.${BASE_DOMAIN}`)
-      traefik.http.routers.seerr.tls: true
-      traefik.http.services.seerr.loadbalancer.server.port: 5055
-      traefik.enable: true
-    restart: unless-stopped
-
 volumes:
   adguard-conf:
-  autobrr-config:
   borg-cache:
   borg-config:
-  cross-seed-config:
   grafana-data:
   nextcloud-data:
-  prowlarr-config:
   alloy-logs-data:
   loki-data:
   node-textfile-collector:
@@ -506,11 +221,6 @@ volumes:
   tempo-data:
   plex-config:
   prometheus-data:
-  qbittorrent-config:
-  sonarr-config:
-  radarr-config:
-  seerr-config:
-  seerr-database:
   vaultwarden-data:
 
 networks:
@@ -521,10 +231,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  seedbox-indexer:
-  seedbox-metrics:
-  seedbox-torrenting:
-  seerr-backend:
 
 secrets:
   AUTHELIA_JWT_SECRET:
@@ -545,8 +251,6 @@ secrets:
     file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
-  SEEDBOX_WIREGUARD_CONFIG:
-    file: ${SECRETS_DIR:-./}seedbox/secrets/WIREGUARD_CONFIG
   BORGMATIC_SSH_PRIVATE_KEY:
     file: ${SECRETS_DIR:-./}borgmatic/secrets/SSH_PRIVATE_KEY
   BORGMATIC_SSH_KNOWN_HOSTS:
