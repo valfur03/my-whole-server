@@ -208,15 +208,8 @@ services:
     volumes:
       - prometheus-data:/prometheus
     networks:
-      - proxy #delete
       - metrics
       - seedbox-metrics
-    labels: # delete
-      traefik.http.routers.prom.rule: Host(`prom.${BASE_DOMAIN}`)
-      traefik.http.routers.prom.tls: true
-      traefik.http.services.prom.loadbalancer.server.port: 9090
-      traefik.http.routers.prom.middlewares: authelia@docker
-      traefik.enable: true
     restart: unless-stopped
   grafana:
     image: grafana/grafana:11.6.14@sha256:ebe075cd4c4520f9d3af2403a1ddc830651ca7d009cbdfdcf21032db574dc3a7
