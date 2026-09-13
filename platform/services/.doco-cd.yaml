@@ -1,0 +1,12 @@
+name: services
+working_dir: platform/services
+webhook_filter: ^refs/heads/master$
+env_files:
+  - ../.sops.env
+build:
+  force_image_pull: false
+auto_discovery:
+  enabled: true
+  depth: 1
+  delete: true
+  remove_volumes: false

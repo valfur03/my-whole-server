@@ -1,0 +1,7 @@
+networks:
+  proxy:
+    external: true
+  metrics:
+    external: true
+  backup:
+    external: true
