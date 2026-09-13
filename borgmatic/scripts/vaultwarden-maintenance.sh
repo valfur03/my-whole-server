@@ -7,16 +7,14 @@ cd $(dirname $0)
 . utils/docker/start.sh
 . utils/docker/stop.sh
 
-VAULTWARDEN_CONTAINER_NAME="my-whole-server-vaultwarden-1"
-
 set_vaultwarden_maintenance()
 {
 	MODE=$1
 	if [ "$MODE" == "off" ]
 	then
-		docker_start $VAULTWARDEN_CONTAINER_NAME
+		docker_start ${VAULTWARDEN_CONTAINER_NAME:?}
 	else
-		docker_stop $VAULTWARDEN_CONTAINER_NAME
+		docker_stop ${VAULTWARDEN_CONTAINER_NAME:?}
 	fi
 }
 

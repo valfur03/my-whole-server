@@ -4,11 +4,9 @@ cd $(dirname $0)
 
 . utils/docker/exec.sh
 
-NEXTCLOUD_CONTAINER_NAME="my-whole-server-nextcloud-app-1"
-
 update_data_fingerprint()
 {
-    docker_exec $NEXTCLOUD_CONTAINER_NAME www-data php occ maintenance:data-fingerprint
+    docker_exec ${NEXTCLOUD_CONTAINER_NAME:?} www-data php occ maintenance:data-fingerprint
 }
 
 update_data_fingerprint

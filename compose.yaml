@@ -79,6 +79,8 @@ services:
       BORG_PASSPHRASE_FILE: /run/secrets/BORGMATIC_ENCRYPTION_PASSPHRASE
       CRON: "0 2 * * *"
       TZ: Europe/Paris
+      NEXTCLOUD_CONTAINER_NAME: my-whole-server-nextcloud-app-1
+      VAULTWARDEN_CONTAINER_NAME: my-whole-server-vaultwarden-1
     env_file:
       - ./borgmatic/envs/databases.sops.env
       - ./borgmatic/envs/borgbase.sops.env
