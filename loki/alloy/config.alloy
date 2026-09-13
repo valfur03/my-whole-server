@@ -1,7 +1,7 @@
 // Discover every container running on the host via the existing socket-proxy
 // (CONTAINERS=1 is enough — no extra permission needed).
 discovery.docker "containers" {
-	host             = "tcp://socket-proxy:2375"
+	host             = "tcp://alloy-socket-proxy:2375"
 	refresh_interval = "15s"
 }
 
@@ -31,7 +31,7 @@ discovery.relabel "containers" {
 
 // Stream container logs via Docker API and ship to Loki.
 loki.source.docker "containers" {
-	host       = "tcp://socket-proxy:2375"
+	host       = "tcp://alloy-socket-proxy:2375"
 	targets    = discovery.relabel.containers.output
 	forward_to = [loki.write.default.receiver]
 }

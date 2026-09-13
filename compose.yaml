@@ -451,6 +451,16 @@ services:
       - metrics
     restart: unless-stopped
 
+  alloy-socket-proxy:
+    image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
+    environment:
+      CONTAINERS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - logs
+    restart: unless-stopped
+
   alloy-logs:
     image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
     command:
@@ -460,13 +470,13 @@ services:
       - /etc/alloy/config.alloy
     depends_on:
       - loki
-      - socket-proxy
+      - alloy-socket-proxy
     volumes:
       - ./loki/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - alloy-logs-data:/var/lib/alloy/data
     networks:
       - metrics
-      - traefik
+      - logs
     restart: unless-stopped
 
 # ============================================================================ #
@@ -991,6 +1001,8 @@ networks:
   backup:
   da-many-backend:
   ldap-backend:
+  logs:
+    internal: true
   metrics:
   proxy:
     ipam:
