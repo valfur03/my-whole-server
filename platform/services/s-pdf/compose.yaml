@@ -1,0 +1,15 @@
+name: s-pdf
+include:
+  - ../common/networks.yaml
+services:
+  s-pdf:
+    image: frooodle/s-pdf:0.46.2@sha256:396ca949b81198a65b9abfec38518fa44e871b1970dad9f9718ffd030eef9b92
+    networks:
+      - proxy
+    labels:
+      traefik.http.routers.s-pdf.rule: Host(`s-pdf.${BASE_DOMAIN}`)
+      traefik.http.services.s-pdf.loadbalancer.server.port: 8080
+      traefik.http.routers.s-pdf.tls: true
+      traefik.http.routers.s-pdf.middlewares: authelia@docker
+      traefik.enable: true
+    restart: unless-stopped
