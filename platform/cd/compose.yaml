@@ -1,0 +1,58 @@
+name: cd
+services:
+  doco-cd:
+    image: ghcr.io/kimdre/doco-cd:0.117.1@sha256:9db114c98e4fffa2f88a5ded0d4f71356334310057398f31105cabb004077e28
+    environment:
+      TZ: Europe/Paris
+      LOG_LEVEL: ${DOCO_CD_LOG_LEVEL:-INFO}
+      DEPLOY_CONFIG_BASE_DIR: platform/services
+      GIT_ACCESS_TOKEN_FILE: /run/secrets/git_access_token
+      WEBHOOK_SECRET_FILE: /run/secrets/webhook_secret
+      SOPS_AGE_KEY_FILE: /run/secrets/sops_age_key
+      API_SECRET_FILE: /run/secrets/api_secret
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+    networks:
+      - proxy
+    secrets:
+      - git_access_token
+      - webhook_secret
+      - sops_age_key
+      - api_secret
+      - source: docker_config
+        target: /root/.docker/config.json
+        mode: 0400
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/doco-cd", "healthcheck"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      traefik.http.routers.doco-cd.rule: Host(`cd.${BASE_DOMAIN}`) && (Path(`/v1/webhook`) || Path(`/v1/api/poll/run`))
+      traefik.http.routers.doco-cd.tls: true
+      traefik.http.services.doco-cd.loadbalancer.server.port: 80
+      traefik.enable: true
+    restart: unless-stopped
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    external: true
+
+secrets:
+  git_access_token:
+    file: ./secrets/git_access_token
+  webhook_secret:
+    file: ./secrets/webhook_secret
+  sops_age_key:
+    file: ./secrets/sops_age_key
+  api_secret:
+    file: ./secrets/api_secret
+  docker_config:
+    file: ./secrets/docker_config.json
