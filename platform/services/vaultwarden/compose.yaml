@@ -1,0 +1,39 @@
+name: vaultwarden
+include:
+  - ../common/networks.yaml
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.37.0@sha256:e6443e3d5ed8fcee2204b89ec778d7f24d0173bcc42d1ea34f990304f5f63f51
+    environment:
+      ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
+      DOMAIN: "https://vault.${BASE_DOMAIN}"
+      SIGNUPS_ALLOWED: "false"
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_FROM: ${VAULTWARDEN_SYSTEM_EMAIL}
+      SMTP_PORT: 587
+      SMTP_SECURITY: starttls
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      WEBSOCKET_ENABLED: "true"
+    volumes:
+      - data:/data
+    networks:
+      - proxy
+    labels:
+      traefik.http.routers.vaultwarden.rule: Host(`vault.${BASE_DOMAIN}`)
+      traefik.http.routers.vaultwarden.service: vaultwarden
+      traefik.http.routers.vaultwarden.tls: true
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 80
+      traefik.http.routers.vaultwarden-ws.rule: Host(`vault.${BASE_DOMAIN}`) && Path(`/notifications/hub`)
+      traefik.http.routers.vaultwarden-ws.service: vaultwarden-ws
+      traefik.http.routers.vaultwarden-ws.tls: true
+      traefik.http.services.vaultwarden-ws.loadbalancer.server.port: 3012
+      traefik.http.routers.vaultwarden-admin.rule: Host(`vault.${BASE_DOMAIN}`) && (Path(`/admin`) || PathPrefix(`/admin/`))
+      traefik.http.routers.vaultwarden-admin.service: vaultwarden
+      traefik.http.routers.vaultwarden-admin.tls: true
+      traefik.http.routers.vaultwarden-admin.middlewares: authelia@docker
+      traefik.enable: true
+    restart: unless-stopped
+
+volumes:
+  data:
