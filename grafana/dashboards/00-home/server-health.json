@@ -361,7 +361,7 @@
       "gridPos": { "x": 12, "y": 11, "w": 12, "h": 5 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        { "refId": "A", "expr": "sum by (compose_service) (rate({compose_project=\"my-whole-server\"} |~ \"(?i)error|panic|fatal\" [5m]))", "legendFormat": "{{compose_service}}" }
+        { "refId": "A", "expr": "sum by (compose_service) (rate({compose_project=~\".+\"} |~ \"(?i)error|panic|fatal\" [5m]))", "legendFormat": "{{compose_service}}" }
       ],
       "fieldConfig": {
         "defaults": {
@@ -387,7 +387,7 @@
       "gridPos": { "x": 0, "y": 17, "w": 24, "h": 12 },
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
-        { "refId": "A", "expr": "sum by (compose_service) (count_over_time({compose_project=\"my-whole-server\"}[5m])) > bool 0", "legendFormat": "{{compose_service}}" }
+        { "refId": "A", "expr": "sum by (compose_service) (count_over_time({compose_project=~\".+\"}[5m])) > bool 0", "legendFormat": "{{compose_service}}" }
       ],
       "fieldConfig": {
         "defaults": {
