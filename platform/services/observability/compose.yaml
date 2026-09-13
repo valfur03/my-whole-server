@@ -1,0 +1,170 @@
+name: observability
+include:
+  - ../common/networks.yaml
+services:
+  prometheus:
+    build: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.enable-remote-write-receiver
+    environment:
+      BASE_DOMAIN: ${BASE_DOMAIN}
+    volumes:
+      - prometheus-data:/prometheus
+    networks:
+      - metrics
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:11.6.14@sha256:ebe075cd4c4520f9d3af2403a1ddc830651ca7d009cbdfdcf21032db574dc3a7
+    depends_on:
+      - prometheus
+    environment:
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/00-home/server-health.json
+      GF_PLUGINS_PREINSTALL: grafana-lokiexplore-app@2.0.4
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    networks:
+      - metrics
+      - proxy
+    restart: unless-stopped
+    labels:
+      traefik.http.routers.grafana.rule: Host(`metrics.${BASE_DOMAIN}`)
+      traefik.http.routers.grafana.tls: true
+      traefik.http.services.grafana.loadbalancer.server.port: 3000
+      traefik.enable: true
+  node-exporter:
+    image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|run|tmp)($$|/)"
+      - "--collector.textfile.directory=/var/lib/node_exporter/textfile_collector"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - node-textfile-collector:/var/lib/node_exporter/textfile_collector:ro
+    networks:
+      - metrics
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0@sha256:b04a9fef4fa086a02fc7fcd8dcdbc4b7b35cc30cdee860fdc6a19dd8b208d63e
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    networks:
+      - metrics
+      - proxy
+    restart: unless-stopped
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.57.0@sha256:e75bdb03b74b0b6995f208f166fead2e6e555dde73e44200113bb26f41b1981d
+    privileged: true
+    command:
+      - --housekeeping_interval=15s
+      - --docker_only=true
+      - --store_container_labels=false
+      - --whitelisted_container_labels=com.docker.compose.project,com.docker.compose.service
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    networks:
+      - metrics
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.10.5@sha256:ee21727732c7a7199cb71c3eee9153bbf23f9b0b87619f0555a0cf21a67f1a33
+    user: "0"
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./otel/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks:
+      - metrics
+    restart: unless-stopped
+
+  otel-collector:
+    image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    depends_on:
+      - tempo
+    volumes:
+      - ./otel/collector/config.alloy:/etc/alloy/config.alloy:ro
+      - otel-collector-data:/var/lib/alloy/data
+    networks:
+      - proxy
+      - metrics
+    labels:
+      traefik.http.routers.otel-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
+      traefik.http.routers.otel-http-collector.tls: true
+      traefik.http.routers.otel-http-collector.middlewares: authelia@docker
+      traefik.http.services.otel-http-collector.loadbalancer.server.port: 4318
+      traefik.enable: true
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.7.2@sha256:191d4fdfb7264f16989f0a57f320872620a5a7c2ceeec6229212c4190ec49b86
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    networks:
+      - metrics
+    restart: unless-stopped
+
+  alloy-socket-proxy:
+    image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
+    environment:
+      CONTAINERS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - logs
+    restart: unless-stopped
+
+  alloy-logs:
+    image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    depends_on:
+      - loki
+      - alloy-socket-proxy
+    volumes:
+      - ./loki/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-logs-data:/var/lib/alloy/data
+    networks:
+      - metrics
+      - logs
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  alloy-logs-data:
+  tempo-data:
+  otel-collector-data:
+  node-textfile-collector:
+
+networks:
+  logs:
+    internal: true

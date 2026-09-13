@@ -367,7 +367,7 @@
           "gridPos": { "x": 0, "y": 36, "w": 24, "h": 12 },
           "datasource": { "type": "loki", "uid": "loki" },
           "targets": [
-            { "refId": "A", "expr": "{compose_service=~\"nextcloud-(app|web)\"} |~ \"(?i)error|warn|critical|exception\"" }
+            { "refId": "A", "expr": "{compose_project=\"nextcloud\", compose_service=~\"app|nextcloud-web\"} |~ \"(?i)error|warn|critical|exception\"" }
           ],
           "options": {
             "showTime": true,
