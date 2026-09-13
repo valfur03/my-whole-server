@@ -33,7 +33,7 @@ providers:
   docker:
     endpoint: "tcp://socket-proxy:2375"
     exposedbydefault: false
-    network: my-whole-server_proxy
+    network: proxy
 
 tracing:
   otlp:

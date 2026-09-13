@@ -777,53 +777,6 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
-# ================================== TRAEFIK ================================= #
-# ============================================================================ #
-  socket-proxy:
-    image: tecnativa/docker-socket-proxy@sha256:1f3a6f303320723d199d2316a3e82b2e2685d86c275d5e3deeaf182573b47476
-    environment:
-      CONTAINERS: 1
-      NETWORKS: 1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - traefik
-    restart: unless-stopped
-
-  traefik:
-    build: traefik
-    depends_on:
-      - socket-proxy
-    ports:
-      - 80:80
-      - 443:443
-    environment:
-      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${SYSTEM_EMAIL}
-      BUNNY_API_KEY_FILE: /run/secrets/BUNNY_API_KEY
-      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS: "true"
-      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS_CERTRESOLVER: letsencrypt
-      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS_DOMAINS_0_MAIN: ${BASE_DOMAIN}
-      TRAEFIK_ENTRYPOINTS_HTTPS_HTTP_TLS_DOMAINS_0_SANS: "*.${BASE_DOMAIN},*.collector.traces.${BASE_DOMAIN}"
-    networks:
-      - proxy
-      - traefik
-      - metrics
-    extra_hosts:
-      - host.docker.internal:172.17.0.1
-    volumes:
-      - traefik-acme:/etc/traefik/acme
-    secrets:
-      - BUNNY_API_KEY
-    labels:
-      traefik.http.routers.traefik.rule: Host(`proxy.${BASE_DOMAIN}`)
-      traefik.http.routers.traefik.tls: true
-      traefik.http.routers.traefik.middlewares: authelia@docker
-      traefik.http.routers.traefik.service: api@internal
-      traefik.http.services.traefik.loadbalancer.server.port: 8080
-      traefik.enable: true
-    restart: unless-stopped
-
-# ============================================================================ #
 # ================================ VAULTWARDEN =============================== #
 # ============================================================================ #
   vaultwarden:
@@ -991,7 +944,6 @@ volumes:
   radarr-config:
   seerr-config:
   seerr-database:
-  traefik-acme:
   vaultwarden-data:
   weekly-money-database:
   wireguard:
@@ -1005,16 +957,13 @@ networks:
     internal: true
   metrics:
   proxy:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.47.0.0/16
+    external: true
+    name: proxy
   nextcloud-backend:
   seedbox-indexer:
   seedbox-metrics:
   seedbox-torrenting:
   seerr-backend:
-  traefik:
   weekly-money-backend:
   AAA-vpn:
     # The network is named this way to ensure (as much as I have understood)
@@ -1046,8 +995,6 @@ secrets:
     file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
-  BUNNY_API_KEY:
-    file: ${SECRETS_DIR:-./}traefik/secrets/BUNNY_API_KEY
   DOCO_CD_GIT_ACCESS_TOKEN:
     file: ${SECRETS_DIR:-./}doco-cd/secrets/GIT_ACCESS_TOKEN
   DOCO_CD_WEBHOOK_SECRET:
