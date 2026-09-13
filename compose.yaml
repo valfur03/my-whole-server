@@ -737,50 +737,6 @@ services:
       traefik.enable: true
     restart: unless-stopped
 
-# ============================================================================ #
-# ================================ WEEKLY-MONEY ============================== #
-# ============================================================================ #
-  weekly-money-database:
-    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-    environment:
-      POSTGRES_DB: weekly-money
-      POSTGRES_USER: weekly-money
-      POSTGRES_PASSWORD: ${WEEKLY_MONEY_DATABASE_PASSWORD}
-    volumes:
-      - weekly-money-database:/var/lib/postgresql/data
-    networks:
-      - weekly-money-backend
-    restart: unless-stopped
-
-  weekly-money:
-    image: ghcr.io/valfur03/weekly-money:main
-    depends_on:
-      - weekly-money-database
-    environment:
-      NOTION_ACCESS_TOKEN: ${NOTION_ACCESS_TOKEN}
-      NOTION_PRODUCTS_DATASOURCE_ID: ${NOTION_PRODUCTS_DATASOURCE_ID}
-      NOTION_PORTFOLIO_DATASOURCE_ID: ${NOTION_PORTFOLIO_DATASOURCE_ID}
-      NOTION_PORTFOLIO_ACCOUNT_ID: ${NOTION_PORTFOLIO_ACCOUNT_ID}
-      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
-      DISCORD_USER_ID: ${DISCORD_USER_ID}
-      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
-      DATABASE_HOST: weekly-money-database
-      DATABASE_USER: weekly-money
-      DATABASE_NAME: weekly-money
-      DATABASE_PASSWORD: ${WEEKLY_MONEY_DATABASE_PASSWORD}
-      BASE_DOMAIN: weekly-money.${BASE_DOMAIN}
-      LOG_LEVEL: debug
-    networks:
-      - proxy
-      - weekly-money-backend
-    labels:
-      traefik.http.routers.weekly-money.rule: Host(`weekly-money.${BASE_DOMAIN}`)
-      traefik.http.routers.weekly-money.tls: true
-      traefik.http.services.weekly-money.loadbalancer.server.port: 3000
-      traefik.enable: true
-    restart: unless-stopped
-
 volumes:
   adguard-conf:
   authelia-database:
@@ -808,7 +764,6 @@ volumes:
   seerr-config:
   seerr-database:
   vaultwarden-data:
-  weekly-money-database:
 
 networks:
   authelia-backend:
@@ -826,7 +781,6 @@ networks:
   seedbox-metrics:
   seedbox-torrenting:
   seerr-backend:
-  weekly-money-backend:
 
 secrets:
   AUTHELIA_JWT_SECRET:
