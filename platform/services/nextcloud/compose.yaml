@@ -1,0 +1,92 @@
+name: nextcloud
+include:
+  - ../common/networks.yaml
+services:
+  database:
+    image: mariadb:11.3-jammy@sha256:e101f9db31916a5d4d7d594dd0dd092fb23ab4f499f1d7a7425d1afd4162c4bc
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --skip-innodb-read-only-compressed
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: ${NEXTCLOUD_STORAGE_PASSWORD}
+    networks:
+      backend: {}
+      backup:
+        aliases:
+          - nextcloud-database
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
+    restart: unless-stopped
+    networks:
+      - backend
+
+  nextcloud-mysqld-exporter:
+    build: ./mysqld-exporter
+    depends_on:
+      - database
+    environment:
+      MYSQL_PASSWORD: ${NEXTCLOUD_STORAGE_PASSWORD}
+    networks:
+      - backend
+      - metrics
+    restart: unless-stopped
+
+  nextcloud-redis-exporter:
+    image: oliver006/redis_exporter:v1.83.0-alpine@sha256:7643b705adca0ef5c700cae28cfd8798c3d3b653ef17096084359d17b70ea5ca
+    depends_on:
+      - redis
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    networks:
+      - backend
+      - metrics
+    restart: unless-stopped
+
+  app:
+    image: nextcloud:33.0.3-fpm@sha256:f19148bd5c7f3a59b1dd848b8a70cd613640251d5e322964fa0c3356249cece2
+    depends_on:
+      - database
+      - redis
+    volumes:
+      - data:/var/www/html
+      - /data/media:/media:ro
+    environment:
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_HOST: database
+      MYSQL_PASSWORD: ${NEXTCLOUD_STORAGE_PASSWORD}
+      REDIS_HOST: redis
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN} nextcloud-web
+      TRUSTED_PROXIES: traefik
+    networks:
+      - backend
+    restart: unless-stopped
+
+  nextcloud-web:
+    build: ./web
+    depends_on:
+      - app
+    volumes:
+      - data:/var/www/html
+      - /data/media:/media:ro
+    networks:
+      - backend
+      - proxy
+    labels:
+      traefik.http.routers.nextcloud.rule: Host(`cloud.${BASE_DOMAIN}`)
+      traefik.http.routers.nextcloud.tls: true
+      traefik.http.services.nextcloud.loadbalancer.server.port: 80
+      traefik.enable: true
+    restart: unless-stopped
+
+volumes:
+  data:
+  database:
+
+networks:
+  backend:
