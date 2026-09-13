@@ -85,7 +85,6 @@ scrape_configs:
           - http://plex:32400/identity
           - http://adguard:80
           - http://s-pdf:8080
-          - http://vidlvery:3000
           - http://tempo:3200/ready
           - http://web:80
           - http://sonarr:8989/ping
