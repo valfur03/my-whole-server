@@ -35,19 +35,18 @@ services:
       AUTHELIA_AUTHENTICATION_BACKEND_LDAP_BASE_DN: ${LDAP_BASE_DN}
       AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE: /run/secrets/LDAP_ADMIN_PASSWORD
       AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USER: ${AUTHELIA_LDAP_USER}
-      AUTHELIA_DEFAULT_REDIRECTION_URL: https://${BASE_DOMAIN}
       AUTHELIA_JWT_SECRET_FILE: /run/secrets/AUTHELIA_JWT_SECRET
       AUTHELIA_NOTIFIER_SMTP_USERNAME: ${SMTP_USERNAME}
       AUTHELIA_NOTIFIER_SMTP_SENDER: "${AUTHELIA_SYSTEM_EMAIL_SENDER} <${AUTHELIA_SYSTEM_EMAIL}>"
       AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /run/secrets/SMTP_PASSWORD
       AUTHELIA_NOTIFIER_SMTP_HOST: ${SMTP_HOST}
       AUTHELIA_NOTIFIER_SMTP_TLS_SERVER_NAME: ${SMTP_HOST}
-      AUTHELIA_SESSION_DOMAIN: ${BASE_DOMAIN}
       AUTHELIA_SESSION_SECRET_FILE: /run/secrets/AUTHELIA_SESSION_SECRET
       AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: /run/secrets/AUTHELIA_STORAGE_PASSWORD
       BASE_DOMAIN: ${BASE_DOMAIN}
       HOST_IP: ${HOST_IP}
       AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/AUTHELIA_STORAGE_ENCRYPTION_KEY
+      X_AUTHELIA_CONFIG_FILTERS: template
     networks:
       - authelia-backend
       - ldap-backend
@@ -62,7 +61,7 @@ services:
     expose:
       - 9091
     labels:
-      traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/verify?rd=https%3A%2F%2Fauth.${BASE_DOMAIN}%2F
+      traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/authz/forward-auth
       traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
       traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
       traefik.http.routers.authelia.rule: Host(`auth.${BASE_DOMAIN}`)
