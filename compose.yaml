@@ -14,6 +14,7 @@ services:
       - authelia-database:/var/lib/postgresql/data
     networks:
       - authelia-backend
+      - backup
     secrets:
       - AUTHELIA_STORAGE_PASSWORD
 
@@ -94,9 +95,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - node-textfile-collector:/var/lib/node_exporter/textfile_collector
     networks:
-      - authelia-backend
-      - da-many-backend
-      - nextcloud-backend
+      - backup
     secrets:
       - AUTHELIA_JWT_SECRET
       - AUTHELIA_SESSION_SECRET
@@ -133,6 +132,7 @@ services:
       - da-many-database:/var/lib/postgresql
     networks:
       - da-many-backend
+      - backup
     restart: unless-stopped
 
   da-many-api:
@@ -330,6 +330,7 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/NEXTCLOUD_STORAGE_PASSWORD
     networks:
       - nextcloud-backend
+      - backup
     secrets:
       - NEXTCLOUD_STORAGE_PASSWORD
     restart: unless-stopped
@@ -985,6 +986,7 @@ volumes:
 
 networks:
   authelia-backend:
+  backup:
   da-many-backend:
   ldap-backend:
   metrics:
