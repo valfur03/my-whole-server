@@ -1,0 +1,13 @@
+name: web
+include:
+  - ../common/networks.yaml
+services:
+  web:
+    build: web
+    networks:
+      - proxy
+    labels:
+      traefik.http.routers.web.rule: Host(`${BASE_DOMAIN}`)
+      traefik.http.routers.web.tls: true
+      traefik.enable: true
+    restart: unless-stopped
