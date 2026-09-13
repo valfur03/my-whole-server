@@ -375,7 +375,7 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/NEXTCLOUD_STORAGE_PASSWORD
       REDIS_HOST: nextcloud-redis
       NEXTCLOUD_TRUSTED_DOMAINS: cloud.${BASE_DOMAIN} nextcloud-web
-      TRUSTED_PROXIES: reverse-proxy
+      TRUSTED_PROXIES: traefik
     networks:
       - nextcloud-backend
     secrets:
@@ -773,11 +773,10 @@ services:
       - traefik
     restart: unless-stopped
 
-  reverse-proxy:
+  traefik:
     build: traefik
     depends_on:
       - socket-proxy
-      - authelia
     ports:
       - 80:80
       - 443:443
@@ -929,8 +928,6 @@ services:
     restart: unless-stopped
   wireguard:
     image: ghcr.io/wg-easy/wg-easy:14@sha256:5f26407fd2ede54df76d63304ef184576a6c1bb73f934a58a11abdd852fab549
-    depends_on:
-      - reverse-proxy
     ports:
       - 51820:51820/udp
     cap_add:

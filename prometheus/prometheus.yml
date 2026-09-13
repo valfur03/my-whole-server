@@ -51,7 +51,7 @@ scrape_configs:
 
   - job_name: "traefik"
     static_configs:
-      - targets: ["reverse-proxy:8080"]
+      - targets: ["traefik:8080"]
 
   - job_name: "nextcloud-mysqld"
     static_configs:
@@ -78,7 +78,7 @@ scrape_configs:
       module: [http_2xx_or_redirect]
     static_configs:
       - targets:
-          - http://reverse-proxy:8080/ping
+          - http://traefik:8080/ping
           - http://authelia:9091/api/health
           - http://nextcloud-web:80/status.php
           - http://vaultwarden:80/alive

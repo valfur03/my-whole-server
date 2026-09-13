@@ -51,7 +51,7 @@
       "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "A", "expr": "probe_success{instance=\"http://reverse-proxy:8080/ping\"}" }
+        { "refId": "A", "expr": "probe_success{instance=\"http://traefik:8080/ping\"}" }
       ],
       "fieldConfig": {
         "defaults": {

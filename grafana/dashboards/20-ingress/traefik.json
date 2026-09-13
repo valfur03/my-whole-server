@@ -413,7 +413,7 @@
           "gridPos": { "x": 0, "y": 52, "w": 24, "h": 12 },
           "datasource": { "type": "loki", "uid": "loki" },
           "targets": [
-            { "refId": "A", "expr": "{compose_service=\"reverse-proxy\"}" }
+            { "refId": "A", "expr": "{compose_service=\"traefik\"}" }
           ],
           "options": {
             "showTime": true,
