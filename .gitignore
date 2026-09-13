@@ -1,8 +1,8 @@
 .env
 .env.local
 platform/services/*/secrets.env
-borgmatic/envs/borgbase.env
-borgmatic/envs/databases.env
+platform/services/borgmatic/envs/borgbase.env
+platform/services/borgmatic/envs/databases.env
 
 sops_age_key*
 *.age

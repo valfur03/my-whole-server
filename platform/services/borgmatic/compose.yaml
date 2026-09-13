@@ -1,0 +1,64 @@
+name: borgmatic
+include:
+  - ../common/networks.yaml
+services:
+  borgmatic:
+    image: ghcr.io/borgmatic-collective/borgmatic:2.1.7@sha256:6d039f98e58a58cea287007608c3d5993ce65f8e248ff91cd3de4246c648c123
+    environment:
+      BORG_PASSPHRASE: ${BORGMATIC_ENCRYPTION_PASSPHRASE}
+      CRON: "0 2 * * *"
+      TZ: Europe/Paris
+      NEXTCLOUD_CONTAINER_NAME: nextcloud-app-1
+      VAULTWARDEN_CONTAINER_NAME: vaultwarden-vaultwarden-1
+    env_file:
+      - ./envs/databases.sops.env
+      - ./envs/borgbase.sops.env
+    volumes:
+      - borg-config:/root/.config/borg
+      - borg-cache:/root/.cache/borg
+      - ./config:/etc/borgmatic.d
+      - ./scripts:/scripts:ro
+      - adguard-conf:/volumes/adguard-conf
+      - nextcloud-data:/volumes/nextcloud-data
+      - plex-config:/volumes/plex-config
+      - vaultwarden-data:/volumes/vaultwarden-data
+      - /backup/local/borg/docker:/backup/local
+      - /var/run/docker.sock:/var/run/docker.sock
+      - node-textfile-collector:/var/lib/node_exporter/textfile_collector
+    networks:
+      - backup
+    secrets:
+      - source: ssh_private_key
+        target: /root/.ssh/id_rsa
+        mode: 0400
+      - source: ssh_known_hosts
+        target: /root/.ssh/known_hosts
+        mode: 0400
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+volumes:
+  borg-config:
+  borg-cache:
+  adguard-conf:
+    external: true
+    name: wireguard_adguard-conf
+  nextcloud-data:
+    external: true
+    name: nextcloud_data
+  plex-config:
+    external: true
+    name: seedbox_plex-config
+  vaultwarden-data:
+    external: true
+    name: vaultwarden_data
+  node-textfile-collector:
+    external: true
+    name: observability_node-textfile-collector
+
+secrets:
+  ssh_private_key:
+    file: ./secrets/id_rsa
+  ssh_known_hosts:
+    file: ./secrets/known_hosts
