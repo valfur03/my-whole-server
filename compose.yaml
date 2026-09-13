@@ -1,76 +1,6 @@
 name: my-whole-server
 services:
 # ============================================================================ #
-# ================================ AUTHELIA ================================== #
-# ============================================================================ #
-  authelia-database:
-    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: authelia
-      POSTGRES_USER: authelia
-      POSTGRES_PASSWORD_FILE: /run/secrets/AUTHELIA_STORAGE_PASSWORD
-    volumes:
-      - authelia-database:/var/lib/postgresql/data
-    networks:
-      - authelia-backend
-      - backup
-    secrets:
-      - AUTHELIA_STORAGE_PASSWORD
-
-  authelia-redis:
-    image: redis:7.2-alpine3.18@sha256:3ce533b2b057f74b235d1d8697ae08b1b6ff0a5e16827ea6a377b6365693c7ed
-    restart: unless-stopped
-    networks:
-      - authelia-backend
-
-  authelia:
-    build: authelia
-    depends_on:
-      - authelia-database
-      - authelia-redis
-      - ldap
-    environment:
-      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_ADDITIONAL_USERS_DN: ou=${LDAP_USER_DC}
-      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_ADDITIONAL_GROUPS_DN: ou=${LDAP_GROUP_DC}
-      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_BASE_DN: ${LDAP_BASE_DN}
-      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE: /run/secrets/LDAP_ADMIN_PASSWORD
-      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USER: ${AUTHELIA_LDAP_USER}
-      AUTHELIA_JWT_SECRET_FILE: /run/secrets/AUTHELIA_JWT_SECRET
-      AUTHELIA_NOTIFIER_SMTP_USERNAME: ${SMTP_USERNAME}
-      AUTHELIA_NOTIFIER_SMTP_SENDER: "${AUTHELIA_SYSTEM_EMAIL_SENDER} <${AUTHELIA_SYSTEM_EMAIL}>"
-      AUTHELIA_NOTIFIER_SMTP_PASSWORD_FILE: /run/secrets/SMTP_PASSWORD
-      AUTHELIA_NOTIFIER_SMTP_HOST: ${SMTP_HOST}
-      AUTHELIA_NOTIFIER_SMTP_TLS_SERVER_NAME: ${SMTP_HOST}
-      AUTHELIA_SESSION_SECRET_FILE: /run/secrets/AUTHELIA_SESSION_SECRET
-      AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE: /run/secrets/AUTHELIA_STORAGE_PASSWORD
-      BASE_DOMAIN: ${BASE_DOMAIN}
-      HOST_IP: ${HOST_IP}
-      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /run/secrets/AUTHELIA_STORAGE_ENCRYPTION_KEY
-      X_AUTHELIA_CONFIG_FILTERS: template
-    networks:
-      - authelia-backend
-      - ldap-backend
-      - proxy
-    secrets:
-      - AUTHELIA_JWT_SECRET
-      - AUTHELIA_SESSION_SECRET
-      - AUTHELIA_STORAGE_PASSWORD
-      - AUTHELIA_STORAGE_ENCRYPTION_KEY
-      - LDAP_ADMIN_PASSWORD
-      - SMTP_PASSWORD
-    expose:
-      - 9091
-    labels:
-      traefik.http.middlewares.authelia.forwardAuth.address: http://authelia:9091/api/authz/forward-auth
-      traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
-      traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
-      traefik.http.routers.authelia.rule: Host(`auth.${BASE_DOMAIN}`)
-      traefik.http.routers.authelia.tls: true
-      traefik.http.services.authelia.loadbalancer.server.port: 9091
-      traefik.enable: true
-    restart: unless-stopped
-# ============================================================================ #
 # ================================= BORGMATIC ================================ #
 # ============================================================================ #
   borgmatic:
@@ -200,41 +130,6 @@ services:
       - /dev/disk:/dev/disk:ro
     networks:
       - metrics
-    restart: unless-stopped
-# ============================================================================ #
-# =================================== LDAP =================================== #
-# ============================================================================ #
-  ldap:
-    image: osixia/openldap:1.5.0@sha256:18742e9c449c9c1afe129d3f2f3ee15fb34cc43e5f940a20f3399728f41d7c28
-    networks:
-      - ldap-backend
-    environment:
-      LDAP_ORGANISATION: ${ORGANISATION_NAME}
-      LDAP_DOMAIN: ${BASE_DOMAIN}
-      LDAP_BASE_DN: ${LDAP_BASE_DN}
-      LDAP_ADMIN_PASSWORD_FILE: /run/secrets/LDAP_ADMIN_PASSWORD
-    volumes:
-      - ldap-database:/var/lib/ldap
-      - ldap-config:/etc/ldap/slapd.d
-    secrets:
-      - LDAP_ADMIN_PASSWORD
-    restart: unless-stopped
-
-  phpldapadmin:
-    image: osixia/phpldapadmin:0.9.0@sha256:d112b82be1336f91e028b0348755133fda333992355b533419355a65c32ff9ad
-    depends_on:
-      - ldap
-    environment:
-      PHPLDAPADMIN_LDAP_HOSTS: ldap
-      PHPLDAPADMIN_HTTPS: false
-    networks:
-      - ldap-backend
-      - proxy
-    labels:
-      traefik.http.routers.ldap.rule: Host(`ldap.${BASE_DOMAIN}`)
-      traefik.http.routers.ldap.tls: true
-      traefik.http.routers.ldap.middlewares: authelia@docker
-      traefik.enable: true
     restart: unless-stopped
 # ============================================================================ #
 # ================================= NEXCTLOUD ================================ #
@@ -684,7 +579,6 @@ services:
 
 volumes:
   adguard-conf:
-  authelia-database:
   autobrr-config:
   borg-cache:
   borg-config:
@@ -693,8 +587,6 @@ volumes:
   nextcloud-data:
   nextcloud-database:
   prowlarr-config:
-  ldap-config:
-  ldap-database:
   alloy-logs-data:
   loki-data:
   node-textfile-collector:
@@ -710,9 +602,7 @@ volumes:
   vaultwarden-data:
 
 networks:
-  authelia-backend:
   backup:
-  ldap-backend:
   logs:
     internal: true
   metrics:

@@ -8,12 +8,12 @@ authentication_backend:
     group_name_attribute: cn
 storage:
   postgres:
-    host: authelia-database
+    host: database
     database: authelia
     username: authelia
 session:
   redis:
-    host: authelia-redis
+    host: redis
     port: 6379
   cookies:
     - domain: '{{ mustEnv "BASE_DOMAIN" }}'
