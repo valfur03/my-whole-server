@@ -87,7 +87,6 @@ services:
       - adguard-conf:/volumes/adguard-conf
       - nextcloud-data:/volumes/nextcloud-data
       - plex-config:/volumes/plex-config
-#      - synapse-data:/volumes/synapse-data
       - vaultwarden-data:/volumes/vaultwarden-data
       - /backup/local/borg/docker:/backup/local
       - /var/run/docker.sock:/var/run/docker.sock
@@ -96,7 +95,6 @@ services:
       - authelia-backend
       - da-many-backend
       - nextcloud-backend
-#      - synapse-backend
     secrets:
       - AUTHELIA_JWT_SECRET
       - AUTHELIA_SESSION_SECRET
@@ -106,7 +104,6 @@ services:
       - LDAP_ADMIN_PASSWORD
       - NEXTCLOUD_STORAGE_PASSWORD
       - SMTP_PASSWORD
-#      - SYNAPSE_STORAGE_PASSWORD
       - VAULTWARDEN_ADMIN_TOKEN
       - DOCO_CD_GIT_ACCESS_TOKEN
       - DOCO_CD_WEBHOOK_SECRET
@@ -421,7 +418,6 @@ services:
       - tempo-data:/var/tempo
     networks:
       - metrics
-      - seedbox-metrics
     restart: unless-stopped
 
   otel-collector:
@@ -438,7 +434,6 @@ services:
       - otel-collector-data:/var/lib/alloy/data
     networks:
       - proxy
-      - seedbox-metrics
     labels:
       traefik.http.routers.otel-http-collector.rule: Host(`http.collector.traces.${BASE_DOMAIN}`)
       traefik.http.routers.otel-http-collector.tls: true
@@ -544,18 +539,6 @@ services:
       - /data:/data
       - qbittorrent-config:/config
     restart: unless-stopped
-
-  # Disabled during the Transmission → qBittorrent migration: fleischel talks to
-  # Transmission's RPC (TRANSMISSION_HOST) and has no qBittorrent-compatible mode.
-  # Kept here pending a qBittorrent-compatible replacement.
-  # fleischel:
-  #   image: ghcr.io/valfur03/fleischel@sha256:f0dc6fefd24e585744a22a15466f0564d071df3a8c590f649a684d75d4b194d7
-  #   networks:
-  #     - seedbox-torrenting
-  #   environment:
-  #     TRANSMISSION_HOST: vpn
-  #     LOG_LEVEL: debug
-  #   restart: unless-stopped
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:2.3.5.5327-ls147@sha256:c9fe528f34b1fd3715438b6f6d6991d64e2965f2c055db36398bc66a0e7eab01
@@ -784,76 +767,6 @@ services:
     restart: unless-stopped
 
 # ============================================================================ #
-# ================================== SYNAPSE ================================= #
-# ============================================================================ #
-#  synapse-database:
-#    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-#    volumes:
-#      - synapse-database:/var/lib/postgresql/data
-#    networks:
-#      - synapse-backend
-#    environment:
-#      POSTGRES_DB: synapse
-#      POSTGRES_USER: synapse
-#      POSTGRES_PASSWORD_FILE: /run/secrets/SYNAPSE_STORAGE_PASSWORD
-#      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
-#    secrets:
-#      - SYNAPSE_STORAGE_PASSWORD
-#    restart: unless-stopped
-
-#  synapse-app:
-#    image: matrixdotorg/synapse:v1.98.0
-#    depends_on:
-#      - synapse-database
-#    volumes:
-#      - synapse-data:/data
-#    networks:
-#      - synapse-backend
-#      - proxy
-#    labels:
-#      traefik.http.routers.synapse.rule: Host(`matrix.${BASE_DOMAIN}`)
-#      traefik.http.services.synapse.loadbalancer.server.port: 8008
-#      traefik.http.routers.synapse.tls: true
-#      traefik.http.routers.synapse.tls.certresolver: letsencrypt
-#      traefik.enable: true
-#    restart: unless-stopped
-
-#  synapse-syncv3-database:
-#    image: postgres:16.1-alpine3.17@sha256:7e26cdee39d74f2f8cd527dc3bf8e675d008a2120fab3aded96d546ff12c9519
-#    volumes:
-#      - synapse-syncv3-database:/var/lib/postgresql/data
-#    networks:
-#      - synapse-backend
-#    environment:
-#      POSTGRES_DB: synapse-syncv3
-#      POSTGRES_USER: synapse-syncv3
-#      POSTGRES_PASSWORD: ${SYNAPSE_SYNCV3_STORAGE_PASSWORD}
-#      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
-#    secrets:
-#      - SYNAPSE_STORAGE_PASSWORD
-#    restart: unless-stopped
-
-#  synapse-syncv3-proxy:
-#    image: ghcr.io/matrix-org/sliding-sync:latest # TODO use no latest
-#    depends_on:
-#      - synapse-app
-#      - synapse-syncv3-database
-#    environment:
-#      SYNCV3_SERVER: https://matrix.${BASE_DOMAIN}
-#      SYNCV3_SECRET: ${SYNAPSE_SYNCV3_SECRET} # TODO can it be set in Docker Secret?
-#      SYNCV3_DB: user=synapse-syncv3 dbname=synapse-syncv3 sslmode=disable host=synapse-syncv3-database password=${SYNAPSE_SYNCV3_STORAGE_PASSWORD} # TODO can it be set in Docker Secret?
-#    networks:
-#      - synapse-backend
-#      - proxy
-#    labels:
-#      traefik.http.routers.synapse-syncv3.rule: Host(`syncv3.matrix.${BASE_DOMAIN}`)
-#      traefik.http.services.synapse-syncv3.loadbalancer.server.port: 8008
-#      traefik.http.routers.synapse-syncv3.tls: true
-#      traefik.http.routers.synapse-syncv3.tls.certresolver: letsencrypt
-#      traefik.enable: true
-#    restart: unless-stopped
-
-# ============================================================================ #
 # ================================== TRAEFIK ================================= #
 # ============================================================================ #
   socket-proxy:
@@ -1063,7 +976,6 @@ volumes:
   nextcloud-data:
   nextcloud-database:
   prowlarr-config:
-  jellyfin-config:
   ldap-config:
   ldap-database:
   alloy-logs-data:
@@ -1078,9 +990,6 @@ volumes:
   radarr-config:
   seerr-config:
   seerr-database:
-#  synapse-data:
-#  synapse-database:
-#  synapse-syncv3-database:
   traefik-acme:
   vaultwarden-data:
   weekly-money-database:
@@ -1101,7 +1010,6 @@ networks:
   seedbox-metrics:
   seedbox-torrenting:
   seerr-backend:
-#  synapse-backend:
   traefik:
   weekly-money-backend:
   AAA-vpn:
@@ -1132,8 +1040,6 @@ secrets:
     file: ${SECRETS_DIR:-./}nextcloud/secrets/STORAGE_PASSWORD
   SMTP_PASSWORD:
     file: ${SECRETS_DIR:-./}secrets/SMTP_PASSWORD
-#  SYNAPSE_STORAGE_PASSWORD:
-#    file: ${SECRETS_DIR:-./}synapse/secrets/STORAGE_PASSWORD
   VAULTWARDEN_ADMIN_TOKEN:
     file: ${SECRETS_DIR:-./}vaultwarden/secrets/ADMIN_TOKEN
   BUNNY_API_KEY:
