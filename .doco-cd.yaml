@@ -1,7 +1,0 @@
-name: my-whole-server
-repository_url: https://github.com/valfur03/my-whole-server.git
-env_files:
-  - .sops.env
-build:
-  force_image_pull: false
-webhook_filter: ^refs/heads/master$

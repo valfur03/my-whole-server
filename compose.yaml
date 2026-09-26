@@ -1,6 +1,0 @@
-name: my-whole-server
-
-networks:
-  proxy:
-    external: true
-    name: proxy
