@@ -27,10 +27,13 @@ services:
       - node-textfile-collector:/var/lib/node_exporter/textfile_collector
     networks:
       - backup
+    entrypoint:
+      - /bin/sh
+      - -c
+      - install -D -m 600 /run/secrets/borg_ssh_key /root/.ssh/id_rsa && exec /init
     secrets:
       - source: ssh_private_key
-        target: /root/.ssh/id_rsa
-        mode: 0400
+        target: borg_ssh_key
       - source: ssh_known_hosts
         target: /root/.ssh/known_hosts
         mode: 0400
