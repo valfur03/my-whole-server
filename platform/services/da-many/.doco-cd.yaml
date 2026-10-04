@@ -1,3 +1,0 @@
-env_files:
-  - ../.sops.env
-  - secrets.sops.env
