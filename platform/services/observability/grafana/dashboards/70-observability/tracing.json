@@ -252,7 +252,7 @@
       "gridPos": { "x": 0, "y": 44, "w": 24, "h": 4 },
       "options": {
         "mode": "markdown",
-        "content": "Tempo replaces the Jaeger UI — use **Grafana → Explore → Tempo** for trace search.\n\n- [Open Tempo Explore](/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22queryType%22:%22traceqlSearch%22%7D%5D%7D) — empty TraceQL search across all services.\n- Useful TraceQL starters:\n  - `{ resource.service.name=\"reverse-proxy\" && duration > 1s }` — slow Traefik requests.\n  - `{ status = error }` — every failing span in range.\n  - `{ span.http.status_code >= 500 }` — server errors only.\n- Each time-series panel above supports right-click → *View in Explore* with the panel's time range pre-applied."
+        "content": "Tempo replaces the Jaeger UI — use **Grafana → Explore → Tempo** for trace search.\n\n- [Open Tempo Explore](/explore?left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22queryType%22:%22traceqlSearch%22%7D%5D%7D) — empty TraceQL search across all services.\n- Useful TraceQL starters:\n  - `{ resource.service.name=\"traefik\" && duration > 1s }` — slow Traefik requests.\n  - `{ status = error }` — every failing span in range.\n  - `{ span.http.status_code >= 500 }` — server errors only.\n- Each time-series panel above supports right-click → *View in Explore* with the panel's time range pre-applied."
       }
     }
   ]

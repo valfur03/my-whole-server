@@ -408,7 +408,7 @@
         {
           "id": 15,
           "type": "logs",
-          "title": "Live log — reverse-proxy",
+          "title": "Live log — traefik",
           "description": "Live tail of the Traefik container. Without `accessLog:` enabled this only shows operational logs (config reloads, internal errors).",
           "gridPos": { "x": 0, "y": 52, "w": 24, "h": 12 },
           "datasource": { "type": "loki", "uid": "loki" },
