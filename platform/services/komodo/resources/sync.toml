@@ -1,0 +1,6 @@
+[[resource_sync]]
+name = "side-projects"
+[resource_sync.config]
+repo = "valfur03/my-whole-server"
+branch = "master"
+resource_path = ["platform/services/komodo/resources"]

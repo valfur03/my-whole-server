@@ -1,0 +1,7 @@
+[[git_provider]]
+domain = "github.com"
+accounts = [{ username = "valfur03", token = "${KOMODO_GITHUB_TOKEN}" }]
+
+[[image_registry]]
+domain = "ghcr.io"
+accounts = [{ username = "valfur03", token = "${KOMODO_GITHUB_TOKEN}" }]

@@ -35,6 +35,8 @@ services:
     init: true
     depends_on:
       - ferretdb
+    env_file:
+      - ../.sops.env
     environment:
       TZ: Europe/Paris
       KOMODO_HOST: https://komodo.${BASE_DOMAIN}
@@ -52,8 +54,11 @@ services:
       KOMODO_PASSKEY: ${KOMODO_PASSKEY}
       KOMODO_JWT_SECRET: ${KOMODO_JWT_SECRET}
       KOMODO_WEBHOOK_SECRET: ${KOMODO_WEBHOOK_SECRET}
+      KOMODO_GITHUB_TOKEN: ${KOMODO_GITHUB_TOKEN}
+      KOMODO_CONFIG_PATHS: /config/files
     volumes:
       - keys:/config/keys
+      - ./config:/config/files:ro
       - /etc/komodo/backups:/backups
     networks:
       - backend

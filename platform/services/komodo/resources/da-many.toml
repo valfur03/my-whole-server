@@ -1,0 +1,29 @@
+[[stack]]
+name = "da-many"
+[stack.config]
+server = "pi"
+git_provider = "github.com"
+git_account = "valfur03"
+repo = "valfur03/da-many"
+branch = "main"
+run_directory = "deploy"
+file_paths = ["compose.yaml", "compose.traefik.yaml"]
+registry_provider = "ghcr.io"
+registry_account = "valfur03"
+auto_update = true
+environment = """
+DA_MANY_IMAGE_TAG = branch-main
+PUBLIC_HOST = money.[[BASE_DOMAIN]]
+PUBLIC_URL = https://money.[[BASE_DOMAIN]]
+API_PUBLIC_URL = https://money.[[BASE_DOMAIN]]
+API_URL = https://money.[[BASE_DOMAIN]]/api
+POSTGRES_DB = da-many
+POSTGRES_USER = da-many
+POSTGRES_PASSWORD = [[DA_MANY_DATABASE_PASSWORD]]
+BETTER_AUTH_SECRET = [[DA_MANY_AUTH_SECRET]]
+SMTP_HOST = [[SMTP_HOST]]
+SMTP_PORT = 587
+SMTP_USER = [[SMTP_USERNAME]]
+SMTP_PASS = [[SMTP_PASSWORD]]
+SMTP_FROM = [[DA_MANY_SYSTEM_EMAIL]]
+"""
