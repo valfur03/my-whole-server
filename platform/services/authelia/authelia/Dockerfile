@@ -1,4 +1,4 @@
-FROM authelia/authelia:4.39.19@sha256:0c824dcab1ae97c56bf673c5e77fe8cc6bcd400564555140cc8002a12c6b6463
+FROM authelia/authelia:4.39.28@sha256:bd97cff4fcbf715b5ff1f9ae286afbe6033afce385302520b0368122d43a6f54
 
 COPY ./my-entrypoint.sh ./my-entrypoint.sh
 COPY ./config /config
