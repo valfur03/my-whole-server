@@ -1,5 +1,9 @@
 apiVersion: 1
 
+deleteDatasources:
+  - name: Loki
+    orgId: 1
+
 datasources:
   - name: Prometheus
     uid: prometheus
@@ -14,19 +18,6 @@ datasources:
         - name: trace_id
           datasourceUid: tempo
 
-  - name: Loki
-    uid: loki
-    type: loki
-    access: proxy
-    url: http://loki:3100
-    editable: false
-    jsonData:
-      derivedFields:
-        - name: TraceID
-          matcherRegex: 'trace[_-]?id["= ]+([a-f0-9]{16,32})'
-          url: '${__value.raw}'
-          datasourceUid: tempo
-
   - name: Tempo
     uid: tempo
     type: tempo
@@ -34,13 +25,6 @@ datasources:
     url: http://tempo:3200
     editable: false
     jsonData:
-      tracesToLogsV2:
-        datasourceUid: loki
-        tags:
-          - key: service.name
-            value: compose_service
-        spanStartTimeShift: '-1h'
-        spanEndTimeShift: '1h'
       tracesToMetrics:
         datasourceUid: prometheus
       serviceMap:
@@ -49,5 +33,3 @@ datasources:
         enabled: true
       search:
         hide: false
-      lokiSearch:
-        datasourceUid: loki

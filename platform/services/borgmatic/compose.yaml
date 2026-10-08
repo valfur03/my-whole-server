@@ -24,7 +24,6 @@ services:
       - vaultwarden-data:/volumes/vaultwarden-data
       - /backup/local/borg/docker:/backup/local
       - /var/run/docker.sock:/var/run/docker.sock
-      - node-textfile-collector:/var/lib/node_exporter/textfile_collector
     networks:
       - backup
     entrypoint:
@@ -56,9 +55,6 @@ volumes:
   vaultwarden-data:
     external: true
     name: vaultwarden_data
-  node-textfile-collector:
-    external: true
-    name: observability_node-textfile-collector
 
 secrets:
   ssh_private_key:

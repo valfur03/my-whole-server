@@ -25,28 +25,6 @@ services:
     networks:
       - backend
 
-  nextcloud-mysqld-exporter:
-    build: ./mysqld-exporter
-    depends_on:
-      - database
-    environment:
-      MYSQL_PASSWORD: ${NEXTCLOUD_STORAGE_PASSWORD}
-    networks:
-      - backend
-      - metrics
-    restart: unless-stopped
-
-  nextcloud-redis-exporter:
-    image: oliver006/redis_exporter:v1.83.0-alpine@sha256:7643b705adca0ef5c700cae28cfd8798c3d3b653ef17096084359d17b70ea5ca
-    depends_on:
-      - redis
-    environment:
-      REDIS_ADDR: redis://redis:6379
-    networks:
-      - backend
-      - metrics
-    restart: unless-stopped
-
   app:
     image: nextcloud:33.0.3-fpm@sha256:f19148bd5c7f3a59b1dd848b8a70cd613640251d5e322964fa0c3356249cece2
     depends_on:

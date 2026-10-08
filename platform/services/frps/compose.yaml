@@ -12,7 +12,6 @@ services:
       - 7000:7000
     networks:
       - proxy
-      - metrics
     labels:
       traefik.http.routers.frps.rule: HostRegexp(`^.+-tunnel\.${BASE_DOMAIN}$`)
       traefik.http.routers.frps.tls: true
