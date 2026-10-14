@@ -9,7 +9,7 @@ services:
       - adguard-conf:/opt/adguardhome/conf
     networks:
       proxy:
-      AAA-vpn:
+      vpn:
         ipv4_address: "10.8.1.3"
     labels:
       traefik.http.routers.adguard.rule: Host(`adguard.${BASE_DOMAIN}`)
@@ -43,7 +43,7 @@ services:
     volumes:
       - wireguard:/etc/wireguard
     networks:
-      AAA-vpn:
+      vpn:
         ipv4_address: "10.8.1.2"
       proxy:
     labels:
@@ -60,7 +60,7 @@ volumes:
   wireguard:
 
 networks:
-  AAA-vpn:
+  vpn:
     ipam:
       driver: default
       config:
