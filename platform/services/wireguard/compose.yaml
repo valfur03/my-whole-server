@@ -30,6 +30,16 @@ services:
     environment:
       WG_HOST: "${HOST_IP}"
       WG_DEFAULT_DNS: "10.8.1.3"
+      WG_POST_UP: >-
+        iptables -t nat -A POSTROUTING -s 10.8.0.0/24 ! -o wg0 -j MASQUERADE;
+        iptables -A INPUT -p udp -m udp --dport 51820 -j ACCEPT;
+        iptables -A FORWARD -i wg0 -j ACCEPT;
+        iptables -A FORWARD -o wg0 -j ACCEPT;
+      WG_POST_DOWN: >-
+        iptables -t nat -D POSTROUTING -s 10.8.0.0/24 ! -o wg0 -j MASQUERADE;
+        iptables -D INPUT -p udp -m udp --dport 51820 -j ACCEPT;
+        iptables -D FORWARD -i wg0 -j ACCEPT;
+        iptables -D FORWARD -o wg0 -j ACCEPT;
     volumes:
       - wireguard:/etc/wireguard
     networks:
@@ -51,11 +61,6 @@ volumes:
 
 networks:
   AAA-vpn:
-    # The network is named this way to ensure (as much as I have understood)
-    # that the interface used inside the container is eth0.
-    # The below issue offers another solution that is not well extensible
-    # according to me. Furthermore, it didn't work when I tried.
-    # https://github.com/wg-easy/wg-easy/issues/291
     ipam:
       driver: default
       config:
