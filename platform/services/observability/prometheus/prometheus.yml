@@ -7,8 +7,13 @@ scrape_configs:
   static_configs:
     - targets: ["node-exporter:9100"]
 - job_name: "qbittorrent"
+  scrape_interval: 60s
   static_configs:
     - targets: ["qbittorrent-exporter:17871"]
+  metric_relabel_configs:
+    - source_labels: [__name__]
+      regex: qbittorrent_torrent_(info|tags|total_uploaded_bytes|total_downloaded_bytes)
+      action: keep
 - job_name: "traefik"
   static_configs:
     - targets: ["traefik:8080"]
