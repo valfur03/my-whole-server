@@ -1,0 +1,34 @@
+groups:
+  - name: seedbox
+    interval: 1m
+    rules:
+      - record: hash:qbittorrent_torrent_tracker:info
+        expr: |
+          topk by (hash) (1, max by (hash, tracker) (
+              label_replace(
+                  qbittorrent_torrent_tags{tag=~"tracker-.+", tag!="tracker-other"}
+                or on (hash)
+                  qbittorrent_torrent_tags{tag="tracker-other"},
+                "tracker", "$1", "tag", "tracker-(.+)"
+              )
+            or on (hash)
+              label_replace(qbittorrent_torrent_info, "tracker", "untagged", "hash", ".*")
+          ))
+      - record: tracker:qbittorrent_torrent_uploaded_bytes:increase1m
+        expr: |
+          sum by (tracker) (
+            clamp_min(
+              qbittorrent_torrent_total_uploaded_bytes - on (hash) qbittorrent_torrent_total_uploaded_bytes offset 1m,
+              0
+            )
+            * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info
+          )
+      - record: tracker:qbittorrent_torrent_downloaded_bytes:increase1m
+        expr: |
+          sum by (tracker) (
+            clamp_min(
+              qbittorrent_torrent_total_downloaded_bytes - on (hash) qbittorrent_torrent_total_downloaded_bytes offset 1m,
+              0
+            )
+            * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info
+          )
