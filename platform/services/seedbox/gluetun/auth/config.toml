@@ -1,0 +1,4 @@
+[[roles]]
+name = "exporter"
+routes = ["GET /v1/vpn/status", "GET /v1/publicip/ip", "GET /v1/openvpn/portforwarded"]
+auth = "none"

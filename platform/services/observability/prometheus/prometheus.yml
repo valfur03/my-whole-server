@@ -17,6 +17,9 @@ scrape_configs:
     - source_labels: [__name__]
       regex: qbittorrent_torrent_(info|tags|total_uploaded_bytes|total_downloaded_bytes)
       action: keep
+- job_name: "gluetun"
+  static_configs:
+    - targets: ["gluetun-exporter:8001"]
 - job_name: "traefik"
   static_configs:
     - targets: ["traefik:8080"]

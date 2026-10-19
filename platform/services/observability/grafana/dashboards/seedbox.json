@@ -60,13 +60,75 @@
   },
   "panels": [
     {
+      "id": 7,
+      "type": "stat",
+      "title": "VPN",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "instant": true,
+          "range": false,
+          "expr": "gluetun_vpn_infos * 0 + on () group_left () max(gluetun_vpn_status)",
+          "legendFormat": "{{ip}} ({{country}})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No data",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "colorMode": "background",
+        "textMode": "name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Uploaded",
       "gridPos": {
-        "x": 0,
+        "x": 6,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 4
       },
       "datasource": {
@@ -113,9 +175,9 @@
       "type": "stat",
       "title": "Downloaded",
       "gridPos": {
-        "x": 8,
+        "x": 12,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 4
       },
       "datasource": {
@@ -162,9 +224,9 @@
       "type": "stat",
       "title": "Ratio",
       "gridPos": {
-        "x": 16,
+        "x": 18,
         "y": 0,
-        "w": 8,
+        "w": 6,
         "h": 4
       },
       "datasource": {
