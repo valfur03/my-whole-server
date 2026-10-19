@@ -30,6 +30,9 @@ cat:
   series: "/data/torrent/complete/series"
   movies: "/data/torrent/complete/movies"
 
+# When you add a tracker here, also add its tag (without "tracker-") to the
+# default of the Tracker variable in
+# platform/services/observability/grafana/dashboards/seedbox.json.
 tracker:
   c411.org:
     tag: tracker-c411
