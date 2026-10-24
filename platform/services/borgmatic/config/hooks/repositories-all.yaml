@@ -1,2 +1,2 @@
 before_actions:
-    - findmnt {local_backup_directory} || exit 1
+    - "[ {repository_label} != local ] || [ \"$(findmnt -n -v -o SOURCE {local_backup_directory})\" = {local_backup_device} ]"

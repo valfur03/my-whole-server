@@ -1,2 +1,3 @@
 constants:
     local_backup_directory: /backup/local
+    local_backup_device: /dev/mapper/fedora-backup
