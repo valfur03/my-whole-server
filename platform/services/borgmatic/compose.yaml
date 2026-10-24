@@ -6,7 +6,9 @@ services:
     image: ghcr.io/borgmatic-collective/borgmatic:2.1.7@sha256:6d039f98e58a58cea287007608c3d5993ce65f8e248ff91cd3de4246c648c123
     environment:
       BORG_PASSPHRASE: ${BORGMATIC_ENCRYPTION_PASSPHRASE}
+      BORGMATIC_HEALTHCHECKS_BASE_URL: ${BORGMATIC_HEALTHCHECKS_BASE_URL:?}
       CRON: "0 2 * * *"
+      CRON_COMMAND: "sh /scripts/healthchecks-run.sh 2>&1"
       TZ: Europe/Paris
       NEXTCLOUD_CONTAINER_NAME: nextcloud-app-1
       VAULTWARDEN_CONTAINER_NAME: vaultwarden-vaultwarden-1
