@@ -4,5 +4,5 @@
     - ../encryption/docker-secret.yaml
     - ../hooks/repositories-all.yaml
     - ../name-formats/docker.yaml
-    - ../retention/7d.yaml
+    - ../retention/7d-4w-6m.yaml
     - ../repositories/all.yaml
