@@ -66,7 +66,7 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 6,
+        "w": 8,
         "h": 4
       },
       "datasource": {
@@ -126,9 +126,9 @@
       "type": "stat",
       "title": "Uploaded",
       "gridPos": {
-        "x": 6,
+        "x": 8,
         "y": 0,
-        "w": 6,
+        "w": 8,
         "h": 4
       },
       "datasource": {
@@ -175,9 +175,9 @@
       "type": "stat",
       "title": "Downloaded",
       "gridPos": {
-        "x": 12,
+        "x": 16,
         "y": 0,
-        "w": 6,
+        "w": 8,
         "h": 4
       },
       "datasource": {
@@ -203,56 +203,6 @@
             "mode": "fixed",
             "fixedColor": "text"
           }
-        },
-        "overrides": []
-      },
-      "options": {
-        "graphMode": "none",
-        "colorMode": "none",
-        "textMode": "value",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        }
-      }
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "Ratio",
-      "gridPos": {
-        "x": 18,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum (qbittorrent_torrent_total_uploaded_bytes * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info{tracker=~\"$tracker\"}) / sum (qbittorrent_torrent_total_downloaded_bytes * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info{tracker=~\"$tracker\"})",
-          "instant": true,
-          "range": false
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "fixed",
-            "fixedColor": "text"
-          },
-          "decimals": 2
         },
         "overrides": []
       },
@@ -332,7 +282,7 @@
     {
       "id": 5,
       "type": "bargauge",
-      "title": "Ratio per tracker",
+      "title": "Uploaded per tracker",
       "gridPos": {
         "x": 0,
         "y": 13,
@@ -350,7 +300,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sort_desc(sum by (tracker) (qbittorrent_torrent_total_uploaded_bytes * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info{tracker=~\"$tracker\"}) / (sum by (tracker) (qbittorrent_torrent_total_downloaded_bytes * on (hash) group_left (tracker) hash:qbittorrent_torrent_tracker:info{tracker=~\"$tracker\"}) > 0))",
+          "expr": "sort_desc(sum by (tracker) (sum_over_time(tracker:qbittorrent_torrent_uploaded_bytes:increase1m{tracker=~\"$tracker\"}[$__range])))",
           "instant": true,
           "range": false,
           "legendFormat": "{{tracker}}"
@@ -358,8 +308,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
-          "decimals": 2,
+          "unit": "bytes",
           "min": 0,
           "color": {
             "mode": "fixed",
