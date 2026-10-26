@@ -18,7 +18,7 @@ services:
       - metrics
     restart: unless-stopped
   grafana:
-    image: grafana/grafana:11.6.14@sha256:ebe075cd4c4520f9d3af2403a1ddc830651ca7d009cbdfdcf21032db574dc3a7
+    image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
     depends_on:
       - prometheus
     volumes:
