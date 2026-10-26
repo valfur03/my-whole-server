@@ -1,0 +1,5 @@
+weekly-money:
+  repository: $RESTIC_REPOSITORY_BASE/weekly-money
+  backup:
+    stdin-command: docker exec weekly-money-database-1 sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"'
+    stdin-filename: weekly-money-postgres.sql

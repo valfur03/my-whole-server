@@ -1,0 +1,20 @@
+authelia:
+  repository: $RESTIC_REPOSITORY_BASE/authelia
+
+authelia-postgres:
+  inherit: authelia
+  backup:
+    stdin-command: docker exec authelia-database-1 sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"'
+    stdin-filename: authelia-postgres.sql
+
+authelia-ldap-config:
+  inherit: authelia
+  backup:
+    stdin-command: docker exec authelia-ldap-1 slapcat -n 0
+    stdin-filename: authelia-ldap-config.ldif
+
+authelia-ldap-data:
+  inherit: authelia
+  backup:
+    stdin-command: docker exec authelia-ldap-1 slapcat -n 1
+    stdin-filename: authelia-ldap-data.ldif

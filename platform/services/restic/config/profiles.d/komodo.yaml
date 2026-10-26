@@ -1,0 +1,6 @@
+komodo:
+  repository: $RESTIC_REPOSITORY_BASE/komodo
+  backup:
+    source:
+      - /volumes/komodo-keys
+      - /volumes/komodo-backups

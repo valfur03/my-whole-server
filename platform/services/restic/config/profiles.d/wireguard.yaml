@@ -1,0 +1,7 @@
+wireguard:
+  repository: $RESTIC_REPOSITORY_BASE/wireguard
+  backup:
+    source:
+      - /volumes/adguard-conf
+      - /volumes/adguard-work
+      - /volumes/wireguard

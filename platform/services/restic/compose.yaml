@@ -1,0 +1,40 @@
+name: restic
+services:
+  restic:
+    build: ./restic
+    init: true
+    hostname: pi
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?}
+      HEALTHCHECKS_BASE_URL: ${RESTIC_HEALTHCHECKS_BASE_URL:?}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?}
+      RESTIC_REPOSITORY_BASE: ${RESTIC_REPOSITORY_BASE:?}
+      TZ: Europe/Paris
+    volumes:
+      - cache:/root/.cache/restic
+      - ./config:/etc/resticprofile:ro
+      - ./scripts:/scripts:ro
+      - ../common/scripts:/common-scripts:ro
+      - adguard-conf:/volumes/adguard-conf:ro
+      - adguard-work:/volumes/adguard-work:ro
+      - komodo-keys:/volumes/komodo-keys:ro
+      - /etc/komodo/backups:/volumes/komodo-backups:ro
+      - wireguard:/volumes/wireguard:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  cache:
+  adguard-conf:
+    external: true
+    name: wireguard_adguard-conf
+  adguard-work:
+    external: true
+    name: wireguard_adguard-work
+  komodo-keys:
+    external: true
+    name: komodo_keys
+  wireguard:
+    external: true
+    name: wireguard_wireguard
