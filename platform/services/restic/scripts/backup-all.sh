@@ -2,7 +2,7 @@
 
 EXIT_CODE=0
 
-PROFILES=$(resticprofile profiles | awk '$2 == "(backup)" { sub(/:$/, "", $1); print $1 }')
+PROFILES=$(resticprofile profiles | awk '/^[[:space:]]*[^[:space:]]+:[[:space:]]+\(([^)]*, )?backup(, [^)]*)?\)/ { sub(/:$/, "", $1); print $1 }')
 
 if [ -z "$PROFILES" ]
 then
