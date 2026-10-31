@@ -1,85 +1,149 @@
 # Backups
 
-Backups are fully managed by [borgmatic](https://torsion.org/borgmatic/).
+## Overview
 
-## How to perform a backup
+At the moment, two tools back up the services: borg and restic. The repository is slowly shifting towards restic only.
 
-Backups are performed automatically by a cron job inside the borgmatic service.
+<table>
+  <tr>
+    <th>Tool</th>
+    <td><a href="https://restic.net/">Restic</a></td>
+    <td><a href="https://www.borgbackup.org/">Borg</a></td>
+  </tr>
+  <tr>
+    <th>Configuration tool</th>
+    <td><a href="https://creativeprojects.github.io/resticprofile/">Resticprofile</a></td>
+    <td><a href="https://torsion.org/borgmatic/">Borgmatic</a></td>
+  </tr>
+  <tr>
+    <th>Local destination</th>
+    <td><i>none</i></td>
+    <td>`/backup/local`</td>
+  </tr>
+  <tr>
+    <th>Remote destination</th>
+    <td><a href="https://www.backblaze.com/cloud-storage">Backblaze B2</a></td>
+    <td><a href="https://www.borgbase.com/">BorgBase</a></td>
+  </tr>
+</table>
 
-It is also possible to perform a manual backup on all repositories.
+An additional third-party service, [healthchecks.io](https://healthchecks.io/), tracks backup jobs and sends an alert when a job was missed or failed.
 
-```shell
-docker compose exec borgmatic borgmatic --stats --list --verbosity 1
-```
+## Status of the migration
+
+<!-- TODO -->
+
+## Restic
 
 > [!NOTE]
-> The flags at the end of the command line are optional.
+> As mentioned earlier, Restic backups target a subset of services only, and are only written remotely.
 
-See more at the [backup creation documentation](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#backups).
+### Quick commands
 
-## How to restore a backup
-
-Backup restoration is not as simple as creation.
-It is recommended to restore each repository individually, one after the other.
-
-Also, the database may be restored before the data volumes.
-
-For the database restoration:
+**Run a backup by hand:**
 
 ```shell
-docker compose exec borgmatic borgmatic restore --archive latest --database <service> -c /etc/borgmatic.d/<service>.yaml
+# Without a healthchecks.io ping
+docker compose -p restic exec restic resticprofile --name <profile> backup
+
+# With a healthchecks.io ping
+docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-backup sh /scripts/backup-all.sh
 ```
 
-For the data extraction:
+**List the snapshots:**
 
 ```shell
-docker compose exec borgmatic borgmatic restore --archive latest --repository <repo> -c /etc/borgmatic.d/<service>.yaml --progress
+docker compose -p restic exec restic resticprofile --name <repository-profile> snapshots
+docker compose -p restic exec restic resticprofile --name <repository-profile> snapshots --latest 1
 ```
 
-Here are the possible repository values:
-
-| Type     | Value                                                |
-|----------|------------------------------------------------------|
-| local    | `/backup/local/<service>`                            |
-| borgbase | `ssh://<repo_id>@<repo_id>.repo.borgbase.com/./repo` |
-
-### How to restore Docker secrets
-
-> [!WARNING]
-> The `BORGMATIC_ENCRYPTION_PASSPHRASE` is still needed,
-> so hopefully you have backed it up somewhere else.
-
-We have to follow these steps:
-
-1. Extract the secrets from our repo
-   ```shell
-   docker compose exec borgmatic borgmatic extract --archive latest --repo <secrets_repo> --destination /tmp -c /etc/borgmatic.d/secrets.yaml --progress
-   ```
-2. Copy the secrets out of the Docker container
-   ```shell
-   mkdir -p .tmp_secrets
-   docker compose cp borgmatic:/tmp/run/secrets/. .tmp_secrets/
-   ```
-3. Populate our secrets in our host directory
-   ```shell
-   # On the prod host with doco-cd:
-   ./scripts/distribute_secrets.sh .tmp_secrets /etc/my-whole-server
-
-   # Or for a local-dev layout:
-   ./scripts/distribute_secrets.sh .tmp_secrets
-   ```
-
-### How to restore the SOPS age key
-
-The key is included in the secrets archive (under `DOCO_CD_SOPS_AGE_KEY`) and `distribute_secrets.sh` places it at `/etc/my-whole-server/doco-cd/secrets/SOPS_AGE_KEY`. Compose mounts that file into the doco-cd container as the `DOCO_CD_SOPS_AGE_KEY` Docker secret, where doco-cd reads it via `SOPS_AGE_KEY_FILE`.
-
-## Troubleshooting
-
-### An error occurs with `before_*` script
-
-Sometimes, the script fails, but we don't need to execute anyway.
-To disable, run the command with this flag:
+**Create a repository:**
 
 ```shell
-docker compose exec borgmatic borgmatic ... --override 'before_extract=[]’
+docker compose -p restic exec restic resticprofile --name <repository-profile> init
+```
+
+### Restoring a backup
+
+#### Database
+
+> [!NOTE]
+> The restore step does not overwrite data: make sure the database is blank first.
+
+**Postgres:**
+
+```shell
+docker compose -p restic exec -T restic resticprofile --name <repository-profile> dump --path /<file>.sql latest /<file>.sql \
+  | docker compose -p <stack> exec -T <service> psql -U <user> -d <database> -v ON_ERROR_STOP=1 -q
+```
+
+#### LDAP
+
+<!-- TODO -->
+
+#### Files
+
+<!-- TODO: this section needs a complete re-write. what is a volume? what's `--include`? -->
+
+```shell
+docker compose -p restic exec restic resticprofile --name <repository-profile> restore latest --target /tmp/restore
+```
+
+The files are under `/tmp/restore/volumes/<name>`. Add `--include /volumes/<name>` to restore one volume only.
+
+The volumes are read-only in the Restic container. To copy the files into a volume, stop the service that uses it, then:
+
+```shell
+docker compose -p restic exec -T restic tar -C /tmp/restore/volumes/<name> -cf - . \
+  | docker run --rm -i -v <volume>:/to alpine tar -C /to -xpf -
+docker compose -p restic exec restic rm -rf /tmp/restore
+```
+
+This copy into a volume is not tested yet (Phase 2).
+
+## Borg
+
+| Repository | Location                                             |
+| ---------- | ---------------------------------------------------- |
+| local      | `/backup/local/<service>`                            |
+| BorgBase   | `ssh://<repo_id>@<repo_id>.repo.borgbase.com/./repo` |
+
+### Quick commands
+
+**Run a backup by hand:**
+
+```shell
+docker compose -p borgmatic exec borgmatic borgmatic --stats --list --verbosity 1
+```
+
+#### Database
+
+**Postgres:**
+
+```shell
+docker compose -p borgmatic exec borgmatic borgmatic restore --archive latest --database <database> -c /etc/borgmatic.d/<service>.yaml
+```
+
+#### Files
+
+```shell
+docker compose -p borgmatic exec borgmatic borgmatic restore --archive latest --repository <repository> -c /etc/borgmatic.d/<service>.yaml --progress
+```
+
+### Troubleshooting
+
+If a `before_*` hook fails and you do not need it, skip it:
+
+```shell
+docker compose -p borgmatic exec borgmatic borgmatic ... --override 'before_extract=[]'
+```
+
+## B2 setup
+
+### Creating the backup key
+
+We use the `b2` CLI because the web UI's "Read and Write" key includes `deleteFiles`, which this key must **not** have.
+
+```shell
+b2 key create --bucket <bucket> <key-name> listBuckets,listFiles,readFiles,writeFiles
 ```
