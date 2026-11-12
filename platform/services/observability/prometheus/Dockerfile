@@ -1,4 +1,4 @@
-FROM prom/prometheus:v2.55.1@sha256:2659f4c2ebb718e7695cb9b25ffa7d6be64db013daba13e05c875451cf51b0d3
+FROM prom/prometheus:v3.16.0@sha256:e04987641b57704f408e31f6373ba4138ecf27cb4a165d24aabb6c38fddd0f06
 
 ADD prometheus.yml /etc/prometheus/
 ADD rules /etc/prometheus/rules/
