@@ -26,7 +26,7 @@ services:
       - backend
 
   app:
-    image: nextcloud:33.0.10-fpm@sha256:300d5d884741146834f5714974daa7c1cc847028551efe276b9a652a18e165ab
+    image: nextcloud:33.0.11-fpm@sha256:a13a2c5800f23973010d99d7db8639389b22f2ad1bd89b8ac9f2e10d88e874fe
     depends_on:
       - database
       - redis
