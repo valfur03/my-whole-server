@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   traefik:
-    image: traefik:v3.7.1@sha256:6b9cbca6fac42ab0075f5437d8dc1685cfd188626d8d515839ea94f8b6271c42
+    image: traefik:v3.7.19@sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4
     depends_on:
       - socket-proxy
     ports:
