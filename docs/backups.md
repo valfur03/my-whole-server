@@ -50,6 +50,21 @@ docker compose -p restic exec restic resticprofile --name <profile> backup
 docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-backup sh /scripts/run-all.sh backup
 ```
 
+**Run a check by hand:**
+
+```shell
+# 10% of the data, without a healthchecks.io ping
+docker compose -p restic exec restic sh /scripts/run-all.sh check --read-data-subset=10%
+
+# 10% of the data, with a healthchecks.io ping
+docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-check sh /scripts/run-all.sh check --read-data-subset=10%
+
+# All the data, with a healthchecks.io ping
+docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-check sh /scripts/run-all.sh check --read-data
+```
+
+The last command is also the one to use when a quarterly full read was missed.
+
 **List the snapshots:**
 
 ```shell

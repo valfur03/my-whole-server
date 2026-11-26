@@ -1,5 +1,7 @@
 wireguard:
   repository: $RESTIC_REPOSITORY_BASE/wireguard
+  check:
+    with-cache: false
   backup:
     source:
       - /volumes/adguard-conf

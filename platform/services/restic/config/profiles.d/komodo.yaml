@@ -1,5 +1,7 @@
 komodo:
   repository: $RESTIC_REPOSITORY_BASE/komodo
+  check:
+    with-cache: false
   backup:
     source:
       - /volumes/komodo-keys
