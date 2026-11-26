@@ -47,7 +47,7 @@ An additional third-party service, [healthchecks.io](https://healthchecks.io/), 
 docker compose -p restic exec restic resticprofile --name <profile> backup
 
 # With a healthchecks.io ping
-docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-backup sh /scripts/backup-all.sh
+docker compose -p restic exec restic sh /common-scripts/healthchecks-run.sh restic-backup sh /scripts/run-all.sh backup
 ```
 
 **List the snapshots:**
