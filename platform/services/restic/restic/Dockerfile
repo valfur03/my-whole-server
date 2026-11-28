@@ -1,4 +1,4 @@
-FROM creativeprojects/resticprofile:0.33.1@sha256:4c235a1448bea30d69375033fb5c6eb37724e2b155f6ab10fbf8d18c8cf4a347
+FROM creativeprojects/resticprofile:0.34.0@sha256:f5495831c9ebed368c4241a58752475a90cbbabd1db6c81931933881e6d231d6
 
 RUN apk add --no-cache docker-cli
 COPY crontab /etc/crontabs/root
