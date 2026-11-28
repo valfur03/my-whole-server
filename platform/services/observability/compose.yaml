@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
 
   otel-collector:
-    image: grafana/alloy:v1.16.1@sha256:51aeb9d829239345070619dad3edd6873186f913c84f45b365b74574fcb38ec0
+    image: grafana/alloy:v1.22.0@sha256:9acc2529bc1edb7f5b2bd801dd8334ebc80c158e3a9e5526ecd7c9a273d43189
     command:
       - run
       - --server.http.listen-addr=0.0.0.0:12345
